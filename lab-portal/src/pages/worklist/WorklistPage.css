@@ -1,0 +1,215 @@
+.worklist-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.worklist-header h1 {
+  margin: 0;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+}
+
+.worklist-header p {
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
+}
+
+.worklist-layout {
+  display: grid;
+  grid-template-columns: 280px 320px minmax(320px, 1fr);
+  gap: var(--space-xl);
+}
+
+.orders-panel,
+.tests-panel,
+.result-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--glass-shadow);
+}
+
+.orders-panel header,
+.tests-panel header,
+.result-panel header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-lg);
+  color: var(--color-text-primary);
+}
+
+.orders-panel ul,
+.tests-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.order-row,
+.test-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.order-row.active,
+.test-row.active,
+.order-row:hover,
+.test-row:hover {
+  border-color: rgba(109, 212, 231, 0.4);
+  background: rgba(109, 212, 231, 0.08);
+}
+
+.order-number,
+.test-name {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.order-meta,
+.test-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.result-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.result-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.result-form input,
+.result-form select,
+.result-form textarea {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  font-size: var(--text-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text-primary);
+}
+
+.result-form textarea {
+  resize: vertical;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
+}
+
+.status-pill {
+  padding: var(--space-xxs) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+}
+
+.status-new,
+.status-pending {
+  background: rgba(109, 212, 231, 0.15);
+  color: #046b84;
+}
+
+.status-in_progress {
+  background: rgba(255, 192, 0, 0.15);
+  color: #a07000;
+}
+
+.status-result_ready,
+.status-completed {
+  background: rgba(93, 216, 161, 0.2);
+  color: #0b8043;
+}
+
+.status-critical,
+.status-error {
+  background: rgba(244, 67, 54, 0.18);
+  color: #b71c1c;
+}
+
+.submit-button {
+  align-self: flex-end;
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: none;
+  background: linear-gradient(135deg, #6dd4e7, #7fb3ff);
+  color: white;
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: rgba(244, 67, 54, 0.1);
+  color: #b71c1c;
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+}
+
+.muted {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 1200px) {
+  .worklist-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+  .result-panel {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .worklist-layout {
+    grid-template-columns: 1fr;
+  }
+  .result-panel {
+    grid-column: span 1;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

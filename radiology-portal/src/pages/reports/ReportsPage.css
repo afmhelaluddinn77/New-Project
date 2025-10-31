@@ -1,0 +1,25 @@
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.reports-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+}
+
+.reports-card h1 {
+  margin: 0 0 var(--space-md) 0;
+}
+
+.reports-card p {
+  color: var(--color-text-secondary);
+  max-width: 640px;
+}
+

@@ -1,0 +1,190 @@
+/* Design Tokens - Medical Grade EMR/HMS System */
+/* Apple San Francisco Typography + Glass Morphism + Accessibility */
+
+:root {
+  /* Typography - Apple San Francisco System */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, -apple-system-body, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+  
+  /* Font Sizes - Responsive Scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Primary Portal Colors - Medical Grade */
+  --color-patient: #7FB3FF;
+  --color-provider: #6FD9B8;
+  --color-admin: #B19EED;
+  --color-lab: #6DD4E7;
+  --color-pharmacy: #8FAFF5;
+  --color-billing: #7B9FE5;
+  --color-radiology: #C4A7FF;
+  
+  /* Color Variants (Lighter/Darker) */
+  --color-patient-light: #3388DD;
+  --color-patient-dark: #0052A3;
+  --color-provider-light: #00A882;
+  --color-provider-dark: #006B56;
+  --color-admin-light: #8B5CF6;
+  --color-admin-dark: #5B21B6;
+  
+  /* Neutral Palette */
+  --color-white: #FFFFFF;
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-overlay: rgba(15, 23, 42, 0.5);
+  
+  /* Text Colors */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-tertiary: #94A3B8;
+  --color-text-inverse: #FFFFFF;
+  
+  /* Border Colors */
+  --color-border-light: rgba(148, 163, 184, 0.2);
+  --color-border-medium: rgba(148, 163, 184, 0.4);
+  --color-border-strong: rgba(148, 163, 184, 0.6);
+  
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  
+  /* Status Backgrounds */
+  --color-success-bg: #D1FAE5;
+  --color-warning-bg: #FEF3C7;
+  --color-error-bg: #FEE2E2;
+  --color-info-bg: #DBEAFE;
+  
+  /* Glass Morphism Effects */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg-strong: rgba(255, 255, 255, 0.95);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-border-strong: rgba(148, 163, 184, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --glass-shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --glass-backdrop: blur(12px);
+  --glass-backdrop-strong: blur(20px);
+  
+  /* Shadows - Subtle 3D Effect */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  --space-3xl: 4rem;      /* 64px */
+  --space-4xl: 6rem;      /* 96px */
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.5rem;   /* 24px */
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-Index Layers */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-modal-backdrop: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
+  
+  /* Layout Dimensions */
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 60px;
+  --topbar-height: 64px;
+  --mobile-nav-height: 56px;
+  
+  /* Breakpoints (for reference in JS) */
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+  --breakpoint-ultra: 1920px;
+  
+  /* Container Max Widths */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Medical-specific colors */
+  --color-medical-green: #00856A;
+  --color-medical-blue: #0066CC;
+  --color-medical-teal: #0891B2;
+  --color-critical-red: #DC2626;
+  --color-warning-amber: #F59E0B;
+  
+  /* Gradient Backgrounds */
+  --gradient-medical: linear-gradient(135deg, #0066CC 0%, #00856A 100%);
+  --gradient-patient: linear-gradient(135deg, #7FB3FF 0%, #A5C9FF 100%);
+  --gradient-provider: linear-gradient(135deg, #6FD9B8 0%, #8FE5C8 100%);
+  --gradient-admin: linear-gradient(135deg, #B19EED 0%, #C9B8F5 100%);
+  --gradient-lab: linear-gradient(135deg, #6DD4E7 0%, #9AE5F0 100%);
+  --gradient-pharmacy: linear-gradient(135deg, #8FAFF5 0%, #B3CAFF 100%);
+  --gradient-billing: linear-gradient(135deg, #7B9FE5 0%, #A3BFEF 100%);
+  --gradient-radiology: linear-gradient(135deg, #C4A7FF 0%, #DCC9FF 100%);
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0F172A;
+    --color-surface: #1E293B;
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #CBD5E1;
+    --color-text-tertiary: #94A3B8;
+    --glass-bg: rgba(30, 41, 59, 0.85);
+    --glass-bg-strong: rgba(30, 41, 59, 0.95);
+    --glass-border: rgba(148, 163, 184, 0.15);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+    --transition-slow: 0ms;
+  }
+}
+

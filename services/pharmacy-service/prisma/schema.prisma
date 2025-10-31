@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderType {
+  OPD
+  IPD
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum PrescriptionStatus {
+  NEW
+  REVIEW_PENDING
+  VERIFIED
+  DISPENSED
+  CANCELLED
+}
+
+enum MedicationStatus {
+  ACTIVE
+  MODIFIED
+  DISCONTINUED
+}
+
+enum InteractionSeverity {
+  MINOR
+  MODERATE
+  MAJOR
+  CONTRAINDICATED
+}
+
+model PrescriptionOrder {
+  id             String              @id @default(uuid())
+  orderNumber    String              @unique
+  patientId      String
+  providerId     String
+  encounterId    String
+  orderType      OrderType
+  priority       OrderPriority
+  status         PrescriptionStatus @default(NEW)
+  notes          String?
+  submittedAt    DateTime            @default(now())
+  verifiedAt     DateTime?
+  dispensedAt    DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  items          MedicationItem[]
+  interactionChecks DrugInteractionCheck[]
+}
+
+model MedicationItem {
+  id                   String             @id @default(uuid())
+  prescriptionOrderId  String
+  rxNormId             String
+  drugName             String
+  dosage               String
+  route                String
+  frequency            String
+  duration             String
+  quantity             Int
+  instructions         String?
+  status               MedicationStatus   @default(ACTIVE)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  prescriptionOrder    PrescriptionOrder  @relation(fields: [prescriptionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([prescriptionOrderId])
+}
+
+model DrugInteractionCheck {
+  id                  String             @id @default(uuid())
+  prescriptionOrderId String
+  severity            InteractionSeverity
+  description         String
+  recommendation      String?
+  checkedAt           DateTime           @default(now())
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  prescriptionOrder   PrescriptionOrder  @relation(fields: [prescriptionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([prescriptionOrderId])
+}

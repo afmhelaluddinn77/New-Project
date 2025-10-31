@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-script-url": "error",
+    "react/no-danger": "error",
+    "react/no-danger-with-children": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/components/ProtectedRoute.tsx"],
+      "rules": {
+        "complexity": ["error", 5],
+        "max-depth": ["error", 3]
+      }
+    }
+  ]
+}
+

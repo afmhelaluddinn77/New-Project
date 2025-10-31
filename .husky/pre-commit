@@ -1,0 +1,181 @@
+#!/bin/sh
+
+# Pre-commit hook to run linting and formatting checks
+# Install with: ln -s ../../.husky/pre-commit .git/hooks/pre-commit
+# Or use husky: npx husky install && npx husky add .husky/pre-commit
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|css|json)$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No files to check"
+  exit 0
+fi
+
+echo "📝 Checking staged files:"
+echo "$STAGED_FILES" | sed 's/^/  - /'
+
+# Check for common issues
+ERRORS=0
+
+# Check for duplicate keys and syntax errors in JSON files
+JSON_FILES=$(echo "$STAGED_FILES" | grep '\.json$' || true)
+if [ -n "$JSON_FILES" ]; then
+  echo ""
+  echo "🔍 Validating JSON files..."
+
+  # Use the JSON validation script if available
+  if [ -f "scripts/validate-json.sh" ]; then
+    for file in $JSON_FILES; do
+      if [ -f "$file" ]; then
+        if ! bash scripts/validate-json.sh "$file" 2>/dev/null; then
+          ERRORS=$((ERRORS + 1))
+        fi
+      fi
+    done
+  else
+    # Fallback: Basic JSON validation
+    for file in $JSON_FILES; do
+      if [ -f "$file" ]; then
+        # Check for duplicate keys (basic implementation)
+        if grep -q '"@nestjs/axios"' "$file" 2>/dev/null; then
+          COUNT=$(grep -c '"@nestjs/axios"' "$file" || echo "0")
+          if [ "$COUNT" -gt 1 ]; then
+            echo "${RED}❌ Error: Duplicate key '@nestjs/axios' found in $file${NC}"
+            ERRORS=$((ERRORS + 1))
+          fi
+        fi
+
+        # Check for missing version in VS Code config files
+        if [[ "$file" == *"tasks.json" ]] || [[ "$file" == *"launch.json" ]]; then
+          if ! grep -q '"version"' "$file" 2>/dev/null; then
+            echo "${RED}❌ Error: Missing required 'version' property in $file${NC}"
+            ERRORS=$((ERRORS + 1))
+          fi
+        fi
+
+        # Validate JSON syntax using available tools
+        # Handle JSONC files (VS Code config files)
+        if [[ "$file" == *"/.vscode/"* ]]; then
+          # JSONC validation - strip comments first
+          if command -v node >/dev/null 2>&1; then
+            if ! node -e "
+              const fs = require('fs');
+              const content = fs.readFileSync('$file', 'utf8');
+              const cleaned = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+              JSON.parse(cleaned);
+            " >/dev/null 2>&1; then
+              echo "${RED}❌ Error: Invalid JSONC syntax in $file${NC}"
+              ERRORS=$((ERRORS + 1))
+            fi
+          elif command -v python3 >/dev/null 2>&1; then
+            if ! python3 -c "
+import re
+import json
+with open('$file', 'r') as f:
+    content = f.read()
+    content = re.sub(r'//.*?$', '', content, flags=re.MULTILINE)
+    content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+    json.loads(content)
+" >/dev/null 2>&1; then
+              echo "${RED}❌ Error: Invalid JSONC syntax in $file${NC}"
+              ERRORS=$((ERRORS + 1))
+            fi
+          fi
+        else
+          # Standard JSON validation
+          if command -v python3 >/dev/null 2>&1; then
+            if ! python3 -m json.tool "$file" >/dev/null 2>&1; then
+              echo "${RED}❌ Error: Invalid JSON syntax in $file${NC}"
+              ERRORS=$((ERRORS + 1))
+            fi
+          elif command -v node >/dev/null 2>&1; then
+            if ! node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))" >/dev/null 2>&1; then
+              echo "${RED}❌ Error: Invalid JSON syntax in $file${NC}"
+              ERRORS=$((ERRORS + 1))
+            fi
+          fi
+        fi
+      fi
+    done
+  fi
+fi
+
+# Check CSS files for vendor prefix order
+CSS_FILES=$(echo "$STAGED_FILES" | grep '\.css$' || true)
+if [ -n "$CSS_FILES" ]; then
+  echo ""
+  echo "🔍 Checking CSS files for vendor prefix issues..."
+  for file in $CSS_FILES; do
+    if [ -f "$file" ]; then
+      # Check if backdrop-filter exists without -webkit- prefix before it
+      if grep -q "backdrop-filter:" "$file" 2>/dev/null; then
+        # Check if -webkit-backdrop-filter appears before backdrop-filter
+        LINE_NUM=$(grep -n "backdrop-filter:" "$file" | head -1 | cut -d: -f1)
+        WEBKIT_LINE=$(grep -n "-webkit-backdrop-filter:" "$file" | head -1 | cut -d: -f1 || echo "999999")
+
+        if [ "$LINE_NUM" -lt "$WEBKIT_LINE" ]; then
+          echo "${YELLOW}⚠️  Warning: backdrop-filter should come after -webkit-backdrop-filter in $file${NC}"
+        fi
+
+        # Check if -webkit- prefix exists at all
+        if ! grep -q "-webkit-backdrop-filter:" "$file" 2>/dev/null; then
+          echo "${YELLOW}⚠️  Warning: backdrop-filter found without -webkit- prefix in $file${NC}"
+        fi
+      fi
+    fi
+  done
+fi
+
+# Run ESLint on TypeScript/JavaScript files
+TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
+if [ -n "$TS_FILES" ]; then
+  echo ""
+  echo "🔍 Running ESLint on TypeScript/JavaScript files..."
+
+  # Try to run ESLint if available
+  if command -v npx >/dev/null 2>&1; then
+    for file in $TS_FILES; do
+      if [ -f "$file" ]; then
+        # Determine which ESLint config to use
+        if echo "$file" | grep -q "^services/"; then
+          ESLINT_CONFIG=".eslintrc.backend.js"
+        else
+          ESLINT_CONFIG=".eslintrc.frontend.js"
+        fi
+
+        if [ -f "$ESLINT_CONFIG" ]; then
+          echo "  Checking $file..."
+          if ! npx eslint --config "$ESLINT_CONFIG" "$file" 2>/dev/null; then
+            echo "${RED}❌ ESLint errors found in $file${NC}"
+            ERRORS=$((ERRORS + 1))
+          fi
+        fi
+      fi
+    done
+  else
+    echo "${YELLOW}⚠️  npx not found, skipping ESLint check${NC}"
+  fi
+fi
+
+# Final check
+if [ $ERRORS -gt 0 ]; then
+  echo ""
+  echo "${RED}❌ Pre-commit checks failed with $ERRORS error(s)${NC}"
+  echo "Please fix the errors before committing."
+  exit 1
+fi
+
+echo ""
+echo "${GREEN}✅ All pre-commit checks passed!${NC}"
+exit 0

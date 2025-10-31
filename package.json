@@ -1,0 +1,43 @@
+{
+  "name": "emr-hms-system",
+  "version": "1.0.0",
+  "description": "Secure Multi-Portal EMR/HMS System",
+  "private": true,
+  "workspaces": [
+    "common-portal",
+    "patient-portal",
+    "provider-portal",
+    "admin-portal",
+    "lab-portal",
+    "pharmacy-portal",
+    "billing-portal",
+    "radiology-portal",
+    "services/*"
+  ],
+  "scripts": {
+    "dev:common": "npm run dev --workspace=common-portal",
+    "dev:patient": "npm run dev --workspace=patient-portal",
+    "dev:provider": "npm run dev --workspace=provider-portal",
+    "dev:admin": "npm run dev --workspace=admin-portal",
+    "dev:lab": "npm run dev --workspace=lab-portal",
+    "dev:pharmacy": "npm run dev --workspace=pharmacy-portal",
+    "dev:billing": "npm run dev --workspace=billing-portal",
+    "dev:radiology": "npm run dev --workspace=radiology-portal",
+    "dev:auth": "npm run start:dev --workspace=services/authentication-service",
+    "dev:patient-svc": "npm run start:dev --workspace=services/patient-service",
+    "dev:lab-svc": "npm run start:dev --workspace=services/lab-service",
+    "lint:backend": "npm run lint --workspaces --if-present --workspace=services/*",
+    "lint:frontend": "npm run lint --workspaces --if-present --workspace=*-portal",
+    "lint:all": "npm run lint:backend && npm run lint:frontend",
+    "format:backend": "npm run format --workspaces --if-present --workspace=services/*",
+    "format:frontend": "npm run format --workspaces --if-present --workspace=*-portal",
+    "format:all": "npm run format:backend && npm run format:frontend",
+    "type-check": "npm run type-check --workspaces --if-present || true",
+    "validate:json": "bash scripts/validate-json.sh .vscode/*.json package.json 2>/dev/null || find . -maxdepth 2 -name '*.json' -not -path '*/node_modules/*' | head -10 | xargs bash scripts/validate-json.sh",
+    "validate": "npm run lint:all && npm run format:all && npm run type-check && npm run validate:json"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

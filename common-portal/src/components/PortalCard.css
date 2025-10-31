@@ -1,0 +1,216 @@
+.portal-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-xl);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  box-shadow: var(--glass-shadow);
+  min-height: 240px;
+}
+
+/* Hover Effect */
+.portal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--portal-color);
+  transform: scaleX(0);
+  transition: transform var(--transition-base);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+}
+
+.portal-card:hover::before {
+  transform: scaleX(1);
+}
+
+.portal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--glass-shadow-lg);
+  border-color: var(--glass-border-strong);
+}
+
+.portal-card:active {
+  transform: translateY(-3px);
+}
+
+/* Focus State */
+.portal-card:focus-visible {
+  outline: 3px solid var(--portal-color);
+  outline-offset: 2px;
+  border-color: var(--portal-color);
+}
+
+/* Icon Section */
+.portal-card-icon-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.portal-card-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--portal-color);
+  color: white;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.portal-card-icon::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--portal-color);
+  border-radius: var(--radius-xl);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.portal-card:hover .portal-card-icon {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.portal-card:hover .portal-card-icon::after {
+  opacity: 0.3;
+}
+
+/* Content Section */
+.portal-card-content {
+  flex: 1;
+}
+
+.portal-card-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-sm) 0;
+  letter-spacing: -0.01em;
+}
+
+.portal-card-description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* Footer Section */
+.portal-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.portal-card-link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--portal-color);
+  transition: color var(--transition-fast);
+}
+
+.portal-card:hover .portal-card-link {
+  color: var(--portal-color);
+}
+
+.portal-card-arrow {
+  color: var(--portal-color);
+  transition: transform var(--transition-fast);
+}
+
+.portal-card:hover .portal-card-arrow {
+  transform: translateX(4px);
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .portal-card {
+    padding: var(--space-lg);
+    min-height: 200px;
+    gap: var(--space-md);
+  }
+  
+  .portal-card-icon {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .portal-card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .portal-card-title {
+    font-size: var(--text-xl);
+  }
+  
+  .portal-card-description {
+    font-size: var(--text-xs);
+  }
+  
+  .portal-card-footer {
+    padding-top: var(--space-sm);
+  }
+}
+
+/* Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  .portal-card:hover {
+    transform: none;
+  }
+  
+  .portal-card:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .portal-card,
+  .portal-card-icon,
+  .portal-card-arrow {
+    transition: none !important;
+  }
+  
+  .portal-card:hover {
+    transform: none;
+  }
+  
+  .portal-card:hover .portal-card-icon {
+    transform: none;
+  }
+  
+  .portal-card:hover .portal-card-arrow {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .portal-card {
+    border: 2px solid var(--color-text-primary);
+  }
+  
+  .portal-card:focus-visible {
+    outline-width: 4px;
+  }
+}

@@ -1,0 +1,390 @@
+openapi: 3.0.3
+info:
+  title: Clinical Workflow Services API
+  version: 0.1.0
+  description: >-
+    API contract for the clinical microservices (clinical-workflow, pharmacy,
+    lab, radiology). All endpoints are secured behind the Kong gateway with JWT
+    authentication. Request context is provided via injected headers:
+    `X-User-ID`, `X-User-Role`, `X-Portal`.
+servers:
+  - url: https://api.local.health/v1
+paths:
+  /workflow/orders/unified:
+    post:
+      summary: Create a unified order package
+      tags: [ClinicalWorkflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnifiedOrderRequest'
+      responses:
+        '201':
+          description: Unified order accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedOrderResponse'
+        '400': { description: Validation error }
+        '403': { description: Forbidden }
+  /workflow/orders/{orderId}:
+    get:
+      summary: Get unified order status
+      tags: [ClinicalWorkflow]
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedOrderStatus'
+        '404': { description: Not found }
+  /pharmacy/prescriptions:
+    post:
+      summary: Create prescription order
+      tags: [Pharmacy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrescriptionOrderInput'
+      responses:
+        '201':
+          description: Prescription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrescriptionOrder'
+  /pharmacy/prescriptions/{id}/verify:
+    post:
+      summary: Pharmacist verification action
+      tags: [Pharmacy]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationAction'
+      responses:
+        '200': { description: Verification result }
+  /pharmacy/interactions/check:
+    post:
+      summary: Drug interaction check using RxNorm API
+      tags: [Pharmacy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InteractionCheckRequest'
+      responses:
+        '200':
+          description: Interaction summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InteractionCheckResult'
+  /lab/orders:
+    post:
+      summary: Create lab order from clinical workflow
+      tags: [Lab]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabOrderInput'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabOrder'
+  /lab/orders/pending:
+    get:
+      summary: Fetch pending lab orders for fulfillment workbench
+      tags: [Lab]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabOrder'
+  /lab/orders/{id}/results:
+    post:
+      summary: Submit lab result for an order test
+      tags: [Lab]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabResultInput'
+      responses:
+        '200': { description: Result accepted }
+  /radiology/orders:
+    post:
+      summary: Create radiology order from clinical workflow
+      tags: [Radiology]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RadiologyOrderInput'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadiologyOrder'
+  /radiology/orders/pending:
+    get:
+      summary: List pending imaging studies
+      tags: [Radiology]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RadiologyOrder'
+  /radiology/orders/{id}/report:
+    post:
+      summary: Submit radiology report text
+      tags: [Radiology]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RadiologyReportInput'
+      responses:
+        '200': { description: Report saved }
+components:
+  schemas:
+    UnifiedOrderRequest:
+      type: object
+      required: [patientId, providerId, encounterId, priority, items]
+      properties:
+        patientId: { type: string }
+        providerId: { type: string }
+        encounterId: { type: string }
+        priority:
+          type: string
+          enum: [ROUTINE, URGENT, STAT]
+        notes: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            required: [type, payload]
+            properties:
+              type:
+                type: string
+                enum: [PHARMACY, LAB, RADIOLOGY]
+              payload:
+                type: object
+    UnifiedOrderResponse:
+      type: object
+      properties:
+        orderId: { type: string }
+        orderNumber: { type: string }
+        status: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string }
+              targetServiceOrderId: { type: string }
+              status: { type: string }
+    UnifiedOrderStatus:
+      allOf:
+        - $ref: '#/components/schemas/UnifiedOrderResponse'
+        - type: object
+          properties:
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  eventType: { type: string }
+                  createdAt: { type: string, format: date-time }
+                  payload: { type: object }
+    PrescriptionOrderInput:
+      type: object
+      required: [patientId, providerId, encounterId, orderType, priority, items]
+      properties:
+        patientId: { type: string }
+        providerId: { type: string }
+        encounterId: { type: string }
+        orderType: { type: string, enum: [OPD, IPD] }
+        priority: { type: string, enum: [ROUTINE, URGENT, STAT] }
+        notes: { type: string }
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/MedicationItemInput'
+    MedicationItemInput:
+      type: object
+      required: [rxNormId, drugName, dosage, route, frequency, duration, quantity]
+      properties:
+        rxNormId: { type: string }
+        drugName: { type: string }
+        dosage: { type: string }
+        route: { type: string }
+        frequency: { type: string }
+        duration: { type: string }
+        quantity: { type: integer }
+        instructions: { type: string }
+    PrescriptionOrder:
+      allOf:
+        - $ref: '#/components/schemas/PrescriptionOrderInput'
+        - type: object
+          properties:
+            id: { type: string }
+            orderNumber: { type: string }
+            status: { type: string }
+            submittedAt: { type: string, format: date-time }
+    VerificationAction:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [VERIFY, REJECT, DISPENSE] }
+        notes: { type: string }
+    InteractionCheckRequest:
+      type: object
+      required: [patientId, newMedications]
+      properties:
+        patientId: { type: string }
+        newMedications:
+          type: array
+          items: { type: string }
+        currentMedications:
+          type: array
+          items: { type: string }
+    InteractionCheckResult:
+      type: object
+      properties:
+        hasInteractions: { type: boolean }
+        interactions:
+          type: array
+          items:
+            type: object
+            properties:
+              drugs:
+                type: array
+                items: { type: string }
+              severity: { type: string }
+              description: { type: string }
+              recommendation: { type: string }
+        hasAllergies: { type: boolean }
+        allergies:
+          type: array
+          items: { type: string }
+    LabOrderInput:
+      type: object
+      required: [patientId, providerId, encounterId, priority, tests]
+      properties:
+        patientId: { type: string }
+        providerId: { type: string }
+        encounterId: { type: string }
+        priority: { type: string, enum: [ROUTINE, URGENT, STAT] }
+        clinicalNotes: { type: string }
+        tests:
+          type: array
+          items:
+            type: object
+            required: [loincCode, testName]
+            properties:
+              loincCode: { type: string }
+              testName: { type: string }
+              specimenType: { type: string }
+    LabOrder:
+      allOf:
+        - $ref: '#/components/schemas/LabOrderInput'
+        - type: object
+          properties:
+            id: { type: string }
+            orderNumber: { type: string }
+            status: { type: string }
+            orderedAt: { type: string, format: date-time }
+            tests:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  loincCode: { type: string }
+                  testName: { type: string }
+                  status: { type: string }
+    LabResultInput:
+      type: object
+      required: [testId, value, unit]
+      properties:
+        testId: { type: string }
+        value: { type: string }
+        unit: { type: string }
+        referenceRange: { type: string }
+        abnormalFlag:
+          type: string
+          enum: [NORMAL, LOW, HIGH, CRITICAL]
+        comment: { type: string }
+    RadiologyOrderInput:
+      type: object
+      required: [patientId, providerId, encounterId, studyType, bodyPart]
+      properties:
+        patientId: { type: string }
+        providerId: { type: string }
+        encounterId: { type: string }
+        studyType:
+          type: string
+          enum: [XRAY, CT, MRI, ULTRASOUND, OTHER]
+        bodyPart: { type: string }
+        contrast: { type: boolean }
+        priority: { type: string, enum: [ROUTINE, URGENT, STAT] }
+        clinicalIndication: { type: string }
+    RadiologyOrder:
+      allOf:
+        - $ref: '#/components/schemas/RadiologyOrderInput'
+        - type: object
+          properties:
+            id: { type: string }
+            orderNumber: { type: string }
+            status: { type: string }
+            orderedAt: { type: string, format: date-time }
+    RadiologyReportInput:
+      type: object
+      required: [reportText]
+      properties:
+        reportText: { type: string }
+        impression: { type: string }
+        criticalFinding: { type: boolean }

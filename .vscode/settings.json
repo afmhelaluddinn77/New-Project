@@ -1,0 +1,185 @@
+{
+  // Mandatory linting and error checking on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // Prevent saving files with errors
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // TypeScript settings - show errors and prevent saving with errors
+  "typescript.validate.enable": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // ESLint settings - mandatory checks
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.run": "onSave",
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.alwaysShowStatus": true,
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Stylelint settings for CSS
+  "stylelint.validate": ["css", "scss", "less"],
+  "stylelint.enable": true,
+
+  // File watcher exclusions
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true
+  },
+
+  // Auto-save settings
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+
+  // Deny save if there are errors (via extension)
+  "editor.saveOnFocusLost": true,
+
+  // Prettier settings
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    }
+  },
+
+  // Error lens for inline error display
+  "errorLens.enabled": true,
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.gutterIconsEnabled": true,
+  "errorLens.followCursor": "activeLine",
+
+  // Problems panel settings
+  "problems.showCurrentInStatus": true,
+  "problems.decorations.enabled": true,
+
+  // File associations
+  "files.associations": {
+    "*.css": "css",
+    "*.ts": "typescript",
+    "*.tsx": "typescriptreact"
+  },
+
+  // TypeScript settings - strict mode
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.reportStyleChecksAsWarnings": false,
+  "typescript.preferences.useLabelDetailsInCompletionEntries": true,
+
+  // Editor settings for better error visibility
+  "editor.rulers": [80, 120],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // File watcher exclusions for performance
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+
+  // JSON validation settings
+  "json.validate.enable": true,
+  "json.schemas": [
+    {
+      "fileMatch": ["package.json"],
+      "schema": {
+        "type": "object",
+        "required": ["name", "version"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" }
+        }
+      }
+    },
+    {
+      "fileMatch": ["**/.vscode/tasks.json"],
+      "schema": {
+        "type": "object",
+        "required": ["version", "tasks"],
+        "properties": {
+          "version": { "type": "string" },
+          "tasks": { "type": "array" }
+        }
+      }
+    },
+    {
+      "fileMatch": ["**/.vscode/launch.json"],
+      "schema": {
+        "type": "object",
+        "required": ["version"],
+        "properties": {
+          "version": { "type": "string" }
+        }
+      }
+    }
+  ],
+
+  // Terminal settings
+  "terminal.integrated.defaultProfile.osx": "zsh"
+}

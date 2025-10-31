@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum LabOrderStatus {
+  NEW
+  IN_PROGRESS
+  RESULT_READY
+  VERIFIED
+  CANCELLED
+}
+
+enum LabTestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CRITICAL
+}
+
+enum AbnormalFlag {
+  NORMAL
+  LOW
+  HIGH
+  CRITICAL
+}
+
+model LabOrder {
+  id            String          @id @default(uuid())
+  orderNumber   String          @unique
+  patientId     String
+  providerId    String
+  encounterId   String
+  priority      OrderPriority
+  status        LabOrderStatus  @default(NEW)
+  clinicalNotes String?
+  orderedAt     DateTime        @default(now())
+  resultedAt    DateTime?
+  verifiedAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  tests         LabOrderTest[]
+
+  @@index([patientId])
+  @@index([providerId])
+}
+
+model LabOrderTest {
+  id          String        @id @default(uuid())
+  labOrderId  String
+  loincCode   String
+  testName    String
+  specimenType String?
+  status      LabTestStatus @default(PENDING)
+  performedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  labOrder    LabOrder      @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
+  result      LabResult?
+
+  @@index([labOrderId])
+  @@index([loincCode])
+}
+
+model LabResult {
+  id              String        @id @default(uuid())
+  labOrderTestId  String        @unique
+  value           String
+  unit            String
+  referenceRange  String?
+  abnormalFlag    AbnormalFlag  @default(NORMAL)
+  comment         String?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  test            LabOrderTest  @relation(fields: [labOrderTestId], references: [id], onDelete: Cascade)
+}

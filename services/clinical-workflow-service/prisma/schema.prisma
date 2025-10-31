@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum UnifiedOrderStatus {
+  NEW
+  PARTIALLY_FULFILLED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderItemType {
+  PHARMACY
+  LAB
+  RADIOLOGY
+  PROCEDURE
+}
+
+enum OrderItemStatus {
+  REQUESTED
+  IN_PROGRESS
+  COMPLETED
+  ERROR
+}
+
+model UnifiedOrder {
+  id           String              @id @default(uuid())
+  orderNumber  String              @unique
+  patientId    String
+  providerId   String
+  encounterId  String
+  priority     OrderPriority
+  status       UnifiedOrderStatus  @default(NEW)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  items        UnifiedOrderItem[]
+  events       WorkflowEvent[]
+
+  @@index([patientId])
+  @@index([providerId])
+}
+
+model UnifiedOrderItem {
+  id                   String           @id @default(uuid())
+  unifiedOrderId       String
+  itemType             OrderItemType
+  targetServiceOrderId String
+  status               OrderItemStatus @default(REQUESTED)
+  metadata             Json?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  unifiedOrder         UnifiedOrder    @relation(fields: [unifiedOrderId], references: [id], onDelete: Cascade)
+
+  @@index([unifiedOrderId])
+  @@index([itemType])
+}
+
+model WorkflowEvent {
+  id             String        @id @default(uuid())
+  unifiedOrderId String
+  eventType      String
+  payload        Json
+  createdAt      DateTime      @default(now())
+
+  unifiedOrder   UnifiedOrder  @relation(fields: [unifiedOrderId], references: [id], onDelete: Cascade)
+
+  @@index([unifiedOrderId])
+  @@index([eventType])
+}

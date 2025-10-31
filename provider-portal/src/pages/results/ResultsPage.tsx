@@ -1,0 +1,143 @@
+import { useEffect, useMemo } from 'react';
+import { Activity, ClipboardCheck, FlaskConical, Pill, Scan } from 'lucide-react';
+import Breadcrumb from '../../components/shared/Breadcrumb';
+import './ResultsPage.css';
+import { useOrdersStore } from '../../store/ordersStore';
+import type { UnifiedOrder } from '../../types/workflow';
+import { getWorkflowSocket } from '../../services/socketClient';
+
+const SERVICE_ICON = {
+  PHARMACY: <Pill size={16} />,
+  LAB: <FlaskConical size={16} />,
+  RADIOLOGY: <Scan size={16} />,
+  PROCEDURE: <ClipboardCheck size={16} />,
+};
+
+const formatDate = (value: string) => new Date(value).toLocaleString();
+
+export default function ResultsPage() {
+  const orders = useOrdersStore((state) => state.orders);
+  const loading = useOrdersStore((state) => state.loading);
+  const fetchOrders = useOrdersStore((state) => state.fetchOrders);
+  const refreshOrder = useOrdersStore((state) => state.refreshOrder);
+
+  useEffect(() => {
+    if (!loading && orders.length === 0) {
+      void fetchOrders();
+    }
+  }, [orders.length, loading, fetchOrders]);
+
+  useEffect(() => {
+    const socket = getWorkflowSocket();
+    const handler = (payload: { orderId: string }) => {
+      void refreshOrder(payload.orderId);
+    };
+    socket.on('order.updated', handler);
+    return () => {
+      socket.off('order.updated', handler);
+    };
+  }, [refreshOrder]);
+
+  const timeline = useMemo(() => buildTimeline(orders), [orders]);
+
+  return (
+    <div className="results-page">
+      <Breadcrumb items={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Results Timeline' }]} />
+
+      <div className="results-header">
+        <div>
+          <h1>Results Timeline</h1>
+          <p>Monitor fulfillment progress across services and surface completed results in real time.</p>
+        </div>
+      </div>
+
+      <div className="results-grid">
+        <section className="status-summary-card">
+          <header>
+            <ClipboardCheck size={20} />
+            <h2>Fulfillment Summary</h2>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Pharmacy</th>
+                <th>Laboratory</th>
+                <th>Radiology</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id}>
+                  <td>
+                    <span className="order-number">{order.orderNumber}</span>
+                    <span className={`status-pill status-${order.status.toLowerCase()}`}>{order.status}</span>
+                  </td>
+                  {['PHARMACY', 'LAB', 'RADIOLOGY'].map((type) => {
+                    const item = order.items.find((i) => i.itemType === type);
+                    return (
+                      <td key={type}>
+                        {item ? (
+                          <span className={`item-status status-${item.status.toLowerCase()}`}>
+                            {SERVICE_ICON[type as keyof typeof SERVICE_ICON]}
+                            {item.status}
+                          </span>
+                        ) : (
+                          <span className="item-status muted">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              {!loading && orders.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="muted">
+                    No orders yet. Create one from the Unified Orders page.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+
+        <section className="timeline-card">
+          <header>
+            <Activity size={20} />
+            <h2>Live Activity Feed</h2>
+          </header>
+          <ul className="timeline-list">
+            {timeline.map((event) => (
+              <li key={`${event.orderId}-${event.id}`}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-title">{event.eventType.replace(/_/g, ' ')}</div>
+                  <div className="timeline-meta">
+                    <span>Order {event.orderNumber}</span>
+                    <span>•</span>
+                    <span>{formatDate(event.createdAt)}</span>
+                  </div>
+                </div>
+              </li>
+            ))}
+            {!loading && timeline.length === 0 && <li className="muted">No activity yet.</li>}
+          </ul>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function buildTimeline(orders: UnifiedOrder[]) {
+  return orders
+    .flatMap((order) =>
+      order.events.map((event) => ({
+        ...event,
+        orderNumber: order.orderNumber,
+        orderId: order.id,
+      })),
+    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 25);
+}
+

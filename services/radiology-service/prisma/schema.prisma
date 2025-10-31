@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum StudyType {
+  XRAY
+  CT
+  MRI
+  ULTRASOUND
+  OTHER
+}
+
+enum RadiologyOrderStatus {
+  NEW
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  REPORTED
+  CANCELLED
+}
+
+enum ReportStatus {
+  DRAFT
+  FINAL
+  AMENDED
+}
+
+model RadiologyOrder {
+  id                 String               @id @default(uuid())
+  orderNumber        String               @unique
+  patientId          String
+  providerId         String
+  encounterId        String
+  studyType          StudyType
+  bodyPart           String
+  contrast           Boolean              @default(false)
+  priority           OrderPriority
+  status             RadiologyOrderStatus @default(NEW)
+  clinicalIndication String?
+  orderedAt          DateTime             @default(now())
+  reportedAt         DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  report             RadiologyReport?
+  imagingAssets      ImagingAsset[]
+
+  @@index([patientId])
+  @@index([providerId])
+}
+
+model RadiologyReport {
+  id                     String         @id @default(uuid())
+  radiologyOrderId       String         @unique
+  reportText             String
+  impression             String?
+  criticalFinding        Boolean        @default(false)
+  reportingRadiologistId String
+  reportStatus           ReportStatus   @default(DRAFT)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  order                  RadiologyOrder @relation(fields: [radiologyOrderId], references: [id], onDelete: Cascade)
+}
+
+model ImagingAsset {
+  id               String         @id @default(uuid())
+  radiologyOrderId String
+  uri              String
+  mimeType         String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  order            RadiologyOrder @relation(fields: [radiologyOrderId], references: [id], onDelete: Cascade)
+
+  @@index([radiologyOrderId])
+}

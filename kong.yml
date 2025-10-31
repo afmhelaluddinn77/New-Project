@@ -1,0 +1,175 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: authentication-service
+    url: http://localhost:3000
+    routes:
+      - name: auth-login
+        paths:
+          - /api/auth/login
+        strip_path: false
+
+  - name: clinical-workflow-service
+    url: http://localhost:3004
+    routes:
+      - name: workflow-api
+        paths:
+          - /api/workflow
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+  - name: pharmacy-service
+    url: http://localhost:3012
+    routes:
+      - name: pharmacy-api
+        paths:
+          - /api/pharmacy
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+  - name: lab-service
+    url: http://localhost:3013
+    routes:
+      - name: lab-api
+        paths:
+          - /api/lab
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+  - name: radiology-service
+    url: http://localhost:3014
+    routes:
+      - name: radiology-api
+        paths:
+          - /api/radiology
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+  - name: patient-service
+    url: http://localhost:3002
+    routes:
+      - name: patient-api
+        paths:
+          - /api/patient
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - Authorization
+        - X-User-ID
+        - X-User-Role
+        - X-Portal
+      exposed_headers:
+        - X-User-ID
+        - X-User-Role
+        - X-Portal
+      credentials: true
+      max_age: 3600

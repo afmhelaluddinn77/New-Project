@@ -1,0 +1,222 @@
+.queue-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.queue-header h1 {
+  margin: 0;
+  font-size: var(--text-3xl);
+}
+
+.queue-header p {
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
+}
+
+.queue-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--space-xl);
+}
+
+.queue-orders,
+.queue-details {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+}
+
+.queue-orders header,
+.prescription-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.queue-orders ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.order-row:hover,
+.order-row.active {
+  border-color: rgba(143, 175, 245, 0.4);
+  background: rgba(143, 175, 245, 0.1);
+}
+
+.order-number {
+  font-weight: var(--font-semibold);
+}
+
+.order-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.status-pill {
+  padding: var(--space-xxs) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+}
+
+.status-new,
+.status-review {
+  background: rgba(143, 175, 245, 0.2);
+  color: #1a4ba0;
+}
+
+.status-verified {
+  background: rgba(111, 217, 184, 0.2);
+  color: #0b8043;
+}
+
+.status-dispensed {
+  background: rgba(93, 216, 161, 0.2);
+  color: #0a7a39;
+}
+
+.status-cancelled {
+  background: rgba(244, 67, 54, 0.18);
+  color: #b71c1c;
+}
+
+.prescription-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.medications {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.medications li {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.med-name {
+  font-weight: var(--font-semibold);
+}
+
+.med-info {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.med-qty {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.prescription-card textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  font-size: var(--text-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text-primary);
+  resize: vertical;
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn svg {
+  flex-shrink: 0;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-verify {
+  background: linear-gradient(135deg, #8faff5, #b3caff);
+  color: white;
+}
+
+.btn-dispense {
+  background: linear-gradient(135deg, #6fd9b8, #8faff5);
+  color: white;
+}
+
+.btn-reject {
+  background: rgba(244, 67, 54, 0.15);
+  color: #b71c1c;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.error-banner {
+  background: rgba(244, 67, 54, 0.12);
+  color: #b71c1c;
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+}
+
+.muted {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 1024px) {
+  .queue-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
