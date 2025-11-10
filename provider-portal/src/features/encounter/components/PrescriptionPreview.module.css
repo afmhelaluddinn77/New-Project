@@ -1,0 +1,308 @@
+.prescriptionContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background: white;
+  font-family: 'Times New Roman', serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  border-bottom: 3px solid #000;
+  padding-bottom: 20px;
+}
+
+.hospitalInfo h1 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.dateInfo {
+  text-align: right;
+  font-size: 13px;
+}
+
+.dateInfo p {
+  margin: 5px 0;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 25px;
+  page-break-inside: avoid;
+}
+
+.section h3 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #999;
+  padding-bottom: 8px;
+}
+
+.noData {
+  font-style: italic;
+  color: #999;
+  margin: 10px 0;
+}
+
+/* Info Grid */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoItem label {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.infoItem span {
+  font-size: 13px;
+  color: #333;
+}
+
+/* Vital Signs */
+.vitalGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.vital {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f9f9f9;
+}
+
+.vital label {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.vital span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Medications List */
+.medicationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.medicationItem {
+  border: 1px solid #999;
+  padding: 15px;
+  page-break-inside: avoid;
+}
+
+.medHeader {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.medNumber {
+  font-weight: bold;
+  margin-right: 10px;
+  min-width: 25px;
+}
+
+.medDetails {
+  flex: 1;
+}
+
+.medName {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.genericName {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Prescription Details */
+.medPrescription {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.prescDetail {
+  display: flex;
+  flex-direction: column;
+}
+
+.prescDetail label {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.prescDetail span {
+  font-size: 13px;
+}
+
+/* Indication and Notes */
+.indication,
+.notes {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-left: 3px solid #3b82f6;
+}
+
+.indication label,
+.notes label {
+  font-weight: bold;
+  font-size: 11px;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.indication span,
+.notes span {
+  font-size: 12px;
+  display: block;
+}
+
+/* Instructions */
+.instructions {
+  margin: 0;
+  padding-left: 25px;
+  font-size: 12px;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Footer */
+.footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #000;
+  page-break-inside: avoid;
+}
+
+.signature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+
+.signature p {
+  margin: 0;
+  padding-top: 30px;
+  border-top: 1px solid #000;
+}
+
+.disclaimer {
+  background: #f0f0f0;
+  padding: 12px;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.disclaimerText {
+  margin: 0;
+  font-size: 10px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Print Styles */
+@media print {
+  .prescriptionContainer {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .section {
+    page-break-inside: avoid;
+  }
+
+  .medicationItem {
+    page-break-inside: avoid;
+  }
+
+  body {
+    background: white;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .prescriptionContainer {
+    padding: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dateInfo {
+    text-align: left;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .vitalGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .medPrescription {
+    grid-template-columns: 1fr;
+  }
+
+  .signature {
+    grid-template-columns: 1fr;
+  }
+}

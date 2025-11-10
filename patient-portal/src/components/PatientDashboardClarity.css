@@ -1,0 +1,2340 @@
+/* Patient Dashboard - Enhanced Clarity Design */
+/* Beautiful white background with enhanced visual clarity */
+
+/* Import Clarity Design System */
+@import '../styles/clarity-tokens.css';
+@import '../styles/clarity-global.css';
+@import '../styles/clarity-components.css';
+
+/* Base Layout - Pure White Background */
+.patient-dashboard {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  font-family: var(--font-family-sans);
+  color: #333333;
+  transition: var(--transition-base);
+}
+
+/* Dark Mode - Explicit Override */
+.dark .patient-dashboard {
+  background-color: #1A1A1A !important;
+  color: #FFFFFF !important;
+}
+
+.dark .patient-dashboard-content {
+  background-color: #1A1A1A !important;
+}
+
+.dark .dashboard-title h1 {
+  color: #FFFFFF !important;
+}
+
+.dark .dashboard-title-icon {
+  color: #60A5FA !important;
+}
+
+.dark .dashboard-welcome {
+  background: linear-gradient(135deg, #2D3748 0%, #1A1A1A 100%) !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .welcome-content h2 {
+  color: #FFFFFF !important;
+}
+
+.dark .welcome-content p {
+  color: #B0B8C4 !important;
+}
+
+.patient-dashboard-content {
+  padding: var(--spacing-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #FFFFFF;
+  transition: var(--transition-base);
+}
+
+/* Dashboard Cards Dark Mode */
+.dark .dashboard-card {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .card-header {
+  background-color: #374151 !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .card-header h3 {
+  color: #FFFFFF !important;
+}
+
+.dark .section-header h3 {
+  color: #FFFFFF !important;
+}
+
+.dark .vital-card {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .vital-content h4 {
+  color: #FFFFFF !important;
+}
+
+.dark .vital-number {
+  color: #FFFFFF !important;
+}
+
+.dark .vital-unit {
+  color: #B0B8C4 !important;
+}
+
+.dark .vital-date {
+  color: #6B7280 !important;
+}
+
+.dark .care-team-item {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .care-team-content h4 {
+  color: #FFFFFF !important;
+}
+
+.dark .care-team-role {
+  color: #B0B8C4 !important;
+}
+
+.dark .contact-item {
+  color: #B0B8C4 !important;
+}
+
+.dark .contact-item svg {
+  color: #6B7280 !important;
+}
+
+.dark .appointment-item {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .appointment-content h4 {
+  color: #FFFFFF !important;
+}
+
+.dark .appointment-provider {
+  color: #B0B8C4 !important;
+}
+
+.dark .appointment-detail {
+  color: #B0B8C4 !important;
+}
+
+.dark .appointment-detail svg {
+  color: #6B7280 !important;
+}
+
+.dark .timeline-container {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+}
+
+.dark .timeline-content h4 {
+  color: #FFFFFF !important;
+}
+
+.dark .timeline-content p {
+  color: #B0B8C4 !important;
+}
+
+.dark .timeline-date {
+  color: #6B7280 !important;
+}
+
+/* Search Bar Dark Mode */
+.dark .search-bar input {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .search-bar input::placeholder {
+  color: #6B7280 !important;
+}
+
+.dark .search-icon {
+  color: #6B7280 !important;
+}
+
+/* Buttons Dark Mode */
+.dark .clarity-button-secondary {
+  background-color: #2D2D2D !important;
+  border-color: #4B5563 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .clarity-button-secondary:hover {
+  background-color: #374151 !important;
+  border-color: #6B7280 !important;
+}
+
+/* Dashboard Title */
+.dashboard-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.dashboard-title h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  transition: var(--transition-base);
+}
+
+.dashboard-title-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary-500);
+  transition: var(--transition-base);
+}
+
+/* Top Bar Enhancements */
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 320px;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--spacing-4);
+  color: var(--color-text-tertiary);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  transition: var(--transition-base);
+}
+
+.search-bar input {
+  padding-left: calc(var(--spacing-4) + 28px);
+  padding-right: var(--spacing-4);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  transition: var(--transition-base);
+}
+
+.search-bar input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.search-bar input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Top Bar Buttons with Notification Badge */
+.clarity-topbar-right .clarity-button {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--color-error-500);
+  color: var(--color-text-on-accent);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  padding: 2px 5px;
+  border-radius: var(--border-radius-full);
+  min-width: 16px;
+  height: 16px;
+  text-align: center;
+  transition: var(--transition-base);
+  z-index: 10;
+  border: 2px solid var(--color-surface);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Welcome Section */
+.dashboard-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-surface) 100%);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.welcome-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  transition: var(--transition-base);
+}
+
+.welcome-content p {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+}
+
+.welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+/* Dashboard Sections */
+.dashboard-section {
+  margin-bottom: var(--spacing-8);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-5);
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  transition: var(--transition-base);
+}
+
+.section-header h3 svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary-500);
+  transition: var(--transition-base);
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* Dashboard Grid - Enhanced for Large Screens with Proper Text Sizing */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+  grid-auto-rows: minmax(320px, auto);
+  justify-items: center;
+  align-items: start;
+}
+
+.dashboard-card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition-base);
+  min-height: 320px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+}
+
+.dashboard-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-default);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-5);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background-color: var(--color-surface-elevated);
+  transition: var(--transition-base);
+}
+
+.card-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  transition: var(--transition-base);
+}
+
+.card-header h3 svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary-500);
+  transition: var(--transition-base);
+}
+
+/* Vitals Grid - Enhanced for proper alignment with dashboard cards */
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+  justify-items: center;
+  align-items: start;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.vital-card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-5);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+  width: 100%;
+  max-width: 240px;
+  justify-self: center;
+}
+
+.vital-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--color-border-default);
+}
+
+.vital-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+.vital-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primary-100);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-200);
+  transition: var(--transition-base);
+}
+
+.vital-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.vital-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.trend-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.trend-up {
+  color: var(--color-success-500);
+}
+
+.trend-down {
+  color: var(--color-warning-500);
+}
+
+.trend-stable {
+  color: var(--color-primary-500);
+}
+
+.vital-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2) 0;
+  transition: var(--transition-base);
+}
+
+.vital-value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-2);
+}
+
+.vital-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  transition: var(--transition-base);
+}
+
+.vital-unit {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  transition: var(--transition-base);
+}
+
+.vital-date {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+  transition: var(--transition-base);
+}
+
+/* Lists - Enhanced for Large Screens */
+.appointments-list,
+.lab-results-list,
+.medications-list,
+.care-team-list {
+  padding: var(--spacing-5);
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* Card content structure - Enhanced for proper text display */
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--spacing-4);
+  min-height: 200px;
+  justify-content: flex-start;
+}
+
+/* Lab Results Item - Enhanced for proper text display */
+.lab-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-base);
+  margin-bottom: var(--spacing-3);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  min-height: 100px;
+  overflow: visible;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Appointments Item - Enhanced for proper text display */
+.appointment-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-base);
+  margin-bottom: var(--spacing-3);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  min-height: 120px;
+  overflow: visible;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Medications Item - Enhanced for proper text display */
+.medication-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-base);
+  margin-bottom: var(--spacing-3);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  min-height: 110px;
+  overflow: visible;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Care Team Item - Enhanced for proper text display */
+.care-team-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-base);
+  margin-bottom: var(--spacing-3);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  min-height: 130px;
+  overflow: visible;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.appointment-item:hover,
+.lab-result-item:hover,
+.medication-item:hover,
+.care-team-item:hover {
+  background-color: var(--color-primary-100);
+  border-color: var(--color-border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.appointment-item:last-child,
+.lab-result-item:last-child,
+.medication-item:last-child,
+.care-team-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Item Icons */
+.appointment-icon,
+.lab-result-icon,
+.medication-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primary-100);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+  border: 1px solid var(--color-primary-200);
+  transition: var(--transition-base);
+}
+
+.appointment-icon svg,
+.lab-result-icon svg,
+.medication-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Lab Results Content - Enhanced for proper text display */
+.lab-result-content {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+/* Appointments Content - Enhanced for proper text display */
+.appointment-content {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+/* Medications Content - Enhanced for proper text display */
+.medication-content {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+/* Care Team Content - Enhanced for proper text display */
+.care-team-content {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+/* Lab Results Heading - Enhanced for proper text display */
+.lab-result-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Appointments Heading - Enhanced for proper text display */
+.appointment-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Medications Heading - Enhanced for proper text display */
+.medication-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Care Team Heading - Enhanced for proper text display */
+.care-team-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Lab Results Secondary Text - Enhanced for proper text display */
+.lab-result-date {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2) 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Appointments Secondary Text - Enhanced for proper text display */
+.appointment-provider {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2) 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Medications Secondary Text - Enhanced for proper text display */
+.medication-dosage {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2) 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Care Team Secondary Text - Enhanced for proper text display */
+.care-team-role {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2) 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+}
+
+.appointment-detail {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.appointment-detail svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  transition: var(--transition-base);
+}
+
+.lab-result-value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+.value-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  transition: var(--transition-base);
+}
+
+.value-range {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  transition: var(--transition-base);
+}
+
+.medication-refills {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+}
+
+.refills-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  transition: var(--transition-base);
+}
+
+.refill-date {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  transition: var(--transition-base);
+}
+
+.care-team-contact {
+  margin-top: var(--spacing-2);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.contact-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-tertiary);
+  transition: var(--transition-base);
+  flex-shrink: 0;
+}
+
+/* Item Actions */
+.appointment-actions,
+.medication-actions,
+.care-team-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-secondary);
+  transition: var(--transition-base);
+}
+
+/* Care Team Photo */
+.care-team-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--color-border-subtle);
+  transition: var(--transition-base);
+  align-self: center;
+}
+
+.care-team-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Timeline */
+.timeline-container {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-6);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  position: relative;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 48px;
+  bottom: -24px;
+  width: 2px;
+  background-color: var(--color-border-subtle);
+  transition: var(--transition-base);
+}
+
+.timeline-marker {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid var(--color-background);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.timeline-marker svg {
+  width: 20px;
+  height: 20px;
+}
+
+.timeline-normal {
+  background-color: var(--color-success-100);
+  color: var(--color-success-500);
+  border-color: var(--color-success-200);
+}
+
+.timeline-caution {
+  background-color: var(--color-warning-100);
+  color: var(--color-warning-500);
+  border-color: var(--color-warning-200);
+}
+
+.timeline-upcoming {
+  background-color: var(--color-info-100);
+  color: var(--color-info-500);
+  border-color: var(--color-info-200);
+}
+
+.timeline-content {
+  flex: 1;
+  padding-top: var(--spacing-2);
+}
+
+.timeline-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1) 0;
+  transition: var(--transition-base);
+}
+
+.timeline-content p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-2) 0;
+  font-weight: 400;
+  transition: var(--transition-base);
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
+}
+
+/* Enhanced Responsive Design System - Space Sensitive & Aesthetic */
+
+/* Mobile Devices (320px - 768px) */
+@media (max-width: 767px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-3);
+    max-width: 100%;
+  }
+  
+  .dashboard-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+  
+  .dashboard-title h1 {
+    font-size: 1.25rem;
+  }
+  
+  .dashboard-welcome {
+    flex-direction: column;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    text-align: center;
+  }
+  
+  .clarity-topbar-right {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: stretch;
+  }
+  
+  .search-bar {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+    max-width: 500px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  /* Lab Results Item - Mobile */
+  .lab-result-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    min-height: auto;
+    padding: var(--spacing-3);
+  }
+  
+  /* Appointments Item - Mobile */
+  .appointment-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    min-height: auto;
+    padding: var(--spacing-3);
+  }
+  
+  /* Medications Item - Mobile */
+  .medication-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    min-height: auto;
+    padding: var(--spacing-3);
+  }
+  
+  /* Care Team Item - Mobile */
+  .care-team-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    min-height: auto;
+    padding: var(--spacing-3);
+  }
+  
+  .care-team-photo {
+    align-self: center;
+  }
+  
+  .care-team-content {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Lab Results Text - Mobile */
+  .lab-result-content h4 {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .lab-result-date {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  /* Appointments Text - Mobile */
+  .appointment-content h4 {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .appointment-provider {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .appointment-detail {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  /* Medications Text - Mobile */
+  .medication-content h4 {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .medication-dosage {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  /* Care Team Text - Mobile */
+  .care-team-content h4,
+  .care-team-role {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  
+  .contact-item {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    justify-content: center;
+  }
+  
+  .appointment-actions,
+  .medication-actions,
+  .care-team-actions {
+    width: 100%;
+    justify-content: center;
+    align-self: center;
+  }
+  
+  .timeline-item {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+  
+  .timeline-item:not(:last-child)::after {
+    display: none;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Tablet Devices (768px - 1024px) - 25% More Compact for Maximum Content Visibility */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-3);
+    max-width: 100%;
+  }
+  
+  .dashboard-welcome {
+    flex-direction: column;
+    gap: var(--spacing-3);
+    text-align: center;
+  }
+  
+  .welcome-actions {
+    justify-content: center;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+    grid-auto-rows: minmax(195px, auto);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-2);
+    max-width: 525px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .dashboard-card {
+    min-height: 195px;
+    max-width: 100%;
+  }
+  
+  .search-bar {
+    min-width: 195px;
+  }
+  
+  /* Tablet List Optimization - 25% More Compact */
+  .appointments-list,
+  .lab-results-list,
+  .medications-list,
+  .care-team-list {
+    max-height: 240px;
+    padding: var(--spacing-2);
+  }
+  
+  /* Tablet Vitals Card - 25% More Compact */
+  .vital-card {
+    padding: var(--spacing-2);
+    max-width: 240px;
+  }
+  
+  /* Tablet Header - 25% More Compact */
+  .card-header {
+    padding: var(--spacing-3);
+  }
+  
+  .card-header h3 {
+    font-size: 0.75rem;
+  }
+  
+  /* Tablet Content Padding - 25% More Compact */
+  .card-content {
+    padding: var(--spacing-2);
+    min-height: 120px;
+  }
+  
+  /* Lab Results Item - Tablet - 25% More Compact */
+  .lab-result-item {
+    padding: var(--spacing-2);
+    min-height: 60px;
+  }
+  
+  /* Appointments Item - Tablet - 25% More Compact */
+  .appointment-item {
+    padding: var(--spacing-2);
+    min-height: 75px;
+  }
+  
+  /* Medications Item - Tablet - 25% More Compact */
+  .medication-item {
+    padding: var(--spacing-2);
+    min-height: 68px;
+  }
+  
+  /* Care Team Item - Tablet - 25% More Compact */
+  .care-team-item {
+    padding: var(--spacing-2);
+    min-height: 83px;
+  }
+  
+  /* Tablet Text Scaling - 25% More Compact */
+  .lab-result-content h4,
+  .appointment-content h4,
+  .medication-content h4,
+  .care-team-content h4 {
+    font-size: 0.675rem;
+    line-height: 1.2;
+  }
+  
+  .lab-result-date,
+  .appointment-provider,
+  .medication-dosage,
+  .care-team-role {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+  
+  .appointment-detail {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+  
+  /* Tablet Welcome Content - 25% More Compact */
+  .welcome-content h2 {
+    font-size: 1.05rem;
+  }
+  
+  .welcome-content p {
+    font-size: 0.675rem;
+  }
+  
+  /* Tablet Dashboard Title - 25% More Compact */
+  .dashboard-title h1 {
+    font-size: 1.05rem;
+  }
+  
+  /* Tablet Section Header - 25% More Compact */
+  .section-header h3 {
+    font-size: 0.7875rem;
+  }
+  
+  /* Tablet Vitals Number - 25% More Compact */
+  .vital-number {
+    font-size: 1.05rem;
+  }
+}
+
+/* Laptop/Small Desktop (1024px - 1440px) - 25% More Compact for Maximum Content Visibility */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-3);
+    max-width: 100%;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+    grid-auto-rows: minmax(210px, auto);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-2);
+    max-width: 600px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .dashboard-card {
+    min-height: 210px;
+    max-width: 100%;
+  }
+  
+  .search-bar {
+    min-width: 210px;
+  }
+  
+  .dashboard-welcome {
+    padding: var(--spacing-3);
+    gap: var(--spacing-3);
+  }
+  
+  /* Laptop Welcome Content - 25% More Compact */
+  .welcome-content h2 {
+    font-size: 1.125rem;
+  }
+  
+  .welcome-content p {
+    font-size: 0.7125rem;
+  }
+  
+  /* Laptop Dashboard Title - 25% More Compact */
+  .dashboard-title h1 {
+    font-size: 1.125rem;
+  }
+  
+  /* Laptop Section Header - 25% More Compact */
+  .section-header h3 {
+    font-size: 0.825rem;
+  }
+  
+  /* Laptop Vitals Number - 25% More Compact */
+  .vital-number {
+    font-size: 1.125rem;
+  }
+  
+  /* Lab Results Item - Laptop - 25% More Compact */
+  .lab-result-item {
+    padding: var(--spacing-2);
+    min-height: 68px;
+  }
+  
+  /* Appointments Item - Laptop - 25% More Compact */
+  .appointment-item {
+    padding: var(--spacing-2);
+    min-height: 83px;
+  }
+  
+  /* Medications Item - Laptop - 25% More Compact */
+  .medication-item {
+    padding: var(--spacing-2);
+    min-height: 75px;
+  }
+  
+  /* Care Team Item - Laptop - 25% More Compact */
+  .care-team-item {
+    padding: var(--spacing-2);
+    min-height: 90px;
+  }
+  
+  /* Laptop Text Scaling - 25% More Compact */
+  .lab-result-content h4,
+  .appointment-content h4,
+  .medication-content h4,
+  .care-team-content h4 {
+    font-size: 0.7125rem;
+    line-height: 1.2;
+  }
+  
+  .lab-result-date,
+  .appointment-provider,
+  .medication-dosage,
+  .care-team-role {
+    font-size: 0.61875rem;
+    line-height: 1.2;
+  }
+  
+  .appointment-detail {
+    font-size: 0.61875rem;
+    line-height: 1.2;
+  }
+  
+  /* Laptop List Optimization - 25% More Compact */
+  .appointments-list,
+  .lab-results-list,
+  .medications-list,
+  .care-team-list {
+    max-height: 263px;
+    padding: var(--spacing-2);
+  }
+  
+  /* Laptop Vitals Card - 25% More Compact */
+  .vital-card {
+    padding: var(--spacing-2);
+    max-width: 188px;
+  }
+  
+  /* Laptop Header - 25% More Compact */
+  .card-header {
+    padding: var(--spacing-3);
+  }
+  
+  .card-header h3 {
+    font-size: 0.75rem;
+  }
+  
+  /* Laptop Content Padding - 25% More Compact */
+  .card-content {
+    padding: var(--spacing-2);
+    min-height: 135px;
+  }
+}
+
+/* Standard Desktop (1440px - 1920px) */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-6);
+    max-width: 1400px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-4);
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .vital-card {
+    max-width: 280px;
+  }
+  
+  .search-bar {
+    min-width: 320px;
+  }
+  
+  .dashboard-welcome {
+    padding: var(--spacing-8);
+    gap: var(--spacing-8);
+  }
+  
+  .dashboard-title h1 {
+    font-size: 1.75rem;
+  }
+  
+  .section-header h3 {
+    font-size: 1.375rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .vital-number {
+    font-size: 1.75rem;
+  }
+  
+  /* Lab Results Item - Standard Desktop */
+  .lab-result-item {
+    padding: var(--spacing-5);
+  }
+  
+  /* Appointments Item - Standard Desktop */
+  .appointment-item {
+    padding: var(--spacing-5);
+  }
+  
+  /* Medications Item - Standard Desktop */
+  .medication-item {
+    padding: var(--spacing-5);
+  }
+  
+  /* Care Team Item - Standard Desktop */
+  .care-team-item {
+    padding: var(--spacing-5);
+  }
+}
+
+/* Large Desktop (1920px - 2560px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-8);
+    max-width: 1800px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: var(--spacing-8);
+    grid-auto-rows: minmax(380px, auto);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-4);
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .dashboard-card {
+    min-height: 380px;
+    max-width: 600px;
+  }
+  
+  .vital-card {
+    max-width: 280px;
+  }
+  
+  .appointments-list,
+  .lab-results-list,
+  .medications-list,
+  .care-team-list {
+    max-height: 500px;
+  }
+  
+  /* Lab Results Item - Enhanced for large desktop */
+  .lab-result-item {
+    padding: var(--spacing-5);
+    min-height: 120px;
+  }
+  
+  /* Appointments Item - Enhanced for large desktop */
+  .appointment-item {
+    padding: var(--spacing-5);
+    min-height: 140px;
+  }
+  
+  /* Medications Item - Enhanced for large desktop */
+  .medication-item {
+    padding: var(--spacing-5);
+    min-height: 130px;
+  }
+  
+  /* Care Team Item - Enhanced for large desktop */
+  .care-team-item {
+    padding: var(--spacing-5);
+    min-height: 150px;
+  }
+  
+  /* Lab Results Text - Enhanced for large desktop */
+  .lab-result-content h4 {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .lab-result-date {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Appointments Text - Enhanced for large desktop */
+  .appointment-content h4 {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-provider {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-detail {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Medications Text - Enhanced for large desktop */
+  .medication-content h4 {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .medication-dosage {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Care Team Text - Enhanced for large desktop */
+  .care-team-content h4 {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .care-team-role {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .search-bar {
+    min-width: 360px;
+  }
+  
+  .dashboard-welcome {
+    padding: var(--spacing-10);
+    gap: var(--spacing-10);
+  }
+  
+  .dashboard-title h1 {
+    font-size: 2rem;
+  }
+  
+  .section-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.375rem;
+  }
+  
+  .vital-number {
+    font-size: 2rem;
+  }
+  
+  .care-team-item {
+    padding: var(--spacing-6);
+  }
+  
+  .appointment-item,
+  .lab-result-item,
+  .medication-item {
+    padding: var(--spacing-5);
+  }
+  
+  .timeline-container {
+    padding: var(--spacing-8);
+  }
+}
+
+/* Ultra-Wide Desktop (2560px - 3840px) */
+@media (min-width: 2560px) and (max-width: 3839px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-10);
+    max-width: 2000px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+    gap: var(--spacing-10);
+    grid-auto-rows: minmax(420px, auto);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-6);
+    max-width: 1400px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .dashboard-card {
+    min-height: 420px;
+    max-width: 700px;
+  }
+  
+  .vital-card {
+    max-width: 320px;
+  }
+  
+  .appointments-list,
+  .lab-results-list,
+  .medications-list,
+  .care-team-list {
+    max-height: 600px;
+  }
+  
+  /* Lab Results Item - Enhanced for ultra-wide */
+  .lab-result-item {
+    padding: var(--spacing-6);
+    min-height: 140px;
+  }
+  
+  /* Appointments Item - Enhanced for ultra-wide */
+  .appointment-item {
+    padding: var(--spacing-6);
+    min-height: 160px;
+  }
+  
+  /* Medications Item - Enhanced for ultra-wide */
+  .medication-item {
+    padding: var(--spacing-6);
+    min-height: 150px;
+  }
+  
+  /* Care Team Item - Enhanced for ultra-wide */
+  .care-team-item {
+    padding: var(--spacing-6);
+    min-height: 170px;
+  }
+  
+  /* Lab Results Text - Enhanced for ultra-wide */
+  .lab-result-content h4 {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .lab-result-date {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Appointments Text - Enhanced for ultra-wide */
+  .appointment-content h4 {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-provider {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-detail {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Medications Text - Enhanced for ultra-wide */
+  .medication-content h4 {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .medication-dosage {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Care Team Text - Enhanced for ultra-wide */
+  .care-team-content h4 {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .care-team-role {
+    font-size: 1.125rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .search-bar {
+    min-width: 400px;
+  }
+  
+  .dashboard-welcome {
+    padding: var(--spacing-12);
+    gap: var(--spacing-12);
+  }
+  
+  .dashboard-title h1 {
+    font-size: 2.25rem;
+  }
+  
+  .section-header h3 {
+    font-size: 1.625rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .vital-number {
+    font-size: 2.25rem;
+  }
+  
+  .care-team-item {
+    padding: var(--spacing-6);
+  }
+  
+  .appointment-item,
+  .lab-result-item,
+  .medication-item {
+    padding: var(--spacing-6);
+  }
+  
+  .timeline-container {
+    padding: var(--spacing-10);
+  }
+  
+  .welcome-content h2 {
+    font-size: 2.5rem;
+  }
+  
+  .welcome-content p {
+    font-size: 1.25rem;
+  }
+}
+
+/* 4K/8K Ultra-Wide (3840px+) */
+@media (min-width: 3840px) {
+  .patient-dashboard-content {
+    padding: var(--spacing-16);
+    max-width: 2400px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(580px, 1fr));
+    gap: var(--spacing-12);
+    grid-auto-rows: minmax(480px, auto);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-8);
+    max-width: 1600px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+  
+  .dashboard-card {
+    min-height: 480px;
+    max-width: 800px;
+  }
+  
+  .vital-card {
+    max-width: 360px;
+  }
+  
+  .appointments-list,
+  .lab-results-list,
+  .medications-list,
+  .care-team-list {
+    max-height: 700px;
+  }
+  
+  /* Lab Results Item - Enhanced for 4K */
+  .lab-result-item {
+    padding: var(--spacing-8);
+    min-height: 160px;
+  }
+  
+  /* Appointments Item - Enhanced for 4K */
+  .appointment-item {
+    padding: var(--spacing-8);
+    min-height: 180px;
+  }
+  
+  /* Medications Item - Enhanced for 4K */
+  .medication-item {
+    padding: var(--spacing-8);
+    min-height: 170px;
+  }
+  
+  /* Care Team Item - Enhanced for 4K */
+  .care-team-item {
+    padding: var(--spacing-8);
+    min-height: 190px;
+  }
+  
+  /* Lab Results Text - Enhanced for 4K */
+  .lab-result-content h4 {
+    font-size: 1.375rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .lab-result-date {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Appointments Text - Enhanced for 4K */
+  .appointment-content h4 {
+    font-size: 1.375rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-provider {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .appointment-detail {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Medications Text - Enhanced for 4K */
+  .medication-content h4 {
+    font-size: 1.375rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .medication-dosage {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  /* Care Team Text - Enhanced for 4K */
+  .care-team-content h4 {
+    font-size: 1.375rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .care-team-role {
+    font-size: 1.25rem;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  
+  .search-bar {
+    min-width: 480px;
+  }
+  
+  .dashboard-welcome {
+    padding: var(--spacing-16);
+    gap: var(--spacing-16);
+  }
+  
+  .dashboard-title h1 {
+    font-size: 2.5rem;
+  }
+  
+  .section-header h3 {
+    font-size: 1.75rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.625rem;
+  }
+  
+  .vital-number {
+    font-size: 2.5rem;
+  }
+  
+  .care-team-item {
+    padding: var(--spacing-8);
+  }
+  
+  .appointment-item,
+  .lab-result-item,
+  .medication-item {
+    padding: var(--spacing-8);
+  }
+  
+  .timeline-container {
+    padding: var(--spacing-12);
+  }
+  
+  .welcome-content h2 {
+    font-size: 3rem;
+  }
+  
+  .welcome-content p {
+    font-size: 1.5rem;
+  }
+  
+  .vital-card {
+    padding: var(--spacing-6);
+  }
+  
+  .dashboard-card {
+    padding: var(--spacing-6);
+  }
+}
+
+/* Dynamic Spacing System for Large Screens */
+@media (min-width: 1920px) {
+  :root {
+    --spacing-1: 6px;
+    --spacing-2: 12px;
+    --spacing-3: 18px;
+    --spacing-4: 24px;
+    --spacing-5: 36px;
+    --spacing-6: 48px;
+    --spacing-7: 72px;
+    --spacing-8: 96px;
+    --spacing-10: 120px;
+    --spacing-12: 144px;
+    --spacing-16: 192px;
+    --spacing-20: 240px;
+    --spacing-24: 288px;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --spacing-1: 8px;
+    --spacing-2: 16px;
+    --spacing-3: 24px;
+    --spacing-4: 32px;
+    --spacing-5: 48px;
+    --spacing-6: 64px;
+    --spacing-7: 96px;
+    --spacing-8: 128px;
+    --spacing-10: 160px;
+    --spacing-12: 192px;
+    --spacing-16: 256px;
+    --spacing-20: 320px;
+    --spacing-24: 384px;
+  }
+}
+
+@media (min-width: 3840px) {
+  :root {
+    --spacing-1: 12px;
+    --spacing-2: 24px;
+    --spacing-3: 36px;
+    --spacing-4: 48px;
+    --spacing-5: 72px;
+    --spacing-6: 96px;
+    --spacing-7: 144px;
+    --spacing-8: 192px;
+    --spacing-10: 240px;
+    --spacing-12: 288px;
+    --spacing-16: 384px;
+    --spacing-20: 480px;
+    --spacing-24: 576px;
+  }
+}
+
+/* Aspect Ratio Considerations for Ultra-Wide Displays */
+@media (min-aspect-ratio: 21/9) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+/* Super Ultra-Wide (32:9 aspect ratio) */
+@media (min-aspect-ratio: 32/9) {
+  .patient-dashboard-content {
+    max-width: none;
+    padding-left: var(--spacing-10);
+    padding-right: var(--spacing-10);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: var(--spacing-10);
+  }
+  
+  .vitals-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-8);
+  }
+}
+
+/* Height-based Responsiveness for Large Displays */
+@media (min-height: 1440px) {
+  .patient-dashboard {
+    min-height: 100vh;
+  }
+  
+  .dashboard-welcome {
+    min-height: 200px;
+  }
+  
+  .vital-card {
+    min-height: 180px;
+  }
+  
+  .care-team-item {
+    min-height: 120px;
+  }
+}
+
+/* Print Styles for Large Screens */
+@media print and (min-width: 1440px) {
+  .patient-dashboard-content {
+    max-width: none;
+    padding: var(--spacing-4);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Enhanced Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .vital-card:hover,
+  .appointment-item:hover,
+  .lab-result-item:hover,
+  .medication-item:hover,
+  .care-team-item:hover {
+    transform: none;
+  }
+}
+
+/* Enhanced High Contrast Mode */
+@media (prefers-contrast: high) {
+  .dashboard-card {
+    border-width: 2px;
+  }
+  
+  .vital-card {
+    border-width: 2px;
+  }
+  
+  .timeline-marker {
+    border-width: 3px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .clarity-topbar,
+  .welcome-actions,
+  .section-actions,
+  .appointment-actions,
+  .medication-actions,
+  .care-team-actions {
+    display: none !important;
+  }
+  
+  .dashboard-welcome {
+    background: none;
+    border: 1px solid #333333;
+  }
+  
+  .vital-card,
+  .dashboard-card {
+    break-inside: avoid;
+    border: 1px solid #333333;
+  }
+}

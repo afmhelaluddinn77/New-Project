@@ -3,15 +3,30 @@ _transform: true
 
 services:
   - name: authentication-service
-    url: http://localhost:3000
+    url: http://host.docker.internal:3001
     routes:
       - name: auth-login
         paths:
           - /api/auth/login
         strip_path: false
 
+      - name: auth-csrf
+        paths:
+          - /api/auth/csrf-token
+        strip_path: false
+
+      - name: auth-refresh
+        paths:
+          - /api/auth/refresh
+        strip_path: false
+
+      - name: auth-logout
+        paths:
+          - /api/auth/logout
+        strip_path: false
+
   - name: clinical-workflow-service
-    url: http://localhost:3004
+    url: http://host.docker.internal:3004
     routes:
       - name: workflow-api
         paths:
@@ -38,7 +53,7 @@ services:
                   - "X-Portal:$(jwt.portal)"
 
   - name: pharmacy-service
-    url: http://localhost:3012
+    url: http://host.docker.internal:3012
     routes:
       - name: pharmacy-api
         paths:
@@ -65,7 +80,7 @@ services:
                   - "X-Portal:$(jwt.portal)"
 
   - name: lab-service
-    url: http://localhost:3013
+    url: http://host.docker.internal:3013
     routes:
       - name: lab-api
         paths:
@@ -92,7 +107,7 @@ services:
                   - "X-Portal:$(jwt.portal)"
 
   - name: radiology-service
-    url: http://localhost:3014
+    url: http://host.docker.internal:3014
     routes:
       - name: radiology-api
         paths:
@@ -119,11 +134,38 @@ services:
                   - "X-Portal:$(jwt.portal)"
 
   - name: patient-service
-    url: http://localhost:3002
+    url: http://host.docker.internal:3011
     routes:
       - name: patient-api
         paths:
           - /api/patient
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              uri_param_names:
+                - token
+              key_claim_name: sub
+              header_names:
+                - authorization
+          - name: request-transformer
+            config:
+              remove:
+                headers:
+                  - authorization
+              add:
+                headers:
+                  - "X-User-ID:$(jwt.sub)"
+                  - "X-User-Role:$(jwt.role)"
+                  - "X-Portal:$(jwt.portal)"
+
+  - name: encounter-service
+    url: http://host.docker.internal:3005
+    routes:
+      - name: encounter-api
+        paths:
+          - /api/encounters
         strip_path: false
         plugins:
           - name: jwt
@@ -167,9 +209,11 @@ plugins:
         - X-User-ID
         - X-User-Role
         - X-Portal
+        - X-XSRF-TOKEN
       exposed_headers:
         - X-User-ID
         - X-User-Role
         - X-Portal
+        - Set-Cookie
       credentials: true
       max_age: 3600

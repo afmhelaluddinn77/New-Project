@@ -1,0 +1,292 @@
+/* Dark Mode Toggle - Intelligent Theme Switcher */
+/* Healthcare-focused accessible theme switching */
+
+/* Placeholder to prevent layout shift during hydration */
+.dark-mode-toggle-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-full);
+  cursor: not-allowed;
+  transition: var(--transition-base);
+}
+
+.placeholder-icon {
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-border-subtle);
+  border-radius: var(--border-radius-full);
+}
+
+/* Main Toggle Button */
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-2) var(--spacing-3);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--color-surface-elevated);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.dark-mode-toggle:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.dark-mode-toggle:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Toggle Track - iOS-style switch */
+.dark-mode-toggle-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--color-border-subtle);
+  border-radius: var(--border-radius-full);
+  transition: var(--transition-base);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode-toggle:hover .dark-mode-toggle-track {
+  background-color: var(--color-border-default);
+}
+
+/* Toggle Thumb */
+.dark-mode-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-text-primary);
+  border-radius: var(--border-radius-full);
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateX(0);
+}
+
+/* Dark Mode State */
+.dark .dark-mode-toggle {
+  background-color: var(--color-surface-elevated);
+  border-color: var(--color-primary-500);
+}
+
+.dark .dark-mode-toggle:hover {
+  background-color: var(--color-primary-100);
+  border-color: var(--color-primary-600);
+}
+
+.dark .dark-mode-toggle-track {
+  background-color: var(--color-primary-500);
+}
+
+.dark .dark-mode-toggle:hover .dark-mode-toggle-track {
+  background-color: var(--color-primary-600);
+}
+
+.dark .dark-mode-toggle-thumb {
+  background-color: var(--color-text-on-accent);
+  transform: translateX(20px);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+/* Icon Styling */
+.dark-mode-icon {
+  color: currentColor;
+  transition: var(--transition-fast);
+}
+
+.dark-mode-toggle:hover .dark-mode-icon {
+  transform: scale(1.1);
+}
+
+.dark .dark-mode-icon {
+  color: var(--color-text-on-accent);
+}
+
+/* Label Styling */
+.dark-mode-toggle-label {
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
+}
+
+.dark-mode-toggle:hover .dark-mode-toggle-label {
+  color: var(--color-text-primary);
+}
+
+.dark .dark-mode-toggle-label {
+  color: var(--color-text-primary);
+}
+
+/* Size Variants */
+.dark-mode-toggle-sm {
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-xs);
+}
+
+.dark-mode-toggle-sm .dark-mode-toggle-track {
+  width: 36px;
+  height: 20px;
+}
+
+.dark-mode-toggle-sm .dark-mode-toggle-thumb {
+  width: 16px;
+  height: 16px;
+  top: 2px;
+  left: 2px;
+}
+
+.dark .dark-mode-toggle-sm .dark-mode-toggle-thumb {
+  transform: translateX(16px);
+}
+
+.dark-mode-toggle-sm .dark-mode-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.dark-mode-toggle-lg {
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-md);
+}
+
+.dark-mode-toggle-lg .dark-mode-toggle-track {
+  width: 52px;
+  height: 28px;
+}
+
+.dark-mode-toggle-lg .dark-mode-toggle-thumb {
+  width: 24px;
+  height: 24px;
+  top: 2px;
+  left: 2px;
+}
+
+.dark .dark-mode-toggle-lg .dark-mode-toggle-thumb {
+  transform: translateX(24px);
+}
+
+.dark-mode-toggle-lg .dark-mode-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Animation for theme switching */
+@keyframes themeSwitch {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.dark-mode-toggle.is-switching .dark-mode-icon {
+  animation: themeSwitch 0.6s ease-in-out;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .dark-mode-toggle {
+    border-width: 2px;
+    border-color: var(--color-border-default);
+  }
+  
+  .dark-mode-toggle-track {
+    border: 1px solid var(--color-text-primary);
+  }
+  
+  .dark .dark-mode-toggle {
+    border-color: var(--color-primary-500);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .dark-mode-toggle,
+  .dark-mode-toggle-track,
+  .dark-mode-toggle-thumb,
+  .dark-mode-icon,
+  .dark-mode-toggle-label {
+    transition: none;
+  }
+  
+  .dark-mode-toggle:hover .dark-mode-icon {
+    transform: none;
+  }
+  
+  .dark-mode-toggle.is-switching .dark-mode-icon {
+    animation: none;
+  }
+}
+
+/* Focus Visible Support */
+.dark-mode-toggle:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 767px) {
+  .dark-mode-toggle-label {
+    display: none;
+  }
+  
+  .dark-mode-toggle {
+    padding: var(--spacing-2);
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .dark-mode-toggle:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .dark-mode-toggle:active {
+    transform: scale(0.95);
+  }
+}

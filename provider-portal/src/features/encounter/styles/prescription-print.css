@@ -1,0 +1,151 @@
+/* Prescription Print Styles - Clarity Design System Integration */
+
+:root {
+  --presc-border: var(--color-border-subtle, #e5e7eb);
+  --presc-text: #1f2937;
+  --presc-text-secondary: #6b7280;
+}
+
+/* ===== HEADER ===== */
+.prescription-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-6, 24px);
+  border-bottom: 2px solid var(--presc-border);
+  padding-bottom: var(--spacing-3, 12px);
+  margin-bottom: var(--spacing-4, 16px);
+  color: var(--presc-text);
+}
+
+.ph-left,
+.ph-right {
+  flex: 1;
+  color: var(--presc-text);
+}
+
+.ph-left {
+  text-align: left;
+}
+
+.ph-right {
+  text-align: right;
+}
+
+.ph-title-en,
+.ph-title-bn {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--presc-text);
+  margin-bottom: 4px;
+}
+
+.ph-line {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--presc-text);
+}
+
+.ph-contact {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--presc-text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== FOOTER ===== */
+.prescription-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-6, 24px);
+  border-top: 2px solid var(--presc-border);
+  padding-top: var(--spacing-3, 12px);
+  margin-top: var(--spacing-4, 16px);
+  font-size: 0.875rem;
+  color: var(--presc-text);
+}
+
+.pf-left,
+.pf-right {
+  flex: 1;
+  color: var(--presc-text);
+}
+
+.pf-left {
+  text-align: left;
+}
+
+.pf-right {
+  text-align: right;
+}
+
+.pf-brand,
+.pf-brand-bn {
+  font-weight: 700;
+  color: var(--presc-text);
+  margin-bottom: 4px;
+}
+
+.pf-muted {
+  color: var(--presc-text-secondary);
+  font-weight: 400;
+}
+
+.pf-line {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--presc-text);
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  .prescription-header,
+  .prescription-footer {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure proper colors in print */
+  .prescription-header,
+  .prescription-footer,
+  .ph-line,
+  .pf-line {
+    color: #000 !important;
+  }
+
+  /* Hide non-essential elements */
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure borders print */
+  .prescription-header {
+    border-bottom: 2px solid #000 !important;
+  }
+
+  .prescription-footer {
+    border-top: 2px solid #000 !important;
+  }
+}
+
+/* ===== PRESCRIPTION CONTAINER ===== */
+.prescription-container {
+  background: #fff;
+  padding: var(--spacing-8, 32px);
+  border-radius: var(--radius-lg, 12px);
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media print {
+  .prescription-container {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,176 @@
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.errorContent {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  max-width: 500px;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.errorIcon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.errorTitle {
+  margin: 0 0 16px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.errorMessage {
+  margin: 0 0 24px 0;
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.errorDetails {
+  margin: 20px 0;
+  padding: 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  border-left: 4px solid #ef4444;
+  text-align: left;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+  user-select: none;
+  padding: 8px;
+  margin: -8px;
+}
+
+.errorDetails summary:hover {
+  color: #1f2937;
+}
+
+.errorStack {
+  margin: 12px 0 0 0;
+  padding: 12px;
+  background: #1f2937;
+  color: #10b981;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.errorStack code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.retryButton,
+.homeButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retryButton {
+  background: #667eea;
+  color: white;
+}
+
+.retryButton:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.retryButton:active {
+  transform: translateY(0);
+}
+
+.homeButton {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.homeButton:hover {
+  background: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.homeButton:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .errorContainer {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .errorContent {
+    padding: 24px;
+  }
+
+  .errorIcon {
+    font-size: 48px;
+  }
+
+  .errorTitle {
+    font-size: 24px;
+  }
+
+  .errorMessage {
+    font-size: 14px;
+  }
+
+  .errorActions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,322 @@
+// Encounter Service - Prisma Schema
+// HIPAA Compliant, HL7 FHIR R4 Compatible, SNOMED CT, LOINC, ICD-10 Ready
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENCOUNTER MANAGEMENT
+// ============================================================================
+
+model Encounter {
+  id                String   @id @default(uuid())
+  encounterNumber   String   @unique // Human-readable encounter number
+  
+  // Patient & Provider Information
+  patientId         String
+  providerId        String
+  facilityId        String?
+  
+  // Encounter Metadata
+  encounterDate     DateTime @default(now())
+  encounterType     EncounterType
+  encounterClass    EncounterClass
+  status            EncounterStatus @default(IN_PROGRESS)
+  priority          Priority @default(ROUTINE)
+  
+  // Chief Complaint
+  chiefComplaint    String?
+  
+  // History Data (JSONB for flexibility)
+  historyOfPresentIllness Json?
+  pastMedicalHistory      Json?
+  medicationHistory       Json?
+  familyHistory           Json?
+  socialHistory           Json?
+  reviewOfSystems         Json?
+  
+  // Physical Examination Data
+  vitalSigns              Json?
+  generalExamination      Json?
+  systemicExamination     Json?
+  
+  // Clinical Assessment
+  assessment              String?  // Clinical impression
+  diagnosisCodes          Json?    // ICD-10, SNOMED CT codes
+  
+  // Plan
+  plan                    String?
+  
+  // FHIR Compatibility
+  fhirResourceId          String?  @unique
+  fhirVersion             String?  @default("R4")
+  
+  // Audit Trail (HIPAA Requirement)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  createdBy               String
+  updatedBy               String
+  deletedAt               DateTime?
+  deletedBy               String?
+  
+  // Relationships
+  investigations          Investigation[]
+  prescriptions           Prescription[]
+  encounterNotes          EncounterNote[]
+  auditLogs               AuditLog[]
+  
+  @@index([patientId])
+  @@index([providerId])
+  @@index([encounterDate])
+  @@index([status])
+  @@index([encounterNumber])
+  @@map("encounters")
+}
+
+// ============================================================================
+// INVESTIGATIONS
+// ============================================================================
+
+model Investigation {
+  id                String   @id @default(uuid())
+  encounterId       String
+  encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  
+  // Investigation Details
+  investigationType InvestigationType
+  loincCode         String?  // LOINC code for lab tests
+  snomedCode        String?  // SNOMED CT code
+  name              String
+  description       String?
+  
+  // Order Information
+  orderedDate       DateTime @default(now())
+  orderedBy         String
+  priority          Priority @default(ROUTINE)
+  status            InvestigationStatus @default(ORDERED)
+  
+  // Results
+  resultDate        DateTime?
+  resultValue       String?
+  resultUnit        String?
+  referenceRange    String?
+  interpretation    ResultInterpretation?
+  resultNotes       String?
+  
+  // Imaging specific
+  imagingModality   String?
+  imagingBodySite   String?
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([encounterId])
+  @@index([status])
+  @@index([loincCode])
+  @@map("investigations")
+}
+
+// ============================================================================
+// PRESCRIPTIONS
+// ============================================================================
+
+model Prescription {
+  id                String   @id @default(uuid())
+  encounterId       String
+  encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  
+  // Medication Details
+  medicationId      String?  // Reference to medication database
+  rxNormCode        String?  // RxNorm code
+  genericName       String
+  brandName         String?
+  
+  // Dosage Information
+  dosage            String
+  dosageForm        String   // tablet, capsule, syrup, injection, etc.
+  route             String   // oral, IV, IM, topical, etc.
+  frequency         String   // BID, TID, QID, etc.
+  duration          String
+  quantity          Int
+  refills           Int      @default(0)
+  
+  // Instructions
+  instructions      String?
+  indication        String?
+  
+  // Prescription Metadata
+  prescribedDate    DateTime @default(now())
+  prescribedBy      String
+  status            PrescriptionStatus @default(ACTIVE)
+  
+  // Safety
+  allergyChecked    Boolean  @default(false)
+  interactionChecked Boolean @default(false)
+  
+  // Dispensing
+  dispensedDate     DateTime?
+  dispensedBy       String?
+  pharmacyId        String?
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([encounterId])
+  @@index([status])
+  @@index([prescribedDate])
+  @@map("prescriptions")
+}
+
+// ============================================================================
+// ENCOUNTER NOTES
+// ============================================================================
+
+model EncounterNote {
+  id                String   @id @default(uuid())
+  encounterId       String
+  encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  
+  noteType          NoteType
+  noteText          String
+  authorId          String
+  authorRole        String
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([encounterId])
+  @@index([noteType])
+  @@map("encounter_notes")
+}
+
+// ============================================================================
+// AUDIT LOGS (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id                String   @id @default(uuid())
+  encounterId       String?
+  encounter         Encounter? @relation(fields: [encounterId], references: [id], onDelete: SetNull)
+  
+  // Action Details
+  action            AuditAction
+  resourceType      String   // Encounter, Prescription, Investigation
+  resourceId        String
+  
+  // User Information
+  userId            String
+  userRole          String
+  userIp            String?
+  userAgent         String?
+  
+  // Change Details
+  oldValue          Json?
+  newValue          Json?
+  
+  // Metadata
+  timestamp         DateTime @default(now())
+  sessionId         String?
+  
+  @@index([encounterId])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum EncounterType {
+  OUTPATIENT
+  INPATIENT
+  EMERGENCY
+  TELEMEDICINE
+  HOME_VISIT
+  FOLLOW_UP
+}
+
+enum EncounterClass {
+  AMBULATORY
+  EMERGENCY
+  INPATIENT
+  OBSERVATION
+  VIRTUAL
+}
+
+enum EncounterStatus {
+  PLANNED
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ENTERED_IN_ERROR
+}
+
+enum Priority {
+  ROUTINE
+  URGENT
+  ASAP
+  STAT
+}
+
+enum InvestigationType {
+  LABORATORY
+  IMAGING
+  PATHOLOGY
+  PROCEDURE
+  OTHER
+}
+
+enum InvestigationStatus {
+  ORDERED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ENTERED_IN_ERROR
+}
+
+enum ResultInterpretation {
+  NORMAL
+  ABNORMAL
+  CRITICAL
+  HIGH
+  LOW
+}
+
+enum PrescriptionStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ENTERED_IN_ERROR
+  STOPPED
+}
+
+enum NoteType {
+  PROGRESS_NOTE
+  CONSULTATION_NOTE
+  DISCHARGE_SUMMARY
+  PROCEDURE_NOTE
+  ADDENDUM
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  PRINT
+  EXPORT
+  LOGIN
+  LOGOUT
+}

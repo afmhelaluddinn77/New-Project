@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import { AppModule } from './app.module'
+import * as cookieParser from 'cookie-parser'
+import * as csurf from 'csurf'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -18,10 +20,21 @@ async function bootstrap() {
       'http://localhost:5179', // radiology-portal
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-XSRF-TOKEN'],
     credentials: true,
   })
   
+  app.use(cookieParser())
+  app.use(
+    csurf({
+      cookie: {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    }),
+  )
+
   app.setGlobalPrefix('api')
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,8 +44,9 @@ async function bootstrap() {
     }),
   )
   
-  await app.listen(3000)
-  console.log('Authentication Service running on port 3000')
+  const port = parseInt(process.env.PORT || '3001', 10)
+  await app.listen(port, '0.0.0.0')
+  console.log(`Authentication Service running on port ${port}`)
 }
 bootstrap()
 

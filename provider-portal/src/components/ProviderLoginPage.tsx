@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { api } from '../lib/api'
+import { useAuthStore } from '../store/authStore'
 import { User, Lock, AlertCircle, Stethoscope } from 'lucide-react'
-import { setAuthToken } from '../services/httpClient'
 import './ProviderLoginPage.css'
 
 function ProviderLoginPage() {
@@ -16,13 +16,15 @@ function ProviderLoginPage() {
     setLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      // Ensure CSRF cookie exists before POST
+      await api.get('/auth/csrf-token')
+      const { data } = await api.post('/auth/login', {
         email,
         password,
-        portalType: 'PROVIDER'
+        portalType: 'PROVIDER',
       })
-
-      setAuthToken(response.data.access_token)
+      // Backend returns { accessToken, user }
+      useAuthStore.getState().setUserAndToken(data.user, data.accessToken)
       window.location.href = '/dashboard'
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed')

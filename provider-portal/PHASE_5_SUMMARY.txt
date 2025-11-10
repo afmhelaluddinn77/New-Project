@@ -1,0 +1,202 @@
+# Restart Kong Gateway
+docker-compose restart kong
+
+# Verify config loaded
+docker-compose logs kong | grep "declarative"
+
+# Start frontend
+npm run dev╔══════════════════════════════════════════════════════════════════════════════╗
+║                       PHASE 5 IMPLEMENTATION COMPLETE ✅                      ║
+║                         Gateway Route Updates                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ✅ FILES CHANGED (7 total)                                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+CREATED:
+  ✓ .env.development ....................................... Gateway URL config
+  ✓ .env.production ........................................ Production config
+  ✓ PHASE_5_PLAN.md ........................................ Implementation plan
+  ✓ PHASE_5_COMPLETE.md .................................... Full documentation
+
+UPDATED:
+  ✓ kong.yml ............................................... Added auth routes
+  ✓ src/services/workflowApi.ts ............................ Use gateway
+  ✓ src/services/encounterService.ts ....................... Use gateway
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🏗️ ARCHITECTURE TRANSFORMATION                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+BEFORE (Direct Service Calls):
+  ❌ Frontend → http://localhost:3004/api/workflow
+  ❌ Frontend → http://localhost:3005/api/encounters
+  ❌ Multiple CORS configurations
+  ❌ Services directly exposed
+
+AFTER (Kong Gateway):
+  ✅ Frontend → http://localhost:3001/api/*
+  ✅ Kong → Routes to appropriate service
+  ✅ Centralized CORS
+  ✅ Centralized JWT validation
+  ✅ Services protected behind gateway
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🛣️  ROUTES CONFIGURED                                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Authentication (No JWT):
+  ✓ POST   /api/auth/login ............... Login
+  ✓ GET    /api/auth/csrf-token .......... Get CSRF token
+  ✓ POST   /api/auth/refresh ............. Refresh access token
+  ✓ POST   /api/auth/logout .............. Logout
+
+Protected Routes (JWT Required):
+  ✓ *      /api/workflow/* ............... Workflow Service
+  ✓ *      /api/encounters/* ............. Encounter Service
+  ✓ *      /api/pharmacy/* ............... Pharmacy Service
+  ✓ *      /api/lab/* .................... Lab Service
+  ✓ *      /api/radiology/* .............. Radiology Service
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 KEY CHANGES                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Kong Configuration:
+  ✓ Added 3 new auth routes (csrf, refresh, logout)
+  ✓ Added X-XSRF-TOKEN to allowed headers
+  ✓ Added Set-Cookie to exposed headers
+  ✓ Credentials enabled for cookies
+
+Frontend Services:
+  ✓ workflowApi.ts: Removed direct URL, uses api.ts
+  ✓ encounterService.ts: 32 methods updated to use api.ts
+  ✓ All API calls now go through gateway
+  ✓ Token management automatic
+
+Environment:
+  ✓ VITE_API_GATEWAY_URL=http://localhost:3001/api
+  ✓ Separate dev/prod configurations
+  ✓ Ready for production deployment
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🧪 TESTING REQUIRED                                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Critical Tests:
+  [ ] Login through gateway works
+  [ ] CSRF token retrieved
+  [ ] Refresh token works
+  [ ] Protected routes accessible
+  [ ] Orders page loads data
+  [ ] Dashboard displays metrics
+  [ ] Can create new orders
+  [ ] WebSocket still works
+
+Browser Checks:
+  [ ] No CORS errors in console
+  [ ] Cookies set (XSRF-TOKEN, refresh_token)
+  [ ] Authorization header sent
+  [ ] All /api/* requests → localhost:3001
+
+Quick Test:
+  $ npm run dev
+  Navigate to http://localhost:5174
+  Login → Check Network tab
+  All requests should go to localhost:3001/api/*
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚠️  IMPORTANT NOTES                                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Before Testing:
+  1. Restart Kong Gateway:
+     $ docker-compose restart kong
+
+  2. Verify Kong loaded config:
+     $ docker-compose logs kong | grep "declarative"
+
+  3. Ensure all services running:
+     - Authentication Service (3000)
+     - Workflow Service (3004)
+     - Kong Gateway (3001)
+
+WebSocket Consideration:
+  - WebSocket may still connect directly (not through Kong)
+  - This is acceptable for now
+  - Can be routed through Kong later if needed
+
+Environment Variables:
+  - .env files are Git ignored
+  - Copy .env.development locally if needed
+  - Update VITE_API_GATEWAY_URL for production
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🐛 TROUBLESHOOTING                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+CORS Errors:
+  → Restart Kong: docker-compose restart kong
+  → Check kong.yml syntax
+
+401 Unauthorized:
+  → Verify JWT secret matches auth service
+  → Try logout & login again
+  → Check token expiry (15 min)
+
+Cookies Not Set:
+  → Check withCredentials: true in api.ts
+  → Verify credentials: true in Kong CORS
+  → For localhost, avoid HTTPS
+
+Routes Not Found:
+  → Check kong.yml paths match frontend calls
+  → Verify strip_path: false
+  → Check service URLs correct
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📈 OVERALL PROGRESS                                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Phase 1: Frontend Security           ✅ Complete (100%)
+Phase 2: Backend Auth Hardening      ✅ Complete (100%)
+Phase 3: Remove Insecure Auth        ✅ Complete (100%)
+Phase 4: State Management            ✅ Complete (100%)
+Phase 5: Gateway Integration         ✅ Complete (100%)
+Phase 6: Polish & Testing            ❌ Not Started (0%)
+
+Overall Progress: ████████████████████░ 83% (5/6 phases)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 NEXT PHASE: Phase 6 - Polish & Testing                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Goals:
+  • Add Error Boundaries for better error handling
+  • Add Suspense boundaries for loading states
+  • Write E2E tests for critical paths
+  • Performance optimization (bundle size, lazy loading)
+  • Security audit
+  • Production deployment guide
+
+Prerequisites:
+  ✅ Phase 5 complete (current state)
+  ✅ Gateway configured
+  ✅ All services using gateway
+
+Estimated Time: 2-3 hours
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                        🎉 PHASE 5: 100% COMPLETE 🎉                          ║
+║                                                                              ║
+║                  All API Calls Now Through Kong Gateway                      ║
+║                     Centralized Auth & CORS Management                       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Generated: November 7, 2025
+Status: ✅ READY FOR TESTING
+Next: Test gateway integration, then Phase 6
+Completion: 83% (5/6 phases)

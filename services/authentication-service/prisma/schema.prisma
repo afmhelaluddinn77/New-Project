@@ -1,0 +1,143 @@
+// Authentication Service - Prisma Schema
+// User Management, Authentication, Authorization
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["auth"]
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  password            String    // bcrypt hashed
+
+  // Personal Information
+  firstName           String
+  lastName            String
+
+  // Role & Portal Access
+  role                String    // 'doctor', 'nurse', 'admin', 'pharmacist', 'lab_tech', 'radiologist'
+  portal              String?   // 'provider', 'admin', 'lab', 'pharmacy', 'billing', 'radiology'
+
+  // Authentication
+  hashedRefreshToken  String?
+  isActive            Boolean   @default(true)
+  lastLoginAt         DateTime?
+
+  // Audit Trail
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relationships
+  sessions            Session[]
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([portal])
+  @@map("users")
+  @@schema("auth")
+}
+
+// ============================================================================
+// SESSION MANAGEMENT
+// ============================================================================
+
+model Session {
+  id                  String    @id @default(uuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session Data
+  accessToken         String    @unique
+  refreshToken        String    @unique
+  csrfToken           String?
+
+  // Session Metadata
+  ipAddress           String?
+  userAgent           String?
+  deviceInfo          String?
+
+  // Expiration
+  accessTokenExpiry   DateTime
+  refreshTokenExpiry  DateTime
+
+  // Status
+  isActive            Boolean   @default(true)
+  revokedAt           DateTime?
+
+  // Timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([accessToken])
+  @@index([refreshToken])
+  @@map("sessions")
+  @@schema("auth")
+}
+
+// ============================================================================
+// AUDIT LOGS (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id                  String    @id @default(uuid())
+  userId              String?
+  user                User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Action Details
+  action              String    // 'login', 'logout', 'password_reset', 'user_create', etc.
+  resourceType        String?   // 'User', 'Session', etc.
+  resourceId          String?
+
+  // Request Details
+  ipAddress           String?
+  userAgent           String?
+  endpoint            String?
+  method              String?   // 'POST', 'GET', etc.
+
+  // Status
+  success             Boolean   @default(true)
+  errorMessage        String?
+
+  // Metadata
+  metadata            Json?     // Additional context
+
+  // Timestamp
+  timestamp           DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+  @@schema("auth")
+}
+
+// ============================================================================
+// PASSWORD RESET TOKENS
+// ============================================================================
+
+model PasswordResetToken {
+  id                  String    @id @default(uuid())
+  email               String
+  token               String    @unique
+  expiresAt           DateTime
+  usedAt              DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@map("password_reset_tokens")
+  @@schema("auth")
+}

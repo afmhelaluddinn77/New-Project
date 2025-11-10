@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { getAuthToken } from '../services/httpClient'
-import { isTokenValidForPortal } from '../utils/auth'
+import { useAuthStore } from '../store/authStore'
+import { LoadingState } from './shared/LoadingState'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -9,12 +9,13 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation()
-  const token = getAuthToken()
+  const status = useAuthStore((s) => s.status)
 
-  if (!isTokenValidForPortal(token, 'PROVIDER')) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token')
-    }
+  if (status === 'loading') {
+    return <LoadingState message="Checking session…" />
+  }
+
+  if (status === 'unauthenticated') {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

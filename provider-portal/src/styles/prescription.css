@@ -1,0 +1,145 @@
+:root {
+  --presc-border: var(--color-border-subtle, #e5e7eb);
+  --presc-text: #1f2937;
+  --presc-text-secondary: #6b7280;
+}
+
+.prescription-header,
+.prescription-footer {
+  display: flex;
+  gap: var(--spacing-6, 24px);
+  justify-content: space-between;
+  color: var(--presc-text);
+}
+
+.prescription-header {
+  align-items: flex-start;
+  border-bottom: 2px solid var(--presc-border);
+  padding-bottom: var(--spacing-3, 12px);
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.prescription-footer {
+  border-top: 2px solid var(--presc-border);
+  padding-top: var(--spacing-3, 12px);
+  margin-top: var(--spacing-4, 16px);
+  font-size: 0.875rem;
+}
+
+.ph-left, .pf-left { 
+  flex: 1;
+  color: var(--presc-text);
+}
+
+.ph-right, .pf-right { 
+  flex: 1;
+  text-align: right;
+  color: var(--presc-text);
+}
+
+.ph-title-en, .ph-title-bn { 
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--presc-text);
+  margin-bottom: 4px;
+}
+
+.pf-brand, .pf-brand-bn { 
+  font-weight: 700;
+  color: var(--presc-text);
+}
+
+.pf-muted { 
+  color: var(--presc-text-secondary);
+  font-weight: 400;
+}
+
+.ph-contact { 
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--presc-text-secondary);
+  line-height: 1.4;
+}
+
+@media print {
+  @page { size: A4; margin: 14mm; }
+  .prescription-header, .prescription-footer { page-break-inside: avoid; }
+}
+
+/* AppointmentSchedule */
+.schedule-card { 
+  border: 1px solid var(--presc-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 8px 0 16px;
+  background: #fff;
+}
+
+.schedule-title { 
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--presc-text);
+}
+
+.schedule-room { 
+  background: #0f766e;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  width: fit-content;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.schedule-table { 
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--presc-text);
+}
+
+.schedule-table th { 
+  background: #166534;
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  font-weight: 600;
+}
+
+.schedule-table td { 
+  padding: 10px;
+  border-bottom: 1px solid var(--presc-border);
+  color: var(--presc-text);
+}
+
+.schedule-table tr:nth-child(even) td { 
+  background: #f8fafc;
+}
+
+.schedule-table .closed { 
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.present-badge { 
+  color: #16a34a;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.schedule-note { 
+  background: #fee2e2;
+  color: #7f1d1d;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  border-left: 3px solid #dc2626;
+}
+
+.note-phones { 
+  font-weight: 600;
+  color: #7f1d1d;
+}
+

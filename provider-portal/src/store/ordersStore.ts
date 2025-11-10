@@ -1,59 +1,47 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import type { CreateUnifiedOrderInput, UnifiedOrder } from '../types/workflow';
-import { createUnifiedOrder, fetchUnifiedOrder, fetchUnifiedOrders } from '../services/workflowApi';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
-interface OrdersState {
-  orders: UnifiedOrder[];
+/**
+ * Orders UI State Store (Zustand)
+ *
+ * PHASE 4 REFACTOR: This store now contains ONLY UI state.
+ * Server state (orders data) has been moved to React Query hooks.
+ *
+ * What's here:
+ * - selectedOrderId: Which order is currently selected in the UI
+ *
+ * What's NOT here (moved to React Query):
+ * - orders: Use useOrdersQuery() hook instead
+ * - loading/error: Use isLoading/error from React Query
+ * - fetchOrders/createOrder/refreshOrder: Use mutation hooks instead
+ *
+ * Migration guide:
+ * - Old: useOrdersStore(state => state.orders)
+ * - New: useOrdersQuery().data
+ *
+ * - Old: useOrdersStore(state => state.loading)
+ * - New: useOrdersQuery().isLoading
+ *
+ * - Old: useOrdersStore(state => state.createOrder)(payload)
+ * - New: useCreateOrder().mutate(payload)
+ */
+interface OrdersUIState {
+  /** Currently selected order ID in the UI */
   selectedOrderId: string | null;
-  loading: boolean;
-  error?: string;
-  fetchOrders: () => Promise<void>;
+
+  /** Select an order (updates UI only, doesn't fetch data) */
   selectOrder: (orderId: string | null) => void;
-  refreshOrder: (orderId: string) => Promise<void>;
-  createOrder: (payload: CreateUnifiedOrderInput) => Promise<UnifiedOrder>;
 }
 
-export const useOrdersStore = create<OrdersState>()(
-  devtools((set, get) => ({
-    orders: [],
-    selectedOrderId: null,
-    loading: false,
-    error: undefined,
-    async fetchOrders() {
-      set({ loading: true, error: undefined });
-      try {
-        const orders = await fetchUnifiedOrders();
-        set({ orders, loading: false });
-        if (orders.length > 0) {
-          set({ selectedOrderId: orders[0].id });
-        }
-      } catch (error) {
-        set({ error: (error as Error).message, loading: false });
-      }
-    },
-    selectOrder(orderId) {
-      set({ selectedOrderId: orderId });
-    },
-    async refreshOrder(orderId) {
-      try {
-        const updated = await fetchUnifiedOrder(orderId);
-        const { orders } = get();
-        const nextOrders = orders.map((order) => (order.id === updated.id ? updated : order));
-        if (!nextOrders.find((order) => order.id === updated.id)) {
-          nextOrders.unshift(updated);
-        }
-        set({ orders: nextOrders });
-      } catch (error) {
-        set({ error: (error as Error).message });
-      }
-    },
-    async createOrder(payload) {
-      const created = await createUnifiedOrder(payload);
-      const { orders } = get();
-      set({ orders: [created, ...orders], selectedOrderId: created.id });
-      return created;
-    },
-  })),
-);
+export const useOrdersStore = create<OrdersUIState>()(
+  devtools(
+    (set) => ({
+      selectedOrderId: null,
 
+      selectOrder(orderId) {
+        set({ selectedOrderId: orderId });
+      },
+    }),
+    { name: "OrdersUIStore" }
+  )
+);

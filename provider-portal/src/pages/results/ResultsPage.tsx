@@ -1,10 +1,19 @@
-import { useEffect, useMemo } from 'react';
-import { Activity, ClipboardCheck, FlaskConical, Pill, Scan } from 'lucide-react';
-import Breadcrumb from '../../components/shared/Breadcrumb';
-import './ResultsPage.css';
-import { useOrdersStore } from '../../store/ordersStore';
-import type { UnifiedOrder } from '../../types/workflow';
-import { getWorkflowSocket } from '../../services/socketClient';
+import { ResultsEntry } from "@/components/investigations/ResultsEntry";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Activity,
+  ClipboardCheck,
+  FlaskConical,
+  Pill,
+  Scan,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Breadcrumb from "../../components/shared/Breadcrumb";
+import { useOrdersQuery } from "../../hooks/queries/useOrdersQuery";
+import { queryKeys } from "../../lib/queryClient";
+import { getWorkflowSocket } from "../../services/socketClient";
+import type { UnifiedOrder } from "../../types/workflow";
+import "./ResultsPage.css";
 
 const SERVICE_ICON = {
   PHARMACY: <Pill size={16} />,
@@ -16,38 +25,44 @@ const SERVICE_ICON = {
 const formatDate = (value: string) => new Date(value).toLocaleString();
 
 export default function ResultsPage() {
-  const orders = useOrdersStore((state) => state.orders);
-  const loading = useOrdersStore((state) => state.loading);
-  const fetchOrders = useOrdersStore((state) => state.fetchOrders);
-  const refreshOrder = useOrdersStore((state) => state.refreshOrder);
+  const { data: orders = [], isLoading: loading } = useOrdersQuery();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!loading && orders.length === 0) {
-      void fetchOrders();
-    }
-  }, [orders.length, loading, fetchOrders]);
+  // Removed fetchOrders useEffect - React Query handles this automatically
 
   useEffect(() => {
     const socket = getWorkflowSocket();
     const handler = (payload: { orderId: string }) => {
-      void refreshOrder(payload.orderId);
+      // Invalidate queries to refetch updated order
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.orders.detail(payload.orderId),
+      });
     };
-    socket.on('order.updated', handler);
+    socket.on("order.updated", handler);
     return () => {
-      socket.off('order.updated', handler);
+      socket.off("order.updated", handler);
     };
-  }, [refreshOrder]);
+  }, [queryClient]);
 
   const timeline = useMemo(() => buildTimeline(orders), [orders]);
 
   return (
     <div className="results-page">
-      <Breadcrumb items={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Results Timeline' }]} />
+      <Breadcrumb
+        items={[
+          { label: "Dashboard", path: "/dashboard" },
+          { label: "Results Timeline" },
+        ]}
+      />
 
       <div className="results-header">
         <div>
           <h1>Results Timeline</h1>
-          <p>Monitor fulfillment progress across services and surface completed results in real time.</p>
+          <p>
+            Monitor fulfillment progress across services and surface completed
+            results in real time.
+          </p>
         </div>
       </div>
 
@@ -71,14 +86,20 @@ export default function ResultsPage() {
                 <tr key={order.id}>
                   <td>
                     <span className="order-number">{order.orderNumber}</span>
-                    <span className={`status-pill status-${order.status.toLowerCase()}`}>{order.status}</span>
+                    <span
+                      className={`status-pill status-${order.status.toLowerCase()}`}
+                    >
+                      {order.status}
+                    </span>
                   </td>
-                  {['PHARMACY', 'LAB', 'RADIOLOGY'].map((type) => {
+                  {["PHARMACY", "LAB", "RADIOLOGY"].map((type) => {
                     const item = order.items.find((i) => i.itemType === type);
                     return (
                       <td key={type}>
                         {item ? (
-                          <span className={`item-status status-${item.status.toLowerCase()}`}>
+                          <span
+                            className={`item-status status-${item.status.toLowerCase()}`}
+                          >
                             {SERVICE_ICON[type as keyof typeof SERVICE_ICON]}
                             {item.status}
                           </span>
@@ -111,7 +132,9 @@ export default function ResultsPage() {
               <li key={`${event.orderId}-${event.id}`}>
                 <div className="timeline-marker" />
                 <div className="timeline-content">
-                  <div className="timeline-title">{event.eventType.replace(/_/g, ' ')}</div>
+                  <div className="timeline-title">
+                    {event.eventType.replace(/_/g, " ")}
+                  </div>
                   <div className="timeline-meta">
                     <span>Order {event.orderNumber}</span>
                     <span>•</span>
@@ -120,8 +143,20 @@ export default function ResultsPage() {
                 </div>
               </li>
             ))}
-            {!loading && timeline.length === 0 && <li className="muted">No activity yet.</li>}
+            {!loading && timeline.length === 0 && (
+              <li className="muted">No activity yet.</li>
+            )}
           </ul>
+        </section>
+      </div>
+
+      {/* New Components Preview (Non-invasive) */}
+      <div style={{ marginTop: 24 }}>
+        <section className="status-summary-card">
+          <header>
+            <h2>Enter Results (New Components Preview)</h2>
+          </header>
+          <ResultsPreviewPanel />
         </section>
       </div>
     </div>
@@ -135,9 +170,48 @@ function buildTimeline(orders: UnifiedOrder[]) {
         ...event,
         orderNumber: order.orderNumber,
         orderId: order.id,
-      })),
+      }))
     )
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .slice(0, 25);
 }
 
+function ResultsPreviewPanel() {
+  const [investigationId, setInvestigationId] = useState("");
+  return (
+    <div>
+      <div style={{ marginBottom: 12 }}>
+        <label
+          style={{
+            display: "block",
+            fontSize: 12,
+            color: "#6b7280",
+            marginBottom: 6,
+          }}
+        >
+          Investigation ID
+        </label>
+        <input
+          value={investigationId}
+          onChange={(e) => setInvestigationId(e.target.value)}
+          placeholder="Enter investigationId to submit results"
+        />
+      </div>
+      {investigationId ? (
+        <ResultsEntry
+          investigationId={investigationId}
+          onSubmit={async () => {
+            /* preview only */
+          }}
+        />
+      ) : (
+        <p className="muted">
+          Provide an investigation ID to preview the ResultsEntry form.
+        </p>
+      )}
+    </div>
+  );
+}

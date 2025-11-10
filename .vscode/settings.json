@@ -181,5 +181,6 @@
   ],
 
   // Terminal settings
-  "terminal.integrated.defaultProfile.osx": "zsh"
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "editor.linkedEditing": true
 }
