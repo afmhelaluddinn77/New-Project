@@ -1,6 +1,7 @@
 # CBC Workflow Pattern - Reusable Template for All Multi-Service Workflows
 
 ## Date: November 11, 2025
+
 ## Status: 🎯 OFFICIAL WORKFLOW TEMPLATE
 
 ---
@@ -267,18 +268,18 @@ async createUnifiedOrder(
 ): Promise<UnifiedOrderResponseDto> {
   const userId = headers['x-user-id'];
   const userRole = headers['x-user-role'];
-  
+
   // 1. Create master order
   const order = await this.createMasterOrder(dto, userId);
-  
+
   // 2. Dispatch to target services
   for (const item of dto.items) {
     await this.dispatchToTargetService(order, item, userRole);
   }
-  
+
   // 3. Emit WebSocket event
   this.eventGateway.emitOrderCreated(order);
-  
+
   return this.transformToResponse(order);
 }
 
@@ -330,7 +331,7 @@ async updateItemStatus(
   @Body() dto: UpdateItemStatusDto
 ): Promise<void> {
   await this.workflowService.updateItemStatus(orderId, itemId, dto);
-  
+
   // Emit WebSocket event
   this.eventGateway.emitOrderUpdated(orderId);
 }
@@ -354,12 +355,12 @@ async createOrder(
   @Headers('x-user-id') userId: string
 ): Promise<LabOrderResponseDto> {
   const order = await this.labService.createOrder(dto, userId);
-  
+
   // If created by workflow service, callback with order ID
   if (dto.workflowOrderId) {
     await this.notifyWorkflowService(dto.workflowOrderId, order.id);
   }
-  
+
   return order;
 }
 
@@ -394,13 +395,13 @@ async submitResults(
 ): Promise<LabResultResponseDto> {
   // 1. Create result record
   const result = await this.labService.submitResults(orderId, dto, userId);
-  
+
   // 2. Update order status
   await this.labService.updateOrderStatus(orderId, 'COMPLETED');
-  
+
   // 3. Notify workflow service
   await this.notifyWorkflowService(orderId, 'COMPLETED');
-  
+
   return result;
 }
 
@@ -430,7 +431,7 @@ export class CreateUnifiedOrderDto {
 }
 
 export class UnifiedOrderItemDto {
-  itemType: 'LAB' | 'PHARMACY' | 'RADIOLOGY' | 'PROCEDURE';
+  itemType: "LAB" | "PHARMACY" | "RADIOLOGY" | "PROCEDURE";
   metadata: Record<string, any>; // Service-specific data
 }
 
@@ -441,7 +442,7 @@ export class CreateLabOrderDto {
   encounterId: string;
   testCode: string; // LOINC code
   testName: string;
-  priority?: 'STAT' | 'URGENT' | 'ROUTINE';
+  priority?: "STAT" | "URGENT" | "ROUTINE";
 }
 
 export class SubmitLabResultsDto {
@@ -458,7 +459,7 @@ export class LabResultComponentDto {
   unit: string;
   referenceRangeLow?: number;
   referenceRangeHigh?: number;
-  interpretation: 'N' | 'L' | 'H' | 'LL' | 'HH' | 'A';
+  interpretation: "N" | "L" | "H" | "LL" | "HH" | "A";
 }
 ```
 
@@ -472,58 +473,67 @@ export class LabResultComponentDto {
 // ============================================================
 // services/workflowApi.ts - Workflow Service Client
 // ============================================================
-import axios from 'axios';
-import { AuthHeaderManager } from '../utils/AuthHeaderManager';
+import axios from "axios";
+import { AuthHeaderManager } from "../utils/AuthHeaderManager";
 
 const workflowClient = axios.create({
-  baseURL: 'http://localhost:3004',
+  baseURL: "http://localhost:3004",
   withCredentials: true,
 });
 
 const headerManager = new AuthHeaderManager();
 
 workflowClient.interceptors.request.use((config) => {
-  const headers = headerManager.getRequiredHeaders('PROVIDER');
+  const headers = headerManager.getRequiredHeaders("PROVIDER");
   config.headers = { ...config.headers, ...headers };
   return config;
 });
 
 export async function createUnifiedOrder(payload: CreateUnifiedOrderInput) {
-  const response = await workflowClient.post('/api/workflow/orders/unified', payload);
+  const response = await workflowClient.post(
+    "/api/workflow/orders/unified",
+    payload
+  );
   return response.data;
 }
 
 export async function fetchUnifiedOrders() {
-  const response = await workflowClient.get('/api/workflow/orders');
+  const response = await workflowClient.get("/api/workflow/orders");
   return response.data;
 }
 
 // ============================================================
 // services/labApi.ts - Lab Service Client
 // ============================================================
-import axios from 'axios';
-import { AuthHeaderManager } from '../utils/AuthHeaderManager';
+import axios from "axios";
+import { AuthHeaderManager } from "../utils/AuthHeaderManager";
 
 const labClient = axios.create({
-  baseURL: 'http://localhost:3013',
+  baseURL: "http://localhost:3013",
   withCredentials: true,
 });
 
 const headerManager = new AuthHeaderManager();
 
 labClient.interceptors.request.use((config) => {
-  const headers = headerManager.getRequiredHeaders('LAB_TECH');
+  const headers = headerManager.getRequiredHeaders("LAB_TECH");
   config.headers = { ...config.headers, ...headers };
   return config;
 });
 
 export async function fetchPendingOrders() {
-  const response = await labClient.get('/api/lab/orders/pending');
+  const response = await labClient.get("/api/lab/orders/pending");
   return response.data;
 }
 
-export async function submitLabResults(orderId: string, data: SubmitResultsInput) {
-  const response = await labClient.post(`/api/lab/orders/${orderId}/results`, data);
+export async function submitLabResults(
+  orderId: string,
+  data: SubmitResultsInput
+) {
+  const response = await labClient.post(
+    `/api/lab/orders/${orderId}/results`,
+    data
+  );
   return response.data;
 }
 
@@ -539,26 +549,26 @@ export async function fetchLabResultDetail(resultId: string) {
 // ============================================================
 // services/socketClient.ts - WebSocket Connection
 // ============================================================
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 
 let workflowSocket: Socket | null = null;
 
 export function getWorkflowSocket(): Socket {
   if (!workflowSocket) {
-    workflowSocket = io('http://localhost:3004', {
-      path: '/workflow/socket.io',
-      transports: ['websocket'],
+    workflowSocket = io("http://localhost:3004", {
+      path: "/workflow/socket.io",
+      transports: ["websocket"],
       auth: {
-        token: localStorage.getItem('accessToken'),
+        token: localStorage.getItem("accessToken"),
       },
     });
 
-    workflowSocket.on('connect', () => {
-      console.log('[WebSocket] Connected to workflow service');
+    workflowSocket.on("connect", () => {
+      console.log("[WebSocket] Connected to workflow service");
     });
 
-    workflowSocket.on('disconnect', () => {
-      console.log('[WebSocket] Disconnected from workflow service');
+    workflowSocket.on("disconnect", () => {
+      console.log("[WebSocket] Disconnected from workflow service");
     });
   }
 
@@ -570,16 +580,16 @@ export function getWorkflowSocket(): Socket {
 // ============================================================
 useEffect(() => {
   const socket = getWorkflowSocket();
-  
+
   const handleOrderUpdate = (payload: { orderId: string }) => {
-    console.log('[WebSocket] Order updated:', payload.orderId);
-    queryClient.invalidateQueries(['orders']);
+    console.log("[WebSocket] Order updated:", payload.orderId);
+    queryClient.invalidateQueries(["orders"]);
   };
-  
-  socket.on('order.updated', handleOrderUpdate);
-  
+
+  socket.on("order.updated", handleOrderUpdate);
+
   return () => {
-    socket.off('order.updated', handleOrderUpdate);
+    socket.off("order.updated", handleOrderUpdate);
   };
 }, [queryClient]);
 ```
@@ -593,7 +603,7 @@ useEffect(() => {
 export default function CreateOrderPage() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const navigate = useNavigate();
-  
+
   const createOrderMutation = useMutation({
     mutationFn: createUnifiedOrder,
     onSuccess: (order) => {
@@ -605,7 +615,7 @@ export default function CreateOrderPage() {
       console.error('Order creation error:', error);
     },
   });
-  
+
   const handleSubmit = async () => {
     const payload = {
       patientId: currentPatient.id,
@@ -615,14 +625,14 @@ export default function CreateOrderPage() {
         metadata: getServiceMetadata(service),
       })),
     };
-    
+
     createOrderMutation.mutate(payload);
   };
-  
+
   return (
     <div>
       <h1>Create Unified Order</h1>
-      
+
       <div className="service-selection">
         <label>
           <input
@@ -632,7 +642,7 @@ export default function CreateOrderPage() {
           />
           Laboratory (CBC, CMP, etc.)
         </label>
-        
+
         <label>
           <input
             type="checkbox"
@@ -641,7 +651,7 @@ export default function CreateOrderPage() {
           />
           Pharmacy (Medications)
         </label>
-        
+
         <label>
           <input
             type="checkbox"
@@ -651,7 +661,7 @@ export default function CreateOrderPage() {
           Radiology (X-Ray, CT, MRI)
         </label>
       </div>
-      
+
       <button
         onClick={handleSubmit}
         disabled={selectedServices.length === 0 || createOrderMutation.isLoading}
@@ -674,9 +684,9 @@ export default function ResultsPage() {
     queryKey: ['orders'],
     queryFn: fetchUnifiedOrders,
   });
-  
+
   const navigate = useNavigate();
-  
+
   // WebSocket listener for real-time updates
   useEffect(() => {
     const socket = getWorkflowSocket();
@@ -687,11 +697,11 @@ export default function ResultsPage() {
       socket.off('order.updated');
     };
   }, []);
-  
+
   return (
     <div>
       <h1>Results Timeline</h1>
-      
+
       <table>
         <thead>
           <tr>
@@ -706,7 +716,7 @@ export default function ResultsPage() {
           {orders.map(order => {
             const labItem = order.items.find(i => i.itemType === 'LAB');
             const isLabCompleted = labItem?.status === 'COMPLETED';
-            
+
             return (
               <tr key={order.id}>
                 <td>{order.orderNumber}</td>
@@ -740,15 +750,15 @@ export default function ResultsPage() {
 // ============================================================
 export default function LabResultDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
-  
+
   const { data: result, isLoading } = useQuery({
     queryKey: ['labResult', orderId],
     queryFn: () => fetchLabResultDetail(orderId),
   });
-  
+
   if (isLoading) return <LoadingSpinner />;
   if (!result) return <NotFound />;
-  
+
   return (
     <div className="lab-result-detail">
       {/* Header */}
@@ -759,7 +769,7 @@ export default function LabResultDetailPage() {
           <button onClick={handleExport}>📥 Export PDF</button>
         </div>
       </header>
-      
+
       {/* Test Information */}
       <section className="test-info">
         <h2>📋 Test Information</h2>
@@ -772,7 +782,7 @@ export default function LabResultDetailPage() {
           <dd><StatusBadge status={result.status} /></dd>
         </dl>
       </section>
-      
+
       {/* Test Results Table */}
       <section className="test-results">
         <h2>📊 Test Results</h2>
@@ -804,19 +814,19 @@ export default function LabResultDetailPage() {
           </tbody>
         </table>
       </section>
-      
+
       {/* Clinical Interpretation */}
       <section className="interpretation">
         <h2>📝 Clinical Interpretation</h2>
         <p>{result.interpretation}</p>
       </section>
-      
+
       {/* Historical Comparison */}
       <section className="historical">
         <h2>📈 Historical Comparison</h2>
-        <HistoricalTable 
-          current={result} 
-          historical={result.historicalResults} 
+        <HistoricalTable
+          current={result}
+          historical={result.historicalResults}
         />
       </section>
     </div>
@@ -834,108 +844,118 @@ export default function LabResultDetailPage() {
 // ============================================================
 // tests/e2e/cbc-workflow.spec.ts
 // ============================================================
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('CBC Workflow E2E', () => {
-  test('Complete CBC workflow from order to results', async ({ page, browser }) => {
+test.describe("CBC Workflow E2E", () => {
+  test("Complete CBC workflow from order to results", async ({
+    page,
+    browser,
+  }) => {
     // ========================================
     // STEP 1: Provider Login
     // ========================================
-    await page.goto('http://localhost:5174/login');
-    await page.fill('[name="email"]', 'provider@example.com');
-    await page.fill('[name="password"]', 'password123');
+    await page.goto("http://localhost:5174/login");
+    await page.fill('[name="email"]', "provider@example.com");
+    await page.fill('[name="password"]', "password123");
     await page.click('button[type="submit"]');
-    
+
     await expect(page).toHaveURL(/.*dashboard/);
-    
+
     // ========================================
     // STEP 2: Create Unified Order with Lab
     // ========================================
-    await page.goto('http://localhost:5174/orders');
+    await page.goto("http://localhost:5174/orders");
     await page.check('input[value="LAB"]');
     await page.click('button:has-text("Launch Order")');
-    
+
     // Wait for order creation
-    await expect(page.locator('text=Order created successfully')).toBeVisible();
-    
+    await expect(page.locator("text=Order created successfully")).toBeVisible();
+
     // Extract order number
-    const orderNumber = await page.locator('.order-detail h2').textContent();
-    
+    const orderNumber = await page.locator(".order-detail h2").textContent();
+
     // ========================================
     // STEP 3: Lab Tech Login (New Context)
     // ========================================
     const labContext = await browser.newContext();
     const labPage = await labContext.newPage();
-    
-    await labPage.goto('http://localhost:5176/login');
-    await labPage.fill('[name="email"]', 'labtech@example.com');
-    await labPage.fill('[name="password"]', 'password123');
+
+    await labPage.goto("http://localhost:5176/login");
+    await labPage.fill('[name="email"]', "labtech@example.com");
+    await labPage.fill('[name="password"]', "password123");
     await labPage.click('button[type="submit"]');
-    
+
     // ========================================
     // STEP 4: Find Pending Order
     // ========================================
-    await labPage.goto('http://localhost:5176/orders/pending');
-    
+    await labPage.goto("http://localhost:5176/orders/pending");
+
     // Find order by number
     const orderRow = labPage.locator(`tr:has-text("${orderNumber}")`);
     await expect(orderRow).toBeVisible();
-    
+
     // Click to open details
     await orderRow.click();
-    
+
     // ========================================
     // STEP 5: Enter CBC Results
     // ========================================
-    await labPage.fill('[name="components[0].value"]', '7.2'); // WBC
-    await labPage.fill('[name="components[1].value"]', '4.5'); // RBC
-    await labPage.fill('[name="components[2].value"]', '13.5'); // Hgb
-    await labPage.fill('[name="components[3].value"]', '40.0'); // Hct
-    await labPage.fill('[name="components[4].value"]', '250'); // PLT
-    
-    await labPage.fill('[name="interpretation"]', 'All values within normal limits');
-    
+    await labPage.fill('[name="components[0].value"]', "7.2"); // WBC
+    await labPage.fill('[name="components[1].value"]', "4.5"); // RBC
+    await labPage.fill('[name="components[2].value"]', "13.5"); // Hgb
+    await labPage.fill('[name="components[3].value"]', "40.0"); // Hct
+    await labPage.fill('[name="components[4].value"]', "250"); // PLT
+
+    await labPage.fill(
+      '[name="interpretation"]',
+      "All values within normal limits"
+    );
+
     await labPage.click('button:has-text("Submit Results")');
-    
-    await expect(labPage.locator('text=Results submitted successfully')).toBeVisible();
-    
+
+    await expect(
+      labPage.locator("text=Results submitted successfully")
+    ).toBeVisible();
+
     // ========================================
     // STEP 6: Verify in Provider Portal
     // ========================================
-    await page.goto('http://localhost:5174/results');
-    
+    await page.goto("http://localhost:5174/results");
+
     // Wait for WebSocket update (max 5 seconds)
     await page.waitForTimeout(5000);
-    
+
     // Verify order shows COMPLETED
     const providerOrderRow = page.locator(`tr:has-text("${orderNumber}")`);
-    await expect(providerOrderRow).toContainText('COMPLETED');
-    
+    await expect(providerOrderRow).toContainText("COMPLETED");
+
     // Click View Details button
     await providerOrderRow.locator('button:has-text("View Details")').click();
-    
+
     // ========================================
     // STEP 7: Verify Detailed Results Display
     // ========================================
     await expect(page).toHaveURL(/.*lab-results/);
-    
+
     // Check all CBC components are displayed
-    await expect(page.locator('text=WBC')).toBeVisible();
-    await expect(page.locator('text=7.2')).toBeVisible();
-    await expect(page.locator('text=✓ Normal')).toBeVisible();
-    
-    await expect(page.locator('text=RBC')).toBeVisible();
-    await expect(page.locator('text=4.5')).toBeVisible();
-    
+    await expect(page.locator("text=WBC")).toBeVisible();
+    await expect(page.locator("text=7.2")).toBeVisible();
+    await expect(page.locator("text=✓ Normal")).toBeVisible();
+
+    await expect(page.locator("text=RBC")).toBeVisible();
+    await expect(page.locator("text=4.5")).toBeVisible();
+
     // Check interpretation
-    await expect(page.locator('text=All values within normal limits')).toBeVisible();
-    
+    await expect(
+      page.locator("text=All values within normal limits")
+    ).toBeVisible();
+
     // ========================================
     // TEST COMPLETE ✅
     // ========================================
   });
-  
-  test('Handle error when lab service is down', async ({ page }) => {
+
+  test("Handle error when lab service is down", async ({ page }) => {
     // Stop lab service
     // Create order
     // Verify error status shown
@@ -950,10 +970,10 @@ test.describe('CBC Workflow E2E', () => {
 // ============================================================
 // workflow.service.spec.ts
 // ============================================================
-describe('WorkflowService', () => {
+describe("WorkflowService", () => {
   let service: WorkflowService;
   let repository: MockRepository<UnifiedOrder>;
-  
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
@@ -964,37 +984,35 @@ describe('WorkflowService', () => {
         },
       ],
     }).compile();
-    
+
     service = module.get(WorkflowService);
     repository = module.get(getRepositoryToken(UnifiedOrder));
   });
-  
-  describe('createUnifiedOrder', () => {
-    it('should create order with correct items', async () => {
+
+  describe("createUnifiedOrder", () => {
+    it("should create order with correct items", async () => {
       const dto = {
-        patientId: 'patient-123',
-        encounterId: 'encounter-456',
-        items: [
-          { itemType: 'LAB', metadata: { testCode: '24323-8' } },
-        ],
+        patientId: "patient-123",
+        encounterId: "encounter-456",
+        items: [{ itemType: "LAB", metadata: { testCode: "24323-8" } }],
       };
-      
-      const result = await service.createUnifiedOrder(dto, 'user-789');
-      
+
+      const result = await service.createUnifiedOrder(dto, "user-789");
+
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].itemType).toBe('LAB');
-      expect(result.status).toBe('PENDING');
+      expect(result.items[0].itemType).toBe("LAB");
+      expect(result.status).toBe("PENDING");
     });
-    
-    it('should dispatch to lab service with correct role', async () => {
-      const labService = jest.spyOn(service, 'dispatchToLabService');
-      
-      await service.createUnifiedOrder(dto, 'user-789');
-      
+
+    it("should dispatch to lab service with correct role", async () => {
+      const labService = jest.spyOn(service, "dispatchToLabService");
+
+      await service.createUnifiedOrder(dto, "user-789");
+
       expect(labService).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            'x-user-role': 'CLINICAL_WORKFLOW',
+            "x-user-role": "CLINICAL_WORKFLOW",
           }),
         })
       );
@@ -1009,21 +1027,25 @@ describe('WorkflowService', () => {
 
 ### **Common Issues & Solutions**
 
-```markdown
+````markdown
 ## Issue: Order Creation Returns 403 Forbidden
 
 ### Symptoms
+
 - POST /api/workflow/orders/unified returns 403
 - Error message: "Forbidden resource"
 
 ### Debug Steps
+
 1. Check browser console for request headers
 2. Verify x-user-role is "PROVIDER"
 3. Verify x-user-id is present
 4. Check backend logs for exact rejection reason
 
 ### Solution
+
 Ensure API client includes all required headers:
+
 - Authorization: Bearer {token}
 - x-user-id: {UUID}
 - x-user-role: PROVIDER
@@ -1034,44 +1056,53 @@ Ensure API client includes all required headers:
 ## Issue: Lab Order Creation Fails with 403
 
 ### Symptoms
+
 - Workflow service creates UnifiedOrder successfully
 - Lab order creation fails with 403
 - UnifiedOrderItem status shows ERROR
 
 ### Debug Steps
+
 1. Check workflow service logs for outgoing request
 2. Verify role sent to lab service
 3. Check lab service RolesGuard configuration
 
 ### Solution
+
 Workflow service MUST send CLINICAL_WORKFLOW role, not user's role.
 
 In workflow.service.ts:
+
 ```typescript
 const role = this.resolveServiceRole(itemType); // Returns 'CLINICAL_WORKFLOW' for LAB
 ```
+````
 
 ---
 
 ## Issue: Results Not Showing in Provider Portal
 
 ### Symptoms
+
 - Lab tech submits results successfully
 - Provider portal still shows PENDING
 - No WebSocket update received
 
 ### Debug Steps
+
 1. Check lab service logs for result submission
 2. Verify callback to workflow service executed
 3. Check WebSocket connection in browser DevTools
 4. Verify React Query cache invalidation
 
 ### Solution
+
 Ensure lab service notifies workflow service after result submission:
+
 ```typescript
 await this.workflowServiceClient.patch(
   `/api/workflow/orders/${workflowOrderId}/items/${itemId}/status`,
-  { status: 'COMPLETED' }
+  { status: "COMPLETED" }
 );
 ```
 
@@ -1080,19 +1111,24 @@ await this.workflowServiceClient.patch(
 ## Issue: Blank Screen on Results Page
 
 ### Symptoms
+
 - Navigation to /results shows blank page
 - Browser console shows ReferenceError
 
 ### Debug Steps
+
 1. Check browser console for errors
 2. Look for "ReferenceError: X is not defined"
 3. Check if all imports are present
 
 ### Solution
+
 Import all used components/icons:
+
 ```typescript
-import { Eye, Activity, ClipboardCheck } from 'lucide-react';
+import { Eye, Activity, ClipboardCheck } from "lucide-react";
 ```
+
 ```
 
 ---
@@ -1225,8 +1261,9 @@ Use this checklist when implementing a new workflow:
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 11, 2025  
-**Status:** 🎯 OFFICIAL WORKFLOW TEMPLATE  
+**Document Version:** 1.0
+**Last Updated:** November 11, 2025
+**Status:** 🎯 OFFICIAL WORKFLOW TEMPLATE
 **Tested With:** CBC Workflow (complete success)
 
+```
