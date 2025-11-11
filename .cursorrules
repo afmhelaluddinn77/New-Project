@@ -1,0 +1,220 @@
+# Cursor IDE Rules - EMR/HMS System
+
+## Project Context
+
+This is a multi-portal EMR/HMS system built with:
+
+- **Backend:** NestJS + Prisma + PostgreSQL
+- **Frontend:** React + TypeScript + Vite + Zustand
+- **Architecture:** Microservices with API Gateway (Kong)
+- **Authentication:** JWT + CSRF tokens
+- **Storage:** MinIO for object storage (radiology images)
+- **Real-time:** WebSocket (Socket.IO) for workflow updates
+
+## Critical Project Laws (MUST FOLLOW)
+
+### 1. API Response Field Names
+
+- **NEVER** assume field names (e.g., `accessToken` vs `access_token`)
+- **ALWAYS** verify actual API response structure
+- **ALWAYS** use TypeScript interfaces for API responses
+
+### 2. RBAC Headers
+
+- **ALWAYS** include `x-user-role`, `x-user-id`, and `x-portal` headers
+- **ALWAYS** use service-specific roles for service-to-service calls
+- **NEVER** use user roles for service-to-service communication
+
+### 3. Session Loader Timeout
+
+- **ALWAYS** add timeout (5 seconds max) to session checks
+- **ALWAYS** set status in catch block (never leave as 'loading')
+- **ALWAYS** use `Promise.race()` for timeout implementation
+
+### 4. Prisma Queries
+
+- **ALWAYS** include relations when frontend expects them
+- **ALWAYS** check frontend code to see what data is expected
+- **ALWAYS** use `include: { relation: true }` for related data
+
+### 5. Image Upload
+
+- **ALWAYS** convert external URLs to blob before upload
+- **ALWAYS** handle errors gracefully with user-friendly messages
+- **ALWAYS** reset loading state in finally block
+
+### 6. Service Port Configuration
+
+- **ALWAYS** use `process.env.PORT ?? DEFAULT_PORT`
+- **ALWAYS** use service-specific defaults
+- **ALWAYS** log actual port on startup
+
+### 7. CORS Configuration
+
+- **ALWAYS** whitelist all frontend origins
+- **ALWAYS** include custom headers in `allowedHeaders`
+- **ALWAYS** enable credentials for authenticated requests
+
+### 8. Error Handling
+
+- **ALWAYS** show user-friendly error messages
+- **NEVER** expose technical errors to end users
+- **ALWAYS** log detailed errors for developers
+
+## Code Patterns
+
+### Session Loader Pattern
+
+```typescript
+const SessionLoader = () => {
+  const { setStatus, setUserAndToken } = useAuthStore();
+  const [hasRun, setHasRun] = useState(false);
+
+  useEffect(() => {
+    if (hasRun) return;
+    setHasRun(true);
+
+    const init = async () => {
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Timeout")), 5000);
+      });
+
+      try {
+        const { api } = await import("./lib/api");
+        const refreshPromise = api.post("/auth/refresh");
+        const { data } = (await Promise.race([
+          refreshPromise,
+          timeoutPromise,
+        ])) as any;
+        setUserAndToken(data.user, data.accessToken);
+      } catch (error: any) {
+        setStatus("unauthenticated"); // ALWAYS set status
+      }
+    };
+    init();
+  }, []);
+
+  return children;
+};
+```
+
+### Image Upload Pattern (URL to File)
+
+```typescript
+async function uploadImageFromUrl(
+  url: string,
+  orderId: string
+): Promise<ImagingAsset> {
+  // Convert URL to blob first (avoids CORS)
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const file = new File([blob], "image.png", { type: blob.type });
+
+  // Upload as file
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const uploadResponse = await radiologyClient.post(
+    `/orders/${orderId}/images`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return uploadResponse.data;
+}
+```
+
+### Prisma Query Pattern (With Relations)
+
+```typescript
+async findOne(id: string) {
+  return this.prisma.radiologyOrder.findUnique({
+    where: { id },
+    include: {
+      imagingAssets: true,  // Frontend expects this
+      report: true,         // Frontend expects this
+    },
+  });
+}
+```
+
+### Service Bootstrap Pattern
+
+```typescript
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Configure CORS, validation, etc.
+
+  // ALWAYS use environment variable with service-specific default
+  const port = process.env.PORT ?? 3014; // Service-specific
+  await app.listen(port, "0.0.0.0");
+  console.log(`✅ Service ready on port ${port}`);
+}
+```
+
+## Service Ports Reference
+
+- Authentication Service: 3001
+- Patient Service: 3002
+- Workflow Service: 3004
+- Encounter Service: 3005
+- Pharmacy Service: 3012
+- Lab Service: 3013
+- Radiology Service: 3014
+
+## Frontend Portals
+
+- Provider Portal: 5174
+- Lab Portal: 5176
+- Pharmacy Portal: 5177
+- Radiology Portal: 5179
+
+## Common Mistakes to Avoid
+
+1. ❌ Assuming API response field names
+2. ❌ Forgetting RBAC headers in requests
+3. ❌ Leaving session loader without timeout
+4. ❌ Missing relations in Prisma queries
+5. ❌ Uploading external URLs directly (CORS)
+6. ❌ Hardcoding service ports
+7. ❌ Exposing technical errors to users
+8. ❌ Not resetting loading states on error
+
+## Documentation References
+
+- **PROJECT_LAWS_AND_BEST_PRACTICES.md** - Complete project laws (28 laws)
+- **RADIOLOGY_WORKFLOW_EXPERIENCE_REPORT.md** - Latest workflow experience
+- **KNOWLEDGE_BASE_COMPLETE.md** - Master knowledge base index
+- **CBC_WORKFLOW_PATTERN_TEMPLATE.md** - Workflow implementation template
+
+## When Implementing New Features
+
+1. ✅ Read relevant project laws first
+2. ✅ Check existing patterns in similar features
+3. ✅ Verify API response structures
+4. ✅ Include all required RBAC headers
+5. ✅ Add timeout to async operations
+6. ✅ Include relations in Prisma queries
+7. ✅ Handle errors gracefully
+8. ✅ Test in browser frequently
+9. ✅ Check browser console for errors
+10. ✅ Update documentation
+
+## Code Review Checklist
+
+- [ ] Imports complete and alphabetized
+- [ ] CORS headers whitelisted
+- [ ] RBAC headers included
+- [ ] Session loader has timeout
+- [ ] Prisma queries include relations
+- [ ] Error handling present
+- [ ] User-friendly error messages
+- [ ] Loading states reset properly
+- [ ] TypeScript types defined
+- [ ] Documentation updated
+
+---
+
+**Last Updated:** November 11, 2025
+**Version:** 2.0
+**Status:** Active

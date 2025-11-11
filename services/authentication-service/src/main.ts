@@ -35,7 +35,7 @@ async function bootstrap() {
   app.use(cookieParser());
   // Apply CSRF protection, but SKIP it for /auth/login and /auth/refresh
   app.use((req: any, res: any, next: any) => {
-    if (req.path === '/api/auth/login' || req.path === '/api/auth/refresh') {
+    if (req.path === "/api/auth/login" || req.path === "/api/auth/refresh") {
       return next(); // Skip CSRF for login and refresh endpoints
     }
     csurf({

@@ -1,12 +1,12 @@
 export type RadiologyOrderStatus =
-  | 'NEW'
-  | 'SCHEDULED'
-  | 'IN_PROGRESS'
-  | 'COMPLETED'
-  | 'REPORTED'
-  | 'CANCELLED';
+  | "NEW"
+  | "SCHEDULED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "REPORTED"
+  | "CANCELLED";
 
-export type StudyType = 'XRAY' | 'CT' | 'MRI' | 'ULTRASOUND' | 'OTHER';
+export type StudyType = "XRAY" | "CT" | "MRI" | "ULTRASOUND" | "OTHER";
 
 export interface RadiologyReport {
   id: string;
@@ -15,7 +15,7 @@ export interface RadiologyReport {
   impression?: string | null;
   criticalFinding: boolean;
   reportingRadiologistId: string;
-  reportStatus: 'DRAFT' | 'FINAL' | 'AMENDED';
+  reportStatus: "DRAFT" | "FINAL" | "AMENDED";
   updatedAt: string;
 }
 
@@ -28,10 +28,11 @@ export interface RadiologyOrder {
   studyType: StudyType;
   bodyPart: string;
   contrast: boolean;
-  priority: 'ROUTINE' | 'URGENT' | 'STAT';
+  priority: "ROUTINE" | "URGENT" | "STAT";
   status: RadiologyOrderStatus;
   orderedAt: string;
   report?: RadiologyReport | null;
+  imagingAssets?: ImagingAsset[];
 }
 
 export interface CreateReportPayload {
@@ -40,3 +41,11 @@ export interface CreateReportPayload {
   criticalFinding?: boolean;
 }
 
+export interface ImagingAsset {
+  id: string;
+  radiologyOrderId: string;
+  uri: string;
+  mimeType: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -1,4 +1,4 @@
-# 🎓 Complete Knowledge Base - CBC Workflow Experience
+# 🎓 Complete Knowledge Base - EMR/HMS System Experience
 
 ## Date: November 11, 2025
 
@@ -8,19 +8,19 @@
 
 ## 🎯 Purpose
 
-This document serves as the **master index** to all lessons learned, patterns discovered, and laws established during the CBC workflow implementation. Use this as your **starting point** for understanding how this project works and how to avoid common pitfalls.
+This document serves as the **master index** to all lessons learned, patterns discovered, and laws established during the CBC workflow, Radiology workflow, and Pharmacy workflow implementations. Use this as your **starting point** for understanding how this project works and how to avoid common pitfalls.
 
 ---
 
-## 📚 Document Library (8 Major Documents)
+## 📚 Document Library (9 Major Documents)
 
 ### **1. PROJECT_LAWS_AND_BEST_PRACTICES.md** ⭐ MUST READ
 
-**Size:** 10,000+ lines
+**Size:** 13,800+ lines
 **Purpose:** Official project laws that MUST be followed
 **Contents:**
 
-- 22 comprehensive project laws
+- 28 comprehensive project laws (updated with radiology workflow learnings)
 - Import management rules
 - CORS configuration standards
 - RBAC header management
@@ -204,7 +204,54 @@ This document serves as the **master index** to all lessons learned, patterns di
 
 ---
 
-### **8. FINAL_DELIVERY_SUMMARY.md**
+### **8. RADIOLOGY_WORKFLOW_EXPERIENCE_REPORT.md** ⭐ NEW
+
+**Size:** 1,500+ lines
+**Purpose:** Complete experience documentation for radiology workflow with image upload
+**Contents:**
+
+- Complete workflow implementation steps
+- Critical issues and solutions
+- Patterns that worked and failed
+- New project laws (LAW #23-28)
+- Image upload best practices
+- MinIO integration patterns
+- Session loader timeout fix
+- Database query patterns
+- Service configuration standards
+- Testing experience
+- Future recommendations
+
+**When to Use:**
+
+- When implementing radiology workflows
+- When implementing image upload features
+- When working with MinIO object storage
+- When fixing session loader issues
+- When writing Prisma queries with relations
+- For understanding service port configuration
+
+**Key Learnings:**
+
+- Session loader must have timeout (5 seconds max)
+- External URL images must be converted to blob first
+- Always include relations in Prisma queries
+- Service ports must use environment variables
+- MinIO presigned URLs need appropriate expiry times
+- Image uploads need comprehensive error handling
+
+**New Laws Established:**
+
+- LAW #23: Session Loader Timeout
+- LAW #24: External URL Image Upload
+- LAW #25: Image Upload Error Handling
+- LAW #26: MinIO Presigned URL Expiry
+- LAW #27: Include Related Data in Prisma Queries
+- LAW #28: Service Port Configuration
+
+---
+
+### **9. FINAL_DELIVERY_SUMMARY.md**
 
 **Size:** 500+ lines
 **Purpose:** Executive summary of complete delivery

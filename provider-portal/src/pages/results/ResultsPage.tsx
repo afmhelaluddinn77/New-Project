@@ -153,6 +153,52 @@ export default function ResultsPage() {
                           View Details
                         </button>
                       )}
+                      {(() => {
+                        const radiologyItem = order.items.find(
+                          (i) => i.itemType === "RADIOLOGY"
+                        );
+                        const isRadiologyCompleted =
+                          radiologyItem?.status === "COMPLETED";
+                        return (
+                          isRadiologyCompleted &&
+                          radiologyItem?.targetServiceOrderId && (
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/radiology-results/${radiologyItem.targetServiceOrderId}`
+                                )
+                              }
+                              className="view-details-btn"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "6px 12px",
+                                fontSize: "13px",
+                                fontWeight: "500",
+                                color: "#3b82f6",
+                                background: "#dbeafe",
+                                border: "1px solid #93c5fd",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                marginLeft: isLabCompleted ? "8px" : "0",
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.background = "#bfdbfe";
+                                e.currentTarget.style.borderColor = "#60a5fa";
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.background = "#dbeafe";
+                                e.currentTarget.style.borderColor = "#93c5fd";
+                              }}
+                            >
+                              <Eye size={14} />
+                              View Report
+                            </button>
+                          )
+                        );
+                      })()}
                     </td>
                   </tr>
                 );

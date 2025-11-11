@@ -3,12 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { RequestUserContext } from '../common/decorators/user-context.decorator';
 import { RadiologyOrderStatus, StudyType } from '../generated/prisma/client';
+import { WorkflowIntegrationService } from '../integration/workflow-integration.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRadiologyOrderDto } from './dto/create-radiology-order.dto';
 import { CreateRadiologyReportDto } from './dto/create-radiology-report.dto';
-import { RequestUserContext } from '../common/decorators/user-context.decorator';
-import { WorkflowIntegrationService } from '../integration/workflow-integration.service';
 
 @Injectable()
 export class RadiologyOrdersService {
@@ -52,6 +52,10 @@ export class RadiologyOrdersService {
             RadiologyOrderStatus.IN_PROGRESS,
           ],
         },
+      },
+      include: {
+        imagingAssets: true,
+        report: true,
       },
       orderBy: {
         orderedAt: 'asc',
@@ -117,6 +121,37 @@ export class RadiologyOrdersService {
     });
 
     return { order: updatedOrder, report };
+  }
+
+  async findOne(id: string) {
+    const order = await this.prisma.radiologyOrder.findUnique({
+      where: { id },
+      include: {
+        report: true,
+        imagingAssets: true,
+      },
+    });
+
+    // Generate presigned URLs for images if they're stored in MinIO
+    if (order && order.imagingAssets) {
+      // For now, return as-is. In production, you'd check if URI is a MinIO path
+      // and generate presigned URLs on-the-fly
+    }
+
+    return order;
+  }
+
+  async createImagingAsset(
+    orderId: string,
+    assetData: { uri: string; mimeType: string },
+  ) {
+    return this.prisma.imagingAsset.create({
+      data: {
+        radiologyOrderId: orderId,
+        uri: assetData.uri,
+        mimeType: assetData.mimeType,
+      },
+    });
   }
 
   private async generateOrderNumber(): Promise<string> {
