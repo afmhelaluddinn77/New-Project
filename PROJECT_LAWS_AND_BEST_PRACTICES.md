@@ -26,6 +26,70 @@ This document codifies all lessons learned from building and debugging the CBC w
 
 ---
 
+## 🔐 API RESPONSE FIELD NAME LAWS
+
+### **LAW #0: ALWAYS Verify API Response Field Names (CRITICAL)**
+**Rule:** NEVER assume API response field names. Always verify the exact field names returned by the backend.
+
+**What Went Wrong:**
+```typescript
+// ❌ WRONG - Assumed snake_case field name
+setAuthToken(response.data.access_token)
+// Result: undefined value, login succeeds but no token saved, silent failure
+
+// Backend actually returned:
+{
+  "accessToken": "eyJhbGci...",  // camelCase!
+  "user": {...}
+}
+```
+
+**Correct Pattern:**
+```typescript
+// ✅ CORRECT - Use exact field name from API
+setAuthToken(response.data.accessToken)  // camelCase matches backend
+
+// ✅ BETTER - Test the endpoint first
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"pass"}'
+// Check the actual response structure!
+```
+
+**Why This Is Critical:**
+- Silent failures are the hardest to debug
+- Login appears to work (200 OK) but token never saves
+- No console errors (undefined is a valid value)
+- User stays on login page with no feedback
+- Wastes hours debugging the wrong layer
+
+**Enforcement:**
+1. ✅ **ALWAYS** test auth endpoints with curl FIRST
+2. ✅ **ALWAYS** log response.data in dev mode
+3. ✅ **NEVER** assume field names match other projects
+4. ✅ **DOCUMENT** all API response schemas
+5. ✅ **USE TypeScript interfaces** for API responses
+
+**Prevention:**
+```typescript
+// Define response interface
+interface LoginResponse {
+  accessToken: string;  // Not access_token!
+  refreshToken?: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
+// Use it
+const response = await axios.post<LoginResponse>('/api/auth/login', data);
+setAuthToken(response.data.accessToken);  // TypeScript will catch errors!
+```
+
+---
+
 ## 🔐 IMPORT MANAGEMENT LAWS
 
 ### **LAW #1: Import Before Use**
