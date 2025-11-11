@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   ClipboardCheck,
+  Eye,
   FlaskConical,
   Pill,
   Scan,
