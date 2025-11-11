@@ -227,9 +227,9 @@ model LabResult {
   metadata        Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   labOrder        LabOrder @relation(fields: [labOrderId], references: [id])
-  
+
   @@index([patientId, testCode, resultedAt])
   @@index([labOrderId])
 }
@@ -248,9 +248,9 @@ model LabResultComponent {
   interpretation    InterpretationFlag
   notes             String?
   sortOrder         Int       @default(0)
-  
+
   labResult         LabResult @relation(fields: [labResultId], references: [id], onDelete: Cascade)
-  
+
   @@index([labResultId])
 }
 
@@ -401,18 +401,18 @@ export const LabResultDetail: React.FC<LabResultDetailProps> = ({ orderId }) => 
   return (
     <div className="lab-result-detail">
       <ResultHeader result={result} />
-      
+
       <ResultTable
         result={result}
         template={template}
         showTrends={true}
       />
-      
+
       <InterpretationPanel
         interpretation={result.interpretation}
         verifiedBy={result.verifiedBy}
       />
-      
+
       {historical && (
         <HistoricalComparison
           current={result}
@@ -420,7 +420,7 @@ export const LabResultDetail: React.FC<LabResultDetailProps> = ({ orderId }) => 
           template={template}
         />
       )}
-      
+
       <ActionBar>
         <Button onClick={handlePrint}>Print Report</Button>
         <Button onClick={handleExportPDF}>Export PDF</Button>
@@ -568,14 +568,14 @@ Please review and confirm:
 - [ ] Timeline and resource allocation
 - [ ] Test types to be included in Phase 1
 
-**Approved by:** ____________________  
-**Date:** ____________________  
+**Approved by:** ____________________
+**Date:** ____________________
 **Comments:** ____________________
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 11, 2025  
-**Prepared by:** AI Development Team  
+**Document Version:** 1.0
+**Last Updated:** November 11, 2025
+**Prepared by:** AI Development Team
 **Status:** 📋 AWAITING APPROVAL
 

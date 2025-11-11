@@ -83,7 +83,7 @@ export class AuthHeaderManager {
 
   getRequiredHeaders(portal: 'PROVIDER' | 'LAB' | 'PHARMACY'): Record<string, string> {
     const { accessToken, user } = this.store.getState();
-    
+
     if (!accessToken) {
       throw new AuthenticationError('No access token available');
     }
@@ -263,7 +263,7 @@ try {
       onClick: () => handleAction(friendly.action),
     } : undefined,
   });
-  
+
   // Log technical details for debugging
   console.error('Order creation failed:', friendly.technicalDetails);
 }
@@ -372,7 +372,7 @@ test.describe('CBC Workflow E2E', () => {
     // Step 3: Lab Portal - New browser context (different user)
     const labContext = await context.browser()?.newContext();
     const labPage = await labContext!.newPage();
-    
+
     await labPage.goto('http://localhost:5176/login');
     await labPage.fill('[name="email"]', 'lab@example.com');
     await labPage.fill('[name="password"]', 'password123');
@@ -381,10 +381,10 @@ test.describe('CBC Workflow E2E', () => {
     // Step 4: Enter Results
     await labPage.goto('http://localhost:5176/worklist');
     await labPage.waitForSelector('.order-list');
-    
+
     // Find and click the order
     await labPage.click(`.order-list [data-order-id*="${orderId?.slice(-5)}"]`);
-    
+
     // Fill CBC values
     await labPage.fill('[name="value"]', 'WBC: 7.2, RBC: 4.5, Hgb: 13.5');
     await labPage.fill('[name="unit"]', 'x10^9/L, x10^12/L, g/dL');
@@ -397,7 +397,7 @@ test.describe('CBC Workflow E2E', () => {
     // Step 5: Verify Results in Provider Portal
     await page.goto('http://localhost:5174/results');
     await page.waitForSelector('.fulfillment-summary');
-    
+
     // Check order status is COMPLETED
     const orderRow = page.locator(`tr:has-text("${orderId}")`);
     await expect(orderRow.locator('.lab-status')).toHaveText('COMPLETED');
@@ -417,7 +417,7 @@ test.describe('CBC Workflow E2E', () => {
     });
 
     await page.goto('http://localhost:5174/orders');
-    
+
     // Should show user-friendly error
     await expect(page.locator('.error-message')).toContainText('Access Denied');
     await expect(page.locator('.error-message')).toContainText('contact your administrator');
@@ -600,16 +600,16 @@ echo "✅ Pre-commit checks passed!"
     // Error tracking
     "@sentry/node": "^7.x.x",
     "@sentry/react": "^7.x.x",
-    
+
     // Validation
     "zod": "^3.x.x",
-    
+
     // Testing
     "@playwright/test": "^1.x.x",
-    
+
     // Monitoring
     "@nestjs/schedule": "^4.x.x",
-    
+
     // Logging
     "winston": "^3.x.x",
     "winston-daily-rotate-file": "^4.x.x"
@@ -618,7 +618,7 @@ echo "✅ Pre-commit checks passed!"
     // Git hooks
     "husky": "^8.x.x",
     "lint-staged": "^15.x.x",
-    
+
     // Code quality
     "eslint-plugin-security": "^1.x.x",
     "@typescript-eslint/eslint-plugin": "^6.x.x"
@@ -631,45 +631,45 @@ echo "✅ Pre-commit checks passed!"
 ## 🎓 Key Learnings Summary
 
 ### **1. Authentication**
-✅ **Always** validate user ID before making API calls  
-✅ **Never** hardcode fallback values in production  
-✅ **Always** extract user ID from JWT as fallback  
+✅ **Always** validate user ID before making API calls
+✅ **Never** hardcode fallback values in production
+✅ **Always** extract user ID from JWT as fallback
 ✅ **Always** redirect to login on auth failures
 
 ### **2. RBAC**
-✅ **Always** send both `x-user-role` AND `x-user-id`  
-✅ **Document** required roles for each endpoint  
-✅ **Use** service-appropriate roles (e.g., CLINICAL_WORKFLOW for inter-service calls)  
+✅ **Always** send both `x-user-role` AND `x-user-id`
+✅ **Document** required roles for each endpoint
+✅ **Use** service-appropriate roles (e.g., CLINICAL_WORKFLOW for inter-service calls)
 ✅ **Test** RBAC scenarios in E2E tests
 
 ### **3. Error Handling**
-✅ **Always** provide user-friendly error messages  
-✅ **Always** log technical details for debugging  
-✅ **Never** expose stack traces to users  
+✅ **Always** provide user-friendly error messages
+✅ **Always** log technical details for debugging
+✅ **Never** expose stack traces to users
 ✅ **Always** have fallback UI for error states
 
 ### **4. Configuration**
-✅ **Always** validate environment variables on startup  
-✅ **Always** provide `.env.example` with documentation  
-✅ **Never** commit `.env` files to git  
+✅ **Always** validate environment variables on startup
+✅ **Always** provide `.env.example` with documentation
+✅ **Never** commit `.env` files to git
 ✅ **Always** restart dev servers after `.env` changes
 
 ### **5. Testing**
-✅ **Always** write E2E tests for critical flows  
-✅ **Always** test error scenarios, not just happy paths  
-✅ **Always** run tests before deploying  
+✅ **Always** write E2E tests for critical flows
+✅ **Always** test error scenarios, not just happy paths
+✅ **Always** run tests before deploying
 ✅ **Always** include RBAC scenarios in tests
 
 ### **6. Monitoring**
-✅ **Always** implement health checks  
-✅ **Always** log errors with context  
-✅ **Always** set up alerts for critical failures  
+✅ **Always** implement health checks
+✅ **Always** log errors with context
+✅ **Always** set up alerts for critical failures
 ✅ **Always** track metrics (response times, error rates)
 
 ### **7. Documentation**
-✅ **Always** document API contracts  
-✅ **Always** document required headers  
-✅ **Always** maintain troubleshooting guides  
+✅ **Always** document API contracts
+✅ **Always** document required headers
+✅ **Always** maintain troubleshooting guides
 ✅ **Always** update docs when code changes
 
 ---
@@ -726,8 +726,8 @@ Track these metrics to measure improvement:
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 11, 2025  
-**Author:** AI Development Team  
+**Document Version:** 1.0
+**Last Updated:** November 11, 2025
+**Author:** AI Development Team
 **Status:** 📚 REFERENCE GUIDE
 

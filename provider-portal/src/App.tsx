@@ -10,6 +10,7 @@ import OrdersPage from './pages/orders/OrdersPage'
 import ResultsPage from './pages/results/ResultsPage'
 import PrescriptionPreviewPage from './pages/prescription/PrescriptionPreviewPage'
 import EncounterEditorPage from './pages/encounter/EncounterEditorPage'
+import LabResultDetailPage from './pages/LabResultDetailPage'
 
 // SessionLoader checks existing refresh token & CSRF then sets auth state
 const SessionLoader: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -70,6 +71,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardHomePage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/lab-results/:orderId" element={<LabResultDetailPage />} />
           <Route path="/prescription/preview" element={<PrescriptionPreviewPage />} />
           <Route path="/prescription/preview/:prescriptionId" element={<PrescriptionPreviewPage />} />
           <Route path="/encounter/editor" element={<EncounterEditorPage />} />
