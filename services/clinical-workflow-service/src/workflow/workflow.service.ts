@@ -283,7 +283,7 @@ export class WorkflowService {
       case UnifiedOrderItemTypeDto.PHARMACY:
         return 'PHARMACIST';
       case UnifiedOrderItemTypeDto.LAB:
-        return 'LAB_TECH';
+        return 'CLINICAL_WORKFLOW'; // LAB service requires this role for order creation
       case UnifiedOrderItemTypeDto.RADIOLOGY:
         return 'RADIOLOGIST';
       default:
