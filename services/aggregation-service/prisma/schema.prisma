@@ -1,0 +1,248 @@
+// This is your Prisma schema file,
+// Development Law: ONLY Prisma for ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================
+// AGGREGATED READ MODELS (CQRS)
+// ============================
+
+/// Complete patient view with all related data
+model PatientAggregateView {
+  id                String   @id @default(uuid())
+  patientId         String   @unique
+  mrn               String   @unique
+  fullName          String
+  dateOfBirth       DateTime @db.Date
+  gender            String
+
+  // Denormalized allergies
+  allergies         Json     @default("[]") // Array of {allergyId, substance, snomedCode, criticality}
+
+  // Denormalized active medications
+  medications       Json     @default("[]") // Array of {requestId, medicationName, rxNormCode, dosage}
+
+  // Latest vital signs
+  latestVitals      Json?    // {bloodPressure, heartRate, temperature, etc.}
+  latestVitalsDate  DateTime?
+
+  // Active diagnoses
+  diagnoses         Json     @default("[]") // Array of {conditionId, snomedCode, name, onsetDate}
+
+  // Encounter summary
+  lastEncounterDate DateTime?
+  encounterCount    Int      @default(0)
+
+  // Pending orders
+  pendingLabOrders      Int @default(0)
+  pendingImagingOrders  Int @default(0)
+
+  // Alerts
+  criticalAlerts    Int      @default(0)
+  unreadResults     Int      @default(0)
+
+  // FHIR resource cache
+  fhirPatient       Json?
+
+  // Metadata
+  lastUpdated       DateTime @default(now()) @updatedAt
+  createdAt         DateTime @default(now())
+
+  @@map("patient_aggregate_views")
+  @@index([mrn])
+  @@index([lastEncounterDate])
+}
+
+/// Lab results aggregated view
+model LabResultView {
+  id                String   @id @default(uuid())
+  reportId          String   @unique
+  orderId           String
+  patientId         String
+  providerId        String
+
+  // Result details
+  status            String   // preliminary | final | corrected
+  criticalValues    Boolean  @default(false)
+  abnormalResults   Boolean  @default(false)
+  resultCount       Int
+
+  // Test summary
+  testNames         Json     // Array of {loincCode, testName, value, unit, referenceRange}
+
+  // Critical value alerts
+  criticalAlerts    Json?    // Array of {testName, value, criticalReason}
+
+  // Viewing audit
+  viewedBy          String[]
+  viewedAt          DateTime?
+
+  // FHIR resource cache
+  fhirReport        Json
+
+  // Metadata
+  resultDate        DateTime
+  createdAt         DateTime @default(now())
+  lastUpdated       DateTime @default(now()) @updatedAt
+
+  @@map("lab_result_views")
+  @@index([patientId])
+  @@index([providerId])
+  @@index([resultDate])
+  @@index([criticalValues])
+}
+
+/// Imaging studies aggregated view
+model ImagingStudyView {
+  id                String   @id @default(uuid())
+  studyId           String   @unique
+  orderId           String
+  patientId         String
+  providerId        String
+
+  // Study details
+  modality          String   // CT | MR | US | XR | NM | PT
+  bodyPart          String
+  imageCount        Int
+
+  // Image storage (MinIO)
+  pacsUrl           String?
+  thumbnailUrl      String?
+  imageUrls         Json?    // Array of MinIO presigned URLs
+
+  // Report details
+  reportId          String?
+  findings          String?
+  impression        String?
+  criticalFindings  Boolean  @default(false)
+  radiologistId     String?
+  reportFinalized   Boolean  @default(false)
+
+  // Viewing audit
+  viewedBy          String[]
+  viewedAt          DateTime?
+
+  // FHIR resource cache
+  fhirStudy         Json
+
+  // Metadata
+  studyDate         DateTime
+  createdAt         DateTime @default(now())
+  lastUpdated       DateTime @default(now()) @updatedAt
+
+  @@map("imaging_study_views")
+  @@index([patientId])
+  @@index([providerId])
+  @@index([studyDate])
+  @@index([criticalFindings])
+}
+
+/// Medication history aggregated view
+model MedicationView {
+  id                String   @id @default(uuid())
+  requestId         String   @unique
+  patientId         String
+  prescriberId      String
+
+  // Medication details
+  medicationName    String
+  rxNormCode        String
+  dosage            String
+  frequency         String
+  route             String
+  duration          String
+  refills           Int
+
+  // Status
+  status            String   // active | completed | cancelled | stopped
+
+  // Dispensing history
+  dispensed         Boolean  @default(false)
+  dispenseId        String?
+  dispensedAt       DateTime?
+  quantityDispensed Int?
+
+  // Interaction warnings
+  interactions      Json?    // Array of {medication, severity, description}
+  allergyWarnings   Json?    // Array of {allergySubstance, criticalityLevel}
+
+  // FHIR resource cache
+  fhirRequest       Json
+
+  // Metadata
+  prescribedAt      DateTime
+  createdAt         DateTime @default(now())
+  lastUpdated       DateTime @default(now()) @updatedAt
+
+  @@map("medication_views")
+  @@index([patientId])
+  @@index([prescriberId])
+  @@index([status])
+  @@index([prescribedAt])
+}
+
+/// Encounter aggregated view
+model EncounterView {
+  id                String   @id @default(uuid())
+  encounterId       String   @unique
+  patientId         String
+  providerId        String
+
+  // Encounter details
+  encounterType     String
+  encounterClass    String   // inpatient | outpatient | emergency | virtual
+  status            String   // in-progress | finished | cancelled
+
+  // Clinical data
+  chiefComplaint    String?
+  diagnosisCodes    String[] // SNOMED CT codes
+  procedureCodes    String[]
+
+  // Vital signs
+  vitals            Json?    // {bloodPressure, heartRate, temperature, etc.}
+
+  // Orders created during encounter
+  labOrdersCreated      Int @default(0)
+  imagingOrdersCreated  Int @default(0)
+  medicationsOrdered    Int @default(0)
+
+  // FHIR resource cache
+  fhirEncounter     Json
+
+  // Metadata
+  startTime         DateTime
+  endTime           DateTime?
+  createdAt         DateTime @default(now())
+  lastUpdated       DateTime @default(now()) @updatedAt
+
+  @@map("encounter_views")
+  @@index([patientId])
+  @@index([providerId])
+  @@index([startTime])
+  @@index([status])
+}
+
+/// HIPAA Audit Log for aggregation service
+model AuditLog {
+  id              String   @id @default(uuid())
+  userId          String
+  action          String   // VIEW_PATIENT_CHART | QUERY_LAB_RESULTS | etc.
+  resourceType    String   // PatientAggregateView | LabResultView | etc.
+  resourceId      String
+  ipAddress       String
+  userAgent       String?
+  portalType      String   // PROVIDER | PATIENT | ADMIN
+  timestamp       DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([timestamp])
+  @@index([resourceType])
+}

@@ -12,12 +12,25 @@ async function bootstrap() {
   // CORS configuration
   app.enableCors({
     origin: [
-      'http://localhost:5174', // provider-portal
-      'http://localhost:5173', // patient-portal
-      'http://localhost:5175', // admin-portal
+      'http://localhost:5172',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://localhost:5176',
+      'http://localhost:5177',
+      'http://localhost:5178',
+      'http://localhost:5179',
+      'http://localhost:5180',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-user-role',
+      'x-user-id',
+      'x-portal',
+      'X-XSRF-TOKEN',
+    ],
     credentials: true,
   });
 
@@ -49,7 +62,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3005;
   await app.listen(port, '0.0.0.0');
-  
+
   console.log(`🚀 Encounter Service is running on: http://localhost:${port}`);
   console.log(`📚 API Documentation available at: http://localhost:${port}/api/docs`);
 }

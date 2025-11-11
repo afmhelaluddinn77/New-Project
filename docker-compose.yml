@@ -192,6 +192,127 @@ services:
       retries: 3
       start_period: 40s
 
+  # ========================================
+  # PHASE 0: INFRASTRUCTURE ENHANCEMENTS
+  # ========================================
+  # These services are OPTIONAL and have ZERO impact on existing code
+  # They enable event-driven architecture and file storage for future features
+
+  # NATS JetStream - Message Bus for Event-Driven Architecture
+  # Used by: Future inter-service communication (optional)
+  # Complies with: Development Law (event-driven patterns for microservices)
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "4222:4222" # Client connections
+      - "8222:8222" # HTTP monitoring
+      - "6222:6222" # Cluster connections
+    command:
+      - "-js" # Enable JetStream
+      - "-m" # Enable monitoring
+      - "8222"
+      - "--store_dir=/data" # Persistent storage
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # MinIO - S3-Compatible Object Storage
+  # Used by: File uploads (radiology images, lab reports, documents)
+  # Complies with: Development Law (HIPAA-compliant storage with encryption)
+  minio:
+    image: minio/minio:latest
+    container_name: minio-server
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123456}
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # MinIO Client - Initialize Buckets
+  # Creates required buckets for HIPAA-compliant file storage
+  minio-client:
+    image: minio/mc:latest
+    container_name: minio-client
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: |
+      /bin/sh -c "
+      mc alias set minio http://minio:9000 admin minio123456;
+      mc mb minio/radiology-images --ignore-existing;
+      mc mb minio/lab-reports --ignore-existing;
+      mc mb minio/patient-documents --ignore-existing;
+      mc mb minio/prescriptions --ignore-existing;
+      mc anonymous set none minio/*;
+      exit 0;
+      "
+    restart: "no"
+
+  # ============================
+  # PHASE 0: NEW SERVICES (OPTIONAL)
+  # ============================
+
+  aggregation-service:
+    build: ./services/aggregation-service
+    container_name: aggregation-service
+    ports:
+      - "3020:3020"
+      - "9229:9229" # Debug port
+    environment:
+      - DATABASE_URL=postgresql://clinical_user:clinical_password@clinical-db:5432/clinical?schema=aggregation
+      - NATS_URL=nats://nats:4222
+      - PORT=3020
+      - NODE_ENV=development
+    depends_on:
+      clinical-db:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    volumes:
+      - ./services/aggregation-service/src:/app/src
+    restart: unless-stopped
+    # This service is OPTIONAL and has ZERO impact on existing services
+    # It consumes events from NATS and builds aggregated read models
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: notification-service
+    ports:
+      - "3021:3021"
+      - "9230:9230" # Debug port
+    environment:
+      - NATS_URL=nats://nats:4222
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-here}
+      - PORT=3021
+      - NODE_ENV=development
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - ./services/notification-service/src:/app/src
+    restart: unless-stopped
+    # This service is OPTIONAL and has ZERO impact on existing services
+    # It sends real-time WebSocket notifications for critical events
+
 volumes:
   kong-data:
   clinical-data:
+  nats-data:
+  minio-data:

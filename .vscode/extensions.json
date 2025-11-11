@@ -1,14 +1,72 @@
 {
+  // ========================================
+  // REQUIRED EXTENSIONS - DEVELOPMENT LAW
+  // ========================================
+  // Install all recommended extensions before development
+
   "recommendations": [
+    // ESSENTIAL (MANDATORY)
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "stylelint.vscode-stylelint",
+    "prisma.prisma",
     "usernamehw.errorlens",
     "ms-vscode.vscode-typescript-next",
-    "bradlc.vscode-tailwindcss",
-    "formulahendry.auto-rename-tag",
+
+    // TYPESCRIPT & JAVASCRIPT
+    "yoavbls.pretty-ts-errors",
     "christian-kohler.path-intellisense",
+
+    // REACT & FRONTEND (MUI)
+    "dsznajder.es7-react-js-snippets",
+
+    // DATABASE & DOCKER
+    "ckolkman.vscode-postgres",
+    "ms-azuretools.vscode-docker",
+
+    // GIT & VERSION CONTROL
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // TESTING
+    "orta.vscode-jest",
+
+    // CODE QUALITY
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-medical-terms",
+
+    // PRODUCTIVITY
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-close-tag",
+
+    // DOCUMENTATION
+    "yzhang.markdown-all-in-one",
+
+    // REST API TESTING
+    "humao.rest-client",
+
+    // STYLING (REMOVED TAILWIND - USE MUI ONLY)
+    "stylelint.vscode-stylelint",
+
+    // JSON VALIDATION
     "ms-vscode.vscode-json"
   ],
-  "unwantedRecommendations": ["hookyqr.beautify", "ms-vscode.vscode-typescript"]
+
+  // ========================================
+  // UNWANTED EXTENSIONS (CONFLICT WITH STACK)
+  // ========================================
+  "unwantedRecommendations": [
+    // TypeORM (We use Prisma ONLY)
+    "rbbit.typescript-hero",
+
+    // Other UI Libraries (We use Material-UI ONLY)
+    "bradlc.vscode-tailwindcss",
+    "abusaidm.html-snippets",
+
+    // Alternative formatters (We use Prettier ONLY)
+    "hookyqr.beautify",
+    "HookyQR.beautify",
+
+    // Deprecated TypeScript
+    "ms-vscode.vscode-typescript"
+  ]
 }

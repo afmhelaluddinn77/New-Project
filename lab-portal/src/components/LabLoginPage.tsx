@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import axios from 'axios'
-import { User, Lock, AlertCircle, FlaskConical } from 'lucide-react'
-import './LabLoginPage.css'
-import { setAuthToken } from '../services/httpClient'
+import axios from "axios";
+import { AlertCircle, FlaskConical, Lock, User } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setAuthToken } from "../services/httpClient";
+import "./LabLoginPage.css";
+
+// Helper function to read cookies
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+};
 
 function LabLoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
-        email,
-        password,
-        portalType: 'LAB'
-      })
+      const authUrl = import.meta.env.VITE_AUTH_URL || "http://localhost:3001";
 
-      setAuthToken(response.data.access_token)
-      window.location.href = '/dashboard'
+      // First, get CSRF token
+      await axios.get(`${authUrl}/api/auth/csrf-token`, {
+        withCredentials: true,
+      });
+
+      // Get CSRF token from cookie
+      const csrfToken = getCookie("XSRF-TOKEN");
+
+      // Then make login request with CSRF token
+      const response = await axios.post(
+        `${authUrl}/api/auth/login`,
+        {
+          email,
+          password,
+          portalType: "LAB",
+        },
+        {
+          withCredentials: true,
+          headers: csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {},
+        }
+      );
+
+      // Backend returns { accessToken, user, refreshToken }
+      setAuthToken(response.data.accessToken);
+      // Navigate to dashboard using React Router
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed')
+      setError(err.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
@@ -120,7 +149,9 @@ function LabLoginPage() {
                 <input type="checkbox" />
                 <span>Remember me</span>
               </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
+              <a href="#" className="forgot-password">
+                Forgot password?
+              </a>
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
@@ -130,7 +161,7 @@ function LabLoginPage() {
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>
@@ -143,7 +174,7 @@ function LabLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default LabLoginPage
+export default LabLoginPage;

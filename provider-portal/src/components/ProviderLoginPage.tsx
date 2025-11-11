@@ -1,37 +1,63 @@
-import { useState } from 'react'
-import { api } from '../lib/api'
-import { useAuthStore } from '../store/authStore'
-import { User, Lock, AlertCircle, Stethoscope } from 'lucide-react'
-import './ProviderLoginPage.css'
+import axios from "axios";
+import { AlertCircle, Lock, Stethoscope, User } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import "./ProviderLoginPage.css";
+
+// Helper function to read cookies
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+};
 
 function ProviderLoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      // Ensure CSRF cookie exists before POST
-      await api.get('/auth/csrf-token')
-      const { data } = await api.post('/auth/login', {
-        email,
-        password,
-        portalType: 'PROVIDER',
-      })
+      const authUrl = import.meta.env.VITE_AUTH_URL || "http://localhost:3001";
+
+      // First, get CSRF token from the auth service
+      await axios.get(`${authUrl}/api/auth/csrf-token`, {
+        withCredentials: true,
+      });
+
+      // Get CSRF token from cookie
+      const csrfToken = getCookie("XSRF-TOKEN");
+
+      // Then make login request to the auth service
+      const { data } = await axios.post(
+        `${authUrl}/api/auth/login`,
+        {
+          email,
+          password,
+          portalType: "PROVIDER",
+        },
+        {
+          withCredentials: true,
+          headers: csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {},
+        }
+      );
+
       // Backend returns { accessToken, user }
-      useAuthStore.getState().setUserAndToken(data.user, data.accessToken)
-      window.location.href = '/dashboard'
+      useAuthStore.getState().setUserAndToken(data.user, data.accessToken);
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed')
+      setError(err.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
@@ -43,7 +69,8 @@ function ProviderLoginPage() {
           </div>
           <h1 className="branding-title">Provider Portal</h1>
           <p className="branding-subtitle">
-            Comprehensive patient care and clinical workflow management for healthcare professionals.
+            Comprehensive patient care and clinical workflow management for
+            healthcare professionals.
           </p>
           <div className="branding-features">
             <div className="feature-item">
@@ -122,7 +149,9 @@ function ProviderLoginPage() {
                 <input type="checkbox" />
                 <span>Remember me</span>
               </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
+              <a href="#" className="forgot-password">
+                Forgot password?
+              </a>
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
@@ -132,7 +161,7 @@ function ProviderLoginPage() {
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>
@@ -145,7 +174,7 @@ function ProviderLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default ProviderLoginPage
+export default ProviderLoginPage;

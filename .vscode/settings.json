@@ -1,5 +1,14 @@
 {
-  // Mandatory linting and error checking on save
+  // ========================================
+  // DEVELOPMENT LAW ENFORCEMENT - VS CODE
+  // ========================================
+  // Reference: /DEVELOPMENT_LAW.md and /CURSOR_SYSTEM_PROMPT.md
+  // Stack: NestJS + Prisma + PostgreSQL + React + MUI ONLY
+  // Standards: FHIR R4, HIPAA, SNOMED CT, LOINC, HL7
+
+  // ========================================
+  // MANDATORY LINTING AND ERROR CHECKING
+  // ========================================
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.fixAll.stylelint": "explicit",
@@ -182,5 +191,101 @@
 
   // Terminal settings
   "terminal.integrated.defaultProfile.osx": "zsh",
-  "editor.linkedEditing": true
+  "terminal.integrated.fontSize": 12,
+  "terminal.integrated.scrollback": 10000,
+  "editor.linkedEditing": true,
+
+  // ========================================
+  // PRISMA CONFIGURATION (MANDATORY)
+  // ========================================
+  "[prisma]": {
+    "editor.formatOnSave": true
+  },
+
+  // ========================================
+  // HEALTHCARE TERMINOLOGY (SPELL CHECK)
+  // ========================================
+  "cSpell.words": [
+    "FHIR",
+    "HIPAA",
+    "SNOMED",
+    "LOINC",
+    "HL7",
+    "Prisma",
+    "NestJS",
+    "Zustand",
+    "Axios",
+    "bcrypt",
+    "CSRF",
+    "XSRF",
+    "PHI",
+    "resourceType",
+    "camelCase",
+    "PostgreSQL",
+    "Kong",
+    "microservices",
+    "Dto",
+    "dtos",
+    "ADT",
+    "ORM",
+    "RBAC"
+  ],
+
+  // ========================================
+  // PATH INTELLISENSE (MONOREPO)
+  // ========================================
+  "path-intellisense.mappings": {
+    "@": "${workspaceFolder}/provider-portal/src",
+    "@auth": "${workspaceFolder}/services/authentication-service/src",
+    "@patient": "${workspaceFolder}/services/patient-service/src",
+    "@encounter": "${workspaceFolder}/services/encounter-service/src"
+  },
+
+  // ========================================
+  // INLAY HINTS (TYPESCRIPT)
+  // ========================================
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "typescript.inlayHints.enumMemberValues.enabled": true,
+
+  // ========================================
+  // FILE NESTING (CLEAN EXPLORER)
+  // ========================================
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, pnpm-lock.yaml, yarn.lock",
+    "tsconfig.json": "tsconfig.*.json",
+    ".env": ".env.*",
+    "docker-compose.yml": "docker-compose.*.yml, Dockerfile*",
+    "*.ts": "${capture}.spec.ts, ${capture}.test.ts",
+    "*.tsx": "${capture}.spec.tsx, ${capture}.test.tsx"
+  },
+
+  // ========================================
+  // SECURITY & WORKSPACE TRUST
+  // ========================================
+  "security.workspace.trust.untrustedFiles": "prompt",
+  "security.workspace.trust.banner": "always",
+
+  // ========================================
+  // GIT BRANCH PROTECTION
+  // ========================================
+  "git.branchProtection": ["main", "master"],
+  "git.confirmSync": true,
+  "git.autofetch": true
+
+  // ========================================
+  // DEVELOPMENT LAW REMINDERS
+  // ========================================
+  // 1. Use Prisma ONLY (NO TypeORM)
+  // 2. Use Material-UI ONLY (NO other UI libraries)
+  // 3. Never commit .env files or secrets
+  // 4. Log all PHI access for HIPAA compliance
+  // 5. Use FHIR R4 for patient data
+  // 6. Validate SNOMED CT and LOINC codes
+  // 7. Test authentication before committing
+  // 8. Never break login flow or dashboard
+  // 9. Run migrations before starting services
+  // 10. Review DEVELOPMENT_LAW.md before coding
 }

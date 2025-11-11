@@ -21,13 +21,15 @@ function createAuthenticatedClient(baseURL: string): AxiosInstance {
       return config;
     }
 
+    config.headers = config.headers ?? ({} as any);
+
     const token = window.localStorage.getItem(tokenStorageKey);
     if (token) {
-      if (!config.headers) {
-        config.headers = {} as any;
-      }
       (config.headers as any).Authorization = `Bearer ${token}`;
     }
+
+    (config.headers as any)['x-user-role'] = 'LAB_TECH';
+    (config.headers as any)['x-portal'] = 'LAB';
 
     return config;
   });

@@ -15,12 +15,14 @@ import { LabTestDto } from './dto/lab-test.dto';
 import { SubmitLabResultDto } from './dto/submit-lab-result.dto';
 import { RequestUserContext } from '../common/decorators/user-context.decorator';
 import { WorkflowIntegrationService } from '../integration/workflow-integration.service';
+import { LabEventPublisher } from '../events/lab-event.publisher';
 
 @Injectable()
 export class LabOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly workflowIntegration: WorkflowIntegrationService,
+    private readonly eventPublisher: LabEventPublisher,
   ) {}
 
   async create(dto: CreateLabOrderDto, user: RequestUserContext) {
@@ -32,7 +34,7 @@ export class LabOrdersService {
 
     const orderNumber = await this.generateOrderNumber();
 
-    return this.prisma.labOrder.create({
+    const order = await this.prisma.labOrder.create({
       data: {
         orderNumber,
         patientId: dto.patientId,
@@ -49,6 +51,22 @@ export class LabOrdersService {
         tests: true,
       },
     });
+
+    // MANDATORY: Publish lab order created event
+    await this.eventPublisher.publishLabOrderCreated({
+      orderId: order.id,
+      patientId: order.patientId,
+      providerId: order.providerId,
+      tests: dto.tests.map((t) => ({
+        loincCode: t.loincCode,
+        testName: t.testName,
+      })),
+      priority: order.priority as 'routine' | 'urgent' | 'stat',
+      userId: user.userId || order.providerId,
+      portalType: 'PROVIDER',
+    });
+
+    return order;
   }
 
   async findPending() {
@@ -76,8 +94,8 @@ export class LabOrdersService {
       throw new ForbiddenException('Missing user context');
     }
 
-    const { updatedOrder, abnormalFlag } = await this.prisma.$transaction(
-      async (tx) => {
+    const { updatedOrder, abnormalFlag, isCritical, testDetails } =
+      await this.prisma.$transaction(async (tx) => {
         const order = await tx.labOrder.findUnique({
           where: { id: orderId },
           include: {
@@ -99,6 +117,7 @@ export class LabOrdersService {
         }
 
         const abnormalFlag = dto.abnormalFlag ?? AbnormalFlag.NORMAL;
+        const isCritical = abnormalFlag === AbnormalFlag.CRITICAL;
 
         await tx.labResult.upsert({
           where: { labOrderTestId: dto.testId },
@@ -126,10 +145,9 @@ export class LabOrdersService {
         await tx.labOrderTest.update({
           where: { id: dto.testId },
           data: {
-            status:
-              abnormalFlag === AbnormalFlag.CRITICAL
-                ? LabTestStatus.CRITICAL
-                : LabTestStatus.COMPLETED,
+            status: isCritical
+              ? LabTestStatus.CRITICAL
+              : LabTestStatus.COMPLETED,
             performedAt: new Date(),
           },
         });
@@ -171,10 +189,18 @@ export class LabOrdersService {
           },
         });
 
-        return { updatedOrder, abnormalFlag };
-      },
-    );
+        return {
+          updatedOrder,
+          abnormalFlag,
+          isCritical,
+          testDetails: {
+            testName: test.testName,
+            loincCode: test.loincCode,
+          },
+        };
+      });
 
+    // Notify workflow service
     await this.workflowIntegration.notify({
       targetServiceOrderId: updatedOrder.id,
       status: 'COMPLETED',
@@ -183,6 +209,66 @@ export class LabOrdersService {
         abnormalFlag: abnormalFlag,
       },
     });
+
+    // MANDATORY: Publish lab result available event if all tests complete
+    if (updatedOrder.status === LabOrderStatus.RESULT_READY) {
+      const completedTests = updatedOrder.tests.filter(
+        (t) =>
+          t.status === LabTestStatus.COMPLETED ||
+          t.status === LabTestStatus.CRITICAL,
+      );
+      const hasCritical = updatedOrder.tests.some(
+        (t) => t.status === LabTestStatus.CRITICAL,
+      );
+      const hasAbnormal = updatedOrder.tests.some(
+        (t) =>
+          t.result?.abnormalFlag &&
+          t.result.abnormalFlag !== AbnormalFlag.NORMAL,
+      );
+
+      await this.eventPublisher.publishLabResultAvailable({
+        reportId: updatedOrder.id,
+        orderId: updatedOrder.id,
+        patientId: updatedOrder.patientId,
+        providerId: updatedOrder.providerId,
+        status: 'final',
+        criticalValues: hasCritical,
+        abnormalResults: hasAbnormal,
+        resultCount: completedTests.length,
+        userId: user.userId,
+        portalType: 'LAB',
+      });
+    }
+
+    // CRITICAL: Publish critical alert if this result is critical
+    if (isCritical) {
+      // Fetch patient name for critical alert
+      const patient = await this.prisma.$queryRaw<any[]>`
+        SELECT id, "firstName", "lastName"
+        FROM "Patient"
+        WHERE id = ${updatedOrder.patientId}
+        LIMIT 1
+      `;
+
+      const patientName = patient[0]
+        ? `${patient[0].firstName} ${patient[0].lastName}`
+        : 'Unknown Patient';
+
+      await this.eventPublisher.publishCriticalLabAlert({
+        reportId: updatedOrder.id,
+        patientId: updatedOrder.patientId,
+        patientName,
+        providerId: updatedOrder.providerId,
+        testName: testDetails.testName,
+        loincCode: testDetails.loincCode,
+        value: dto.value,
+        unit: dto.unit || '',
+        referenceRange: dto.referenceRange || '',
+        criticalReason: dto.comment || 'Critical value detected',
+        userId: user.userId,
+        portalType: 'LAB',
+      });
+    }
 
     return updatedOrder;
   }

@@ -1,5 +1,5 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -14,10 +14,18 @@ async function bootstrap() {
       'http://localhost:5177',
       'http://localhost:5178',
       'http://localhost:5179',
+      'http://localhost:5180',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-user-role',
+      'x-user-id',
+      'x-portal',
+      'X-XSRF-TOKEN',
+    ],
   });
   app.setGlobalPrefix('api/lab');
   app.useGlobalPipes(
