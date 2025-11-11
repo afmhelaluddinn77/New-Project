@@ -33,15 +33,19 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-  app.use(
+  // Apply CSRF protection, but SKIP it for /auth/refresh (already protected by refresh token)
+  app.use((req: any, res: any, next: any) => {
+    if (req.path === '/api/auth/refresh') {
+      return next(); // Skip CSRF for refresh endpoint
+    }
     csurf({
       cookie: {
         httpOnly: true,
         sameSite: "lax", // Use 'lax' for development across different ports
         secure: process.env.NODE_ENV === "production",
       },
-    })
-  );
+    })(req, res, next);
+  });
 
   app.setGlobalPrefix("api");
   app.useGlobalPipes(

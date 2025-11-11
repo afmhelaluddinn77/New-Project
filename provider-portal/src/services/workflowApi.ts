@@ -49,13 +49,26 @@ workflowClient.interceptors.request.use((config) => {
     config.headers["x-user-id"] = userId;
   }
 
+  // DEBUG: Log what we're sending
+  console.log("[WorkflowClient] Request headers:", {
+    method: config.method,
+    url: config.url,
+    hasAuth: !!accessToken,
+    role: config.headers["x-user-role"],
+    portal: config.headers["x-portal"],
+    userId: config.headers["x-user-id"],
+    user: user,
+  });
+
   return config;
 });
 
 import type { CreateUnifiedOrderInput, UnifiedOrder } from "../types/workflow";
 
 export async function fetchUnifiedOrders(): Promise<UnifiedOrder[]> {
-  const response = await workflowClient.get<UnifiedOrder[]>("/api/workflow/orders");
+  const response = await workflowClient.get<UnifiedOrder[]>(
+    "/api/workflow/orders"
+  );
   return response.data;
 }
 

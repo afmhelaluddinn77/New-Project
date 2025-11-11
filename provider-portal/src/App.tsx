@@ -14,22 +14,29 @@ import EncounterEditorPage from './pages/encounter/EncounterEditorPage'
 // SessionLoader checks existing refresh token & CSRF then sets auth state
 const SessionLoader: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const { setStatus, setUserAndToken, status } = useAuthStore()
+  const [hasRun, setHasRun] = React.useState(false)
+
   React.useEffect(() => {
+    // Only run ONCE on mount, never again
+    if (hasRun) return
+
     const init = async () => {
       try {
-        // Only attempt refresh if not already authenticated
+        setHasRun(true)
+
+        // Skip if already authenticated
         if (status === 'authenticated') return
 
         // Fetch CSRF token & attempt refresh via api client
         const { api } = await import('./lib/api')
-        
+
         try {
           await api.get('/auth/csrf-token')
         } catch (csrfError: any) {
           // CSRF endpoint might fail due to routing issues, continue anyway
           console.warn('[SessionLoader] CSRF fetch failed, continuing...', csrfError.status)
         }
-        
+
         const { data } = await api.post('/auth/refresh')
         setUserAndToken(data.user, data.accessToken)
       } catch (error: any) {
@@ -38,7 +45,7 @@ const SessionLoader: React.FC<{ children: JSX.Element }> = ({ children }) => {
       }
     }
     init()
-  }, [setStatus, setUserAndToken, status])
+  }, []) // Empty deps = run ONCE on mount
   return children
 }
 
