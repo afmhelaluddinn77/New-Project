@@ -22,7 +22,8 @@ function RadiologyLoginPage() {
         portalType: 'RADIOLOGY'
       })
 
-      setAuthToken(response.data.access_token)
+      // Auth service returns 'accessToken' not 'access_token'
+      setAuthToken(response.data.accessToken)
       window.location.href = '/dashboard'
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed')
