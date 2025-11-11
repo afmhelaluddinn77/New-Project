@@ -75,23 +75,27 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto) {
-    // Find user by email
-    const user = MOCK_USERS.find((u) => u.email === loginDto.email);
+    // Find user by email in database
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginDto.email },
+    });
 
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    // Validate password (in production, use bcrypt.compare)
-    // For demo purposes, we'll skip actual password hashing
-    const isPasswordValid = true; // Simplified for demo
+    // Validate password using bcrypt
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
     // CRITICAL: Validate portal authorization
-    if (!user.portals.includes(loginDto.portalType)) {
+    const userPortalType = user.portal?.toUpperCase();
+    const requestedPortalType = loginDto.portalType.toUpperCase();
+    
+    if (userPortalType !== requestedPortalType) {
       throw new UnauthorizedException(
         `User is not authorized to access ${loginDto.portalType} portal`
       );
@@ -116,19 +120,13 @@ export class AuthService {
       secret: "refresh-secret-change",
     });
 
-    // store/update hashed refresh token in DB (upsert minimal user row)
+    // store/update hashed refresh token in DB
     const hashed = await bcrypt.hash(refreshToken, 10);
-    await this.prisma.user.upsert({
+    await this.prisma.user.update({
       where: { id: user.id },
-      update: { hashedRefreshToken: hashed },
-      create: {
-        id: user.id,
-        email: user.email,
-        password: user.password, // Already hashed in MOCK_USERS
-        firstName: "Demo",
-        lastName: "User",
-        role: user.role,
+      data: {
         hashedRefreshToken: hashed,
+        lastLoginAt: new Date(),
       },
     });
 
@@ -140,6 +138,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         portal: loginDto.portalType,
+        firstName: user.firstName,
+        lastName: user.lastName,
       },
     };
   }
