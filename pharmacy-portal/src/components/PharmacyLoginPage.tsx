@@ -16,7 +16,7 @@ function PharmacyLoginPage() {
     setLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('http://localhost:3001/api/auth/login', {
         email,
         password,
         portalType: 'PHARMACY'
