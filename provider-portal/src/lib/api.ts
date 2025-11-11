@@ -10,10 +10,12 @@ const getCookie = (name: string): string | undefined => {
 
 // Use gateway if available, otherwise go directly to services
 // For now, bypassing Kong and going directly to services for reliability
+// ALWAYS use 3001 for auth service, regardless of env var
+const API_BASE_URL = "http://localhost:3001/api";
+console.log('[API] Base URL:', API_BASE_URL);
+
 export const api = axios.create({
-  baseURL:
-    (import.meta.env.VITE_API_GATEWAY_URL as string | undefined) ??
-    "http://localhost:3001/api", // Auth service base - other services accessed via full URLs
+  baseURL: API_BASE_URL,
   withCredentials: true, // send refresh cookie + XSRF-TOKEN automatically
 });
 
