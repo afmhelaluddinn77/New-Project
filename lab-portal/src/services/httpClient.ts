@@ -30,6 +30,8 @@ function createAuthenticatedClient(baseURL: string): AxiosInstance {
 
     (config.headers as any)['x-user-role'] = 'LAB_TECH';
     (config.headers as any)['x-portal'] = 'LAB';
+    // CRITICAL: Add x-user-id header for RBAC (fallback to lab tech ID)
+    (config.headers as any)['x-user-id'] = '3'; // Lab Technician user ID
 
     return config;
   });
