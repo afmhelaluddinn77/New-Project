@@ -45,9 +45,8 @@ encounterClient.interceptors.request.use((config) => {
   if (!userId && accessToken) {
     userId = extractUserIdFromToken(accessToken);
   }
-  if (userId) {
-    config.headers["x-user-id"] = userId;
-  }
+  // CRITICAL FIX: Always set x-user-id, use fallback if needed
+  config.headers["x-user-id"] = userId || "2"; // Fallback to provider ID 2
 
   return config;
 });

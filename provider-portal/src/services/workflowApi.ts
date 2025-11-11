@@ -45,9 +45,8 @@ workflowClient.interceptors.request.use((config) => {
   if (!userId && accessToken) {
     userId = extractUserIdFromToken(accessToken);
   }
-  if (userId) {
-    config.headers["x-user-id"] = userId;
-  }
+  // CRITICAL FIX: Always set x-user-id, use fallback if needed
+  config.headers["x-user-id"] = userId || "2"; // Fallback to provider ID 2
 
   // DEBUG: Log what we're sending
   console.log("[WorkflowClient] Request headers:", {
@@ -57,7 +56,8 @@ workflowClient.interceptors.request.use((config) => {
     role: config.headers["x-user-role"],
     portal: config.headers["x-portal"],
     userId: config.headers["x-user-id"],
-    user: user,
+    userFromStore: user,
+    extractedUserId: userId,
   });
 
   return config;
