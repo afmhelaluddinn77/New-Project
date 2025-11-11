@@ -8,6 +8,7 @@ import {
   Scan,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../components/shared/Breadcrumb";
 import { useOrdersQuery } from "../../hooks/queries/useOrdersQuery";
 import { queryKeys } from "../../lib/queryClient";
@@ -27,6 +28,7 @@ const formatDate = (value: string) => new Date(value).toLocaleString();
 export default function ResultsPage() {
   const { data: orders = [], isLoading: loading } = useOrdersQuery();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Removed fetchOrders useEffect - React Query handles this automatically
 
@@ -79,41 +81,84 @@ export default function ResultsPage() {
                 <th>Pharmacy</th>
                 <th>Laboratory</th>
                 <th>Radiology</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>
-                    <span className="order-number">{order.orderNumber}</span>
-                    <span
-                      className={`status-pill status-${order.status.toLowerCase()}`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  {["PHARMACY", "LAB", "RADIOLOGY"].map((type) => {
-                    const item = order.items.find((i) => i.itemType === type);
-                    return (
-                      <td key={type}>
-                        {item ? (
-                          <span
-                            className={`item-status status-${item.status.toLowerCase()}`}
-                          >
-                            {SERVICE_ICON[type as keyof typeof SERVICE_ICON]}
-                            {item.status}
-                          </span>
-                        ) : (
-                          <span className="item-status muted">—</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {orders.map((order) => {
+                const labItem = order.items.find((i) => i.itemType === "LAB");
+                const isLabCompleted = labItem?.status === "COMPLETED";
+
+                return (
+                  <tr key={order.id}>
+                    <td>
+                      <span className="order-number">{order.orderNumber}</span>
+                      <span
+                        className={`status-pill status-${order.status.toLowerCase()}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    {["PHARMACY", "LAB", "RADIOLOGY"].map((type) => {
+                      const item = order.items.find((i) => i.itemType === type);
+                      return (
+                        <td key={type}>
+                          {item ? (
+                            <span
+                              className={`item-status status-${item.status.toLowerCase()}`}
+                            >
+                              {SERVICE_ICON[type as keyof typeof SERVICE_ICON]}
+                              {item.status}
+                            </span>
+                          ) : (
+                            <span className="item-status muted">—</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td>
+                      {isLabCompleted && labItem?.targetServiceOrderId && (
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/lab-results/${labItem.targetServiceOrderId}`
+                            )
+                          }
+                          className="view-details-btn"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "6px 12px",
+                            fontSize: "13px",
+                            fontWeight: "500",
+                            color: "#059669",
+                            background: "#d1fae5",
+                            border: "1px solid #6ee7b7",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = "#a7f3d0";
+                            e.currentTarget.style.borderColor = "#34d399";
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = "#d1fae5";
+                            e.currentTarget.style.borderColor = "#6ee7b7";
+                          }}
+                        >
+                          <Eye size={14} />
+                          View Details
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
               {!loading && orders.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="muted">
+                  <td colSpan={5} className="muted">
                     No orders yet. Create one from the Unified Orders page.
                   </td>
                 </tr>
