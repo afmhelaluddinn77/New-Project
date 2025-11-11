@@ -18,7 +18,7 @@ export class PrescriptionsController {
   constructor(private readonly prescriptionsService: PrescriptionsService) {}
 
   @Post()
-  @Roles('PROVIDER')
+  @Roles('PROVIDER', 'CLINICAL_WORKFLOW')  // Allow workflow service to create orders
   create(
     @Body() dto: CreatePrescriptionDto,
     @UserContext() user: RequestUserContext,

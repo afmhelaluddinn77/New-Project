@@ -281,11 +281,11 @@ export class WorkflowService {
   private resolveServiceRole(type: UnifiedOrderItemTypeDto): string {
     switch (type) {
       case UnifiedOrderItemTypeDto.PHARMACY:
-        return 'PHARMACIST';
+        return 'CLINICAL_WORKFLOW'; // Pharmacy service requires this role for order creation
       case UnifiedOrderItemTypeDto.LAB:
         return 'CLINICAL_WORKFLOW'; // LAB service requires this role for order creation
       case UnifiedOrderItemTypeDto.RADIOLOGY:
-        return 'RADIOLOGIST';
+        return 'CLINICAL_WORKFLOW'; // Radiology service requires this role for order creation
       default:
         return 'SYSTEM';
     }
