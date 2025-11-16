@@ -206,29 +206,31 @@
   // HEALTHCARE TERMINOLOGY (SPELL CHECK)
   // ========================================
   "cSpell.words": [
-    "FHIR",
-    "HIPAA",
-    "SNOMED",
-    "LOINC",
-    "HL7",
-    "Prisma",
-    "NestJS",
-    "Zustand",
+    "ADT",
     "Axios",
     "bcrypt",
-    "CSRF",
-    "XSRF",
-    "PHI",
-    "resourceType",
     "camelCase",
-    "PostgreSQL",
-    "Kong",
-    "microservices",
+    "CSRF",
     "Dto",
     "dtos",
-    "ADT",
+    "FHIR",
+    "HIPAA",
+    "HL7",
+    "Kong",
+    "LOINC",
+    "microservices",
+    "Morphism",
+    "NestJS",
     "ORM",
-    "RBAC"
+    "PHI",
+    "PostgreSQL",
+    "Prisma",
+    "RBAC",
+    "resourceType",
+    "SNOMED",
+    "topbar",
+    "XSRF",
+    "Zustand"
   ],
 
   // ========================================
@@ -273,7 +275,8 @@
   // ========================================
   "git.branchProtection": ["main", "master"],
   "git.confirmSync": true,
-  "git.autofetch": true
+  "git.autofetch": true,
+  "claudeCodeChat.permissions.yoloMode": true
 
   // ========================================
   // DEVELOPMENT LAW REMINDERS

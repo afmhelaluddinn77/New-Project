@@ -10,7 +10,6 @@ import {
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserContext } from '../common/decorators/user-context.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { RequestUserContext } from '../common/interfaces/request-user-context.interface';
 import { LabResultsService } from './lab-results.service';
 
 /**
@@ -70,7 +69,7 @@ export class LabResultsController {
     @Query('limit') limit?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @UserContext() user: RequestUserContext,
+    @UserContext() user?: RequestUserContext,
   ) {
     try {
       const history = await this.labResultsService.getPatientHistory(
@@ -255,7 +254,7 @@ export class LabResultsController {
   @Roles('PROVIDER', 'LAB_TECH')
   async getCriticalResults(
     @Query('limit') limit?: string,
-    @UserContext() user: RequestUserContext,
+    @UserContext() user?: RequestUserContext,
   ) {
     try {
       const criticalResults = await this.labResultsService.getCriticalResults(
@@ -291,7 +290,7 @@ export class LabResultsController {
   @Roles('PROVIDER', 'LAB_TECH', 'LAB_SUPERVISOR')
   async getDashboardStats(
     @Query('period') period?: string, // 'today', 'week', 'month'
-    @UserContext() user: RequestUserContext,
+    @UserContext() user?: RequestUserContext,
   ) {
     try {
       const stats = await this.labResultsService.getDashboardStats(
@@ -361,4 +360,9 @@ export interface LabResultHistoryQuery {
   limit?: number;
   startDate?: Date;
   endDate?: Date;
+}
+
+export interface RequestUserContext {
+  userId: string;
+  roles?: string[];
 }

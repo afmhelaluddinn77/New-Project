@@ -16,40 +16,42 @@ const encounterClient = axios.create({
 });
 
 // Helper to extract user ID from JWT token
-const extractUserIdFromToken = (token: string): string | null => {
+const extractUserIdFromToken = (token: string): string | undefined => {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub || payload.userId || payload.id || null;
+    return payload.sub || payload.userId || payload.id || undefined;
   } catch {
-    return null;
+    return undefined;
   }
 };
 
-// Apply request interceptor to encounter client
-encounterClient.interceptors.request.use((config) => {
-  const { accessToken, user } = useAuthStore.getState();
+// Apply request interceptor to encounter client (guarded for test environments)
+if ((encounterClient as any)?.interceptors?.request?.use) {
+  encounterClient.interceptors.request.use((config) => {
+    const { accessToken, user } = useAuthStore.getState();
 
-  config.headers = config.headers ?? {};
+    config.headers = config.headers ?? {};
 
-  // Add Authorization
-  if (accessToken) {
-    config.headers["Authorization"] = `Bearer ${accessToken}`;
-  }
+    // Add Authorization
+    if (accessToken) {
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
+    }
 
-  // Required by backend role guards
-  config.headers["x-user-role"] = user?.role || "PROVIDER";
-  config.headers["x-portal"] = "PROVIDER";
+    // Required by backend role guards
+    config.headers["x-user-role"] = user?.role || "PROVIDER";
+    config.headers["x-portal"] = "PROVIDER";
 
-  // Extract user ID from token or user object
-  let userId = user?.id;
-  if (!userId && accessToken) {
-    userId = extractUserIdFromToken(accessToken);
-  }
-  // CRITICAL FIX: Always set x-user-id, use fallback if needed
-  config.headers["x-user-id"] = userId || "2"; // Fallback to provider ID 2
+    // Extract user ID from token or user object
+    let userId = user?.id;
+    if (!userId && accessToken) {
+      userId = extractUserIdFromToken(accessToken);
+    }
+    // CRITICAL FIX: Always set x-user-id, use fallback if needed
+    config.headers["x-user-id"] = userId || "2"; // Fallback to provider ID 2
 
-  return config;
-});
+    return config;
+  });
+}
 
 interface EncounterPayload {
   patientId: string;
@@ -140,6 +142,11 @@ export interface MedicationInteractionPayload {
 }
 
 class EncounterService {
+  // HTTP client used for all requests; default to axios encounterClient but
+  // can be overridden in tests via (encounterService as any).client
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public client: any = encounterClient;
+
   /**
    * @deprecated Phase 3: This method is deprecated and does nothing.
    * Token management is now handled automatically by api.ts interceptors.
@@ -153,7 +160,7 @@ class EncounterService {
   // Create new encounter
   async createEncounter(data: EncounterPayload) {
     try {
-      const response = await encounterClient.post(`/api/encounters`, data);
+      const response = await this.client.post(`/api/encounters`, data);
       return response.data;
     } catch (error) {
       console.error("Error creating encounter:", error);
@@ -164,9 +171,7 @@ class EncounterService {
   // Get encounter by ID
   async getEncounter(encounterId: string) {
     try {
-      const response = await encounterClient.get(
-        `/api/encounters/${encounterId}`
-      );
+      const response = await this.client.get(`/api/encounters/${encounterId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching encounter:", error);
@@ -177,7 +182,7 @@ class EncounterService {
   // Update encounter
   async updateEncounter(encounterId: string, data: Partial<EncounterPayload>) {
     try {
-      const response = await encounterClient.patch(
+      const response = await this.client.patch(
         `/api/encounters/${encounterId}`,
         data
       );
@@ -191,7 +196,7 @@ class EncounterService {
   // Get encounters for patient
   async getPatientEncounters(patientId: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/encounters/patient/${patientId}`
       );
       return response.data;
@@ -204,7 +209,7 @@ class EncounterService {
   // Finalize encounter
   async finalizeEncounter(encounterId: string) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/encounters/${encounterId}/finalize`
       );
       return response.data;
@@ -217,7 +222,7 @@ class EncounterService {
   // Delete encounter (soft delete)
   async deleteEncounter(encounterId: string) {
     try {
-      const response = await encounterClient.delete(
+      const response = await this.client.delete(
         `/api/encounters/${encounterId}`
       );
       return response.data;
@@ -230,7 +235,7 @@ class EncounterService {
   // Get all encounters (with pagination)
   async getAllEncounters(skip: number = 0, take: number = 20) {
     try {
-      const response = await encounterClient.get(`/api/encounters`, {
+      const response = await this.client.get(`/api/encounters`, {
         params: { skip, take },
       });
       return response.data;
@@ -246,7 +251,7 @@ class EncounterService {
 
   async listPrescriptions(skip: number = 0, take: number = 20) {
     try {
-      const response = await encounterClient.get(`/api/prescriptions`, {
+      const response = await this.client.get(`/api/prescriptions`, {
         params: { skip, take },
       });
       return response.data;
@@ -258,7 +263,7 @@ class EncounterService {
 
   async getPrescription(prescriptionId: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/prescriptions/${prescriptionId}`
       );
       return response.data;
@@ -270,7 +275,7 @@ class EncounterService {
 
   async getPrescriptionsByEncounter(encounterId: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/prescriptions/encounter/${encounterId}`
       );
       return response.data;
@@ -282,10 +287,7 @@ class EncounterService {
 
   async createPrescription(data: PrescriptionPayload) {
     try {
-      const response = await encounterClient.post(
-        `/api/prescriptions`,
-        data
-      );
+      const response = await this.client.post(`/api/prescriptions`, data);
       return response.data;
     } catch (error) {
       console.error("Error creating prescription:", error);
@@ -298,7 +300,7 @@ class EncounterService {
     data: UpdatePrescriptionPayload
   ) {
     try {
-      const response = await encounterClient.put(
+      const response = await this.client.put(
         `/api/prescriptions/${prescriptionId}`,
         data
       );
@@ -311,7 +313,7 @@ class EncounterService {
 
   async deletePrescription(prescriptionId: string) {
     try {
-      const response = await encounterClient.delete(
+      const response = await this.client.delete(
         `/api/prescriptions/${prescriptionId}`
       );
       return response.data;
@@ -326,7 +328,7 @@ class EncounterService {
     data: { dispensedDate?: string; pharmacyId?: string }
   ) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/prescriptions/${prescriptionId}/dispense`,
         data
       );
@@ -342,7 +344,7 @@ class EncounterService {
     otherMedications: MedicationInteractionPayload[]
   ) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/prescriptions/${prescriptionId}/check-interactions`,
         otherMedications
       );
@@ -359,7 +361,7 @@ class EncounterService {
 
   async listInvestigations(skip: number = 0, take: number = 20) {
     try {
-      const response = await encounterClient.get(`/api/investigations`, {
+      const response = await this.client.get(`/api/investigations`, {
         params: { skip, take },
       });
       return response.data;
@@ -371,7 +373,7 @@ class EncounterService {
 
   async getInvestigation(investigationId: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/investigations/${investigationId}`
       );
       return response.data;
@@ -383,7 +385,7 @@ class EncounterService {
 
   async getInvestigationsByEncounter(encounterId: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/investigations/encounter/${encounterId}`
       );
       return response.data;
@@ -395,10 +397,7 @@ class EncounterService {
 
   async createInvestigation(data: InvestigationPayload) {
     try {
-      const response = await encounterClient.post(
-        `/api/investigations`,
-        data
-      );
+      const response = await this.client.post(`/api/investigations`, data);
       return response.data;
     } catch (error) {
       console.error("Error creating investigation:", error);
@@ -411,7 +410,7 @@ class EncounterService {
     data: UpdateInvestigationPayload
   ) {
     try {
-      const response = await encounterClient.put(
+      const response = await this.client.put(
         `/api/investigations/${investigationId}`,
         data
       );
@@ -424,7 +423,9 @@ class EncounterService {
 
   async deleteInvestigation(investigationId: string) {
     try {
-      const response = await encounterClient.delete(`/api/investigations/${investigationId}`);
+      const response = await this.client.delete(
+        `/api/investigations/${investigationId}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error deleting investigation:", error);
@@ -437,7 +438,7 @@ class EncounterService {
     data: InvestigationResultPayload
   ) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/investigations/${investigationId}/results`,
         data
       );
@@ -450,7 +451,7 @@ class EncounterService {
 
   async searchInvestigationByLoinc(loincCode: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/investigations/search/loinc/${loincCode}`
       );
       return response.data;
@@ -462,7 +463,7 @@ class EncounterService {
 
   async searchInvestigationBySnomed(snomedCode: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/investigations/search/snomed/${snomedCode}`
       );
       return response.data;
@@ -478,12 +479,9 @@ class EncounterService {
 
   async searchMedications(query: string, limit: number = 20) {
     try {
-      const response = await encounterClient.get(
-        `/api/medications/search`,
-        {
-          params: { q: query, limit },
-        }
-      );
+      const response = await this.client.get(`/api/medications/search`, {
+        params: { q: query, limit },
+      });
       return response.data;
     } catch (error) {
       console.error("Error searching medications:", error);
@@ -493,7 +491,7 @@ class EncounterService {
 
   async getMedicationByRxNorm(rxNormCode: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/medications/search/rxnorm/${rxNormCode}`
       );
       return response.data;
@@ -507,7 +505,7 @@ class EncounterService {
     medications: MedicationInteractionPayload[]
   ) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/medications/interactions/check`,
         {
           medications,
@@ -522,7 +520,7 @@ class EncounterService {
 
   async getMedicationContraindications(rxNormCode: string) {
     try {
-      const response = await encounterClient.get(
+      const response = await this.client.get(
         `/api/medications/contraindications/${rxNormCode}`
       );
       return response.data;
@@ -534,7 +532,9 @@ class EncounterService {
 
   async getMedicationSideEffects(rxNormCode: string) {
     try {
-      const response = await encounterClient.get(`/api/medications/side-effects/${rxNormCode}`);
+      const response = await this.client.get(
+        `/api/medications/side-effects/${rxNormCode}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching side effects:", error);
@@ -544,7 +544,9 @@ class EncounterService {
 
   async getMedicationDosageInfo(rxNormCode: string) {
     try {
-      const response = await encounterClient.get(`/api/medications/dosage-info/${rxNormCode}`);
+      const response = await this.client.get(
+        `/api/medications/dosage-info/${rxNormCode}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching dosage info:", error);
@@ -554,7 +556,7 @@ class EncounterService {
 
   async checkMedicationAllergies(patientId: string, medications: string[]) {
     try {
-      const response = await encounterClient.post(
+      const response = await this.client.post(
         `/api/medications/allergy-check`,
         {
           patientId,
@@ -570,7 +572,9 @@ class EncounterService {
 
   async getMedicationAlternatives(rxNormCode: string) {
     try {
-      const response = await encounterClient.get(`/api/medications/alternatives/${rxNormCode}`);
+      const response = await this.client.get(
+        `/api/medications/alternatives/${rxNormCode}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching medication alternatives:", error);
@@ -581,7 +585,7 @@ class EncounterService {
   // Health check
   async healthCheck() {
     try {
-      const response = await encounterClient.get(`/api/health`);
+      const response = await this.client.get(`/api/health`);
       return response.data;
     } catch (error) {
       console.error("Error health check:", error);

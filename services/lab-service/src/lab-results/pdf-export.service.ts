@@ -164,7 +164,7 @@ export class PdfExportService {
                 <tbody>
                     ${resultData.components
                       .map(
-                        (component) => `
+                        (component: { displayName: string; name: string; value: string; unit: string; referenceRangeText: string; interpretation: string; trend?: string }) => `
                         <tr class="result-row ${this.getRowClass(component.interpretation)}">
                             <td class="component-name">
                                 <strong>${component.displayName}</strong>
@@ -212,7 +212,7 @@ export class PdfExportService {
                         <th>Current</th>
                         ${resultData.historicalResults
                           .map(
-                            (h) => `
+                            (h: any) => `
                             <th>${new Date(h.date).toLocaleDateString()}</th>
                         `,
                           )
@@ -222,13 +222,13 @@ export class PdfExportService {
                 <tbody>
                     ${resultData.components
                       .map(
-                        (component) => `
+                        (component: any) => `
                         <tr>
                             <td><strong>${component.displayName}</strong></td>
                             <td class="current-value">${component.value}</td>
                             ${resultData.historicalResults
                               .map(
-                                (h) => `
+                                (h: any) => `
                                 <td>${h.components[component.displayName] || '—'}</td>
                             `,
                               )
@@ -518,7 +518,7 @@ export class PdfExportService {
   }
 
   private getStatusLabel(interpretation: string): string {
-    const labels = {
+    const labels: Record<string, string> = {
       N: '✓ Normal',
       L: '↓ Low',
       H: '↑ High',
@@ -530,7 +530,7 @@ export class PdfExportService {
   }
 
   private getTrendSymbol(trend?: string): string {
-    const symbols = {
+    const symbols: Record<string, string> = {
       UP: '↑──',
       DOWN: '↓──',
       STABLE: '───',

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useEncounterStore } from '../store/encounterStore';
+import { useCallback, useEffect, useRef } from "react";
+import { useEncounterStore } from "../store/encounterStore";
 
 interface UseAutoSaveOptions {
   debounceMs?: number;
@@ -10,27 +10,29 @@ interface UseAutoSaveOptions {
 
 /**
  * Hook for automatic encounter saving with debouncing
- * 
+ *
  * @param options Configuration options
  * @returns Object with isSaving status and manual save function
- * 
+ *
  * @example
  * const { isSaving, save } = useAutoSave({ debounceMs: 3000 });
- * 
+ *
  * // Auto-save will trigger 3 seconds after the last state change
  * // You can also manually trigger save with save()
  */
 export const useAutoSave = (options: UseAutoSaveOptions = {}) => {
-  const {
-    debounceMs = 3000,
-    enabled = true,
-    onSuccess,
-    onError,
-  } = options;
+  const { debounceMs = 3000, enabled = true, onSuccess, onError } = options;
 
-  const { saveEncounter, isSaving, history, examination, investigations, medications } = useEncounterStore();
+  const {
+    saveEncounter,
+    isSaving,
+    history,
+    examination,
+    investigations,
+    medications,
+  } = useEncounterStore();
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const lastSaveRef = useRef<string>('');
+  const lastSaveRef = useRef<string>("");
   const isSavingRef = useRef(false);
 
   /**
@@ -58,8 +60,9 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}) => {
       await saveEncounter();
       onSuccess?.();
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('Unknown error occurred');
-      console.error('Auto-save failed:', err);
+      const err =
+        error instanceof Error ? error : new Error("Unknown error occurred");
+      console.error("Auto-save failed:", err);
       onError?.(err);
     } finally {
       isSavingRef.current = false;
@@ -117,8 +120,9 @@ export const useAutoSave = (options: UseAutoSaveOptions = {}) => {
  * Hook to track if there are unsaved changes
  */
 export const useHasUnsavedChanges = () => {
-  const { history, examination, investigations, medications } = useEncounterStore();
-  const lastSavedStateRef = useRef<string>('');
+  const { history, examination, investigations, medications } =
+    useEncounterStore();
+  const lastSavedStateRef = useRef<string>("");
 
   const currentState = JSON.stringify({
     history,
@@ -159,14 +163,14 @@ export const useUnsavedChangesWarning = (enabled: boolean = true) => {
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = '';
-      return '';
+      e.returnValue = "";
+      return "";
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [enabled, hasChanges]);
 
@@ -184,7 +188,7 @@ export const usePeriodicSave = (intervalMs: number = 30000) => {
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       saveEncounter().catch((error) => {
-        console.error('Periodic save failed:', error);
+        console.error("Periodic save failed:", error);
       });
     }, intervalMs);
 

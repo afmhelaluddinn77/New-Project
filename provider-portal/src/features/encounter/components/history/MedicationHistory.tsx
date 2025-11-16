@@ -1,45 +1,65 @@
-import React, { useState } from 'react';
-import { useEncounterStore } from '../../../../store/encounterStore';
-import styles from '../../styles/history.module.css';
+import React, { useState } from "react";
+import { useEncounterStore } from "../../../../store/encounterStore";
+import styles from "../../styles/history.module.css";
 
 export const MedicationHistory: React.FC = () => {
   const { history, updateHistory } = useEncounterStore();
   const medHistory = history.medicationHistory;
-  
-  const [newMed, setNewMed] = useState({
-    medicationName: '',
-    dosage: '',
-    frequency: '',
-    indication: '',
-    startDate: '',
-    endDate: '',
+
+  const [newMed, setNewMed] = useState<{
+    medicationName: string;
+    dosage: string;
+    frequency: string;
+    route: string;
+    indication: string;
+    startDate: string;
+    endDate: string;
+    status: "current" | "stopped";
+    notes: string;
+  }>({
+    medicationName: "",
+    dosage: "",
+    frequency: "",
+    route: "",
+    indication: "",
+    startDate: "",
+    endDate: "",
+    status: "current",
+    notes: "",
   });
 
   const handleAddMedication = () => {
     if (newMed.medicationName.trim() && newMed.dosage.trim()) {
-      updateHistory('medicationHistory', [
-        ...medHistory,
-        newMed,
-      ]);
+      updateHistory("medicationHistory", [...medHistory, newMed]);
       setNewMed({
-        medicationName: '',
-        dosage: '',
-        frequency: '',
-        indication: '',
-        startDate: '',
-        endDate: '',
+        medicationName: "",
+        dosage: "",
+        frequency: "",
+        route: "",
+        indication: "",
+        startDate: "",
+        endDate: "",
+        status: "current",
+        notes: "",
       });
     }
   };
 
   const handleRemoveMedication = (index: number) => {
-    updateHistory('medicationHistory', medHistory.filter((_, i) => i !== index));
+    updateHistory(
+      "medicationHistory",
+      medHistory.filter((_, i) => i !== index)
+    );
   };
 
-  const handleUpdateMedication = (index: number, field: string, value: string) => {
+  const handleUpdateMedication = (
+    index: number,
+    field: string,
+    value: string
+  ) => {
     const updated = [...medHistory];
     updated[index] = { ...updated[index], [field]: value };
-    updateHistory('medicationHistory', updated);
+    updateHistory("medicationHistory", updated);
   };
 
   return (
@@ -50,7 +70,9 @@ export const MedicationHistory: React.FC = () => {
         <input
           type="text"
           value={newMed.medicationName}
-          onChange={(e) => setNewMed({ ...newMed, medicationName: e.target.value })}
+          onChange={(e) =>
+            setNewMed({ ...newMed, medicationName: e.target.value })
+          }
           placeholder="Medication name"
           className={styles.input}
         />
@@ -66,6 +88,13 @@ export const MedicationHistory: React.FC = () => {
           value={newMed.frequency}
           onChange={(e) => setNewMed({ ...newMed, frequency: e.target.value })}
           placeholder="Frequency (e.g., 3 times daily)"
+          className={styles.input}
+        />
+        <input
+          type="text"
+          value={newMed.route}
+          onChange={(e) => setNewMed({ ...newMed, route: e.target.value })}
+          placeholder="Route (e.g., oral)"
           className={styles.input}
         />
         <input
@@ -88,7 +117,29 @@ export const MedicationHistory: React.FC = () => {
           placeholder="End date (if discontinued)"
           className={styles.input}
         />
+        <select
+          value={newMed.status}
+          onChange={(e) =>
+            setNewMed({
+              ...newMed,
+              status: e.target.value as "current" | "stopped",
+            })
+          }
+          className={styles.select}
+        >
+          <option value="current">Current</option>
+          <option value="stopped">Stopped</option>
+        </select>
       </div>
+
+      <input
+        type="text"
+        value={newMed.notes}
+        onChange={(e) => setNewMed({ ...newMed, notes: e.target.value })}
+        placeholder="Notes (optional)"
+        className={styles.input}
+        style={{ marginTop: 8 }}
+      />
 
       <button
         onClick={handleAddMedication}
@@ -110,6 +161,11 @@ export const MedicationHistory: React.FC = () => {
                   <span>{med.dosage}</span>
                   <span>{med.frequency}</span>
                   {med.indication && <span>For: {med.indication}</span>}
+                  {med.route && <span>Route: {med.route}</span>}
+                  {(med as any).status && (
+                    <span>Status: {(med as any).status}</span>
+                  )}
+                  {(med as any).notes && <span>{(med as any).notes}</span>}
                 </div>
               </div>
               <button

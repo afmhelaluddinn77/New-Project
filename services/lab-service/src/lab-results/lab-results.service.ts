@@ -44,7 +44,7 @@ export class LabResultsService {
     }
 
     const test = labOrder.tests[0];
-    const result = test.result;
+    const result = test.result!;
 
     // Get historical results for trend analysis
     const historicalResults = await this.getPatientHistory(labOrder.patientId, {
@@ -66,8 +66,8 @@ export class LabResultsService {
       resultedAt: result.createdAt.toISOString(),
       performingLab: 'Central Clinical Laboratory',
       verifiedBy: result.verifiedBy || 'Lab Technician #3',
-      interpretation: this.generateClinicalInterpretation(result.components),
-      components: result.components.map((component) => ({
+      interpretation: this.generateClinicalInterpretation(result.components || []),
+      components: (result.components || []).map((component) => ({
         code: component.code,
         name: component.name,
         displayName: component.displayName,
@@ -256,7 +256,7 @@ export class LabResultsService {
   async createExport(exportRequest: ExportResultsDto, userId: string) {
     const exportJob = await this.prisma.labResultExport.create({
       data: {
-        patientId: exportRequest.patientId,
+        patientId: exportRequest.patientId || 'unknown',
         orderIds: exportRequest.orderIds || [],
         format: exportRequest.format,
         requestedBy: userId,

@@ -94,13 +94,13 @@
   align-items: flex-start;
   gap: var(--space-md);
   padding: var(--space-md);
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(15, 23, 42, 0.02);
   border-radius: var(--radius-lg);
   transition: background var(--transition-fast);
 }
 
 .activity-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .activity-icon {
@@ -109,7 +109,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-patient);
+  background: var(--color-provider);
   color: white;
   border-radius: var(--radius-md);
   flex-shrink: 0;
@@ -166,7 +166,7 @@
 }
 
 .quick-action-btn svg {
-  color: var(--color-patient);
+  color: var(--color-provider);
 }
 
 /* Responsive Design */
@@ -181,25 +181,25 @@
   .dashboard-title {
     font-size: var(--text-3xl);
   }
-  
+
   .dashboard-subtitle {
     font-size: var(--text-base);
   }
-  
+
   .dashboard-cards-grid {
     grid-template-columns: 1fr;
     gap: var(--space-md);
   }
-  
+
   .dashboard-sections {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
   }
-  
+
   .quick-actions {
     grid-template-columns: 1fr;
   }
-  
+
   .metric-value {
     font-size: var(--text-3xl);
   }

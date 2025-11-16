@@ -115,13 +115,11 @@ test.describe("Pharmacy Workflow", () => {
     });
   });
 
-  test("Pharmacy workflow handles drug interaction checks", async ({
+  test.skip("Pharmacy workflow handles drug interaction checks", async ({
     page,
     context,
   }) => {
     // This would test drug interaction validation
-    test.skip(
-      "Drug interaction checks - requires pharmacy service enhancement"
-    );
+    // Skipped: requires pharmacy service enhancement
   });
 });

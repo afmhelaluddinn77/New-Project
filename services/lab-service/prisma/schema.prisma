@@ -89,4 +89,91 @@ model LabResult {
   updatedAt       DateTime      @updatedAt
 
   test            LabOrderTest  @relation(fields: [labOrderTestId], references: [id], onDelete: Cascade)
+  components      LabResultComponent[]
+}
+
+/// Detailed result components for each LabResult (e.g., individual analytes)
+model LabResultComponent {
+  id                  String   @id @default(uuid())
+  labResultId         String
+  code                String
+  name                String
+  displayName         String
+  value               String
+  numericValue        Float?
+  unit                String
+  referenceRangeLow   Float?
+  referenceRangeHigh  Float?
+  referenceRangeText  String?
+  interpretation      String
+  trend               String?
+  criticalValue       Boolean  @default(false)
+  comment             String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  labResult           LabResult @relation(fields: [labResultId], references: [id], onDelete: Cascade)
+
+  @@index([labResultId])
+  @@index([code])
+}
+
+/// Historical values to support trend analysis
+model LabResultHistory {
+  id             String   @id @default(uuid())
+  patientId      String
+  testCode       String
+  componentCode  String
+  value          String?
+  numericValue   Float?
+  unit           String?
+  interpretation String?
+  performedAt    DateTime
+  orderId        String?
+  createdAt      DateTime @default(now())
+
+  @@index([patientId])
+  @@index([componentCode])
+  @@index([performedAt])
+}
+
+/// Standardized test templates with predefined component definitions
+model LabTestTemplate {
+  id        String                       @id @default(uuid())
+  loincCode String                       @unique
+  testName  String
+  components LabTestTemplateComponent[]
+}
+
+model LabTestTemplateComponent {
+  id                 String          @id @default(uuid())
+  templateId         String
+  code               String
+  name               String
+  displayName        String?
+  unit               String?
+  referenceRangeLow  Float?
+  referenceRangeHigh Float?
+  referenceRangeText String?
+  sortOrder          Int             @default(0)
+
+  template           LabTestTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([code])
+}
+
+/// Export jobs for lab results (stores parameters and output path)
+model LabResultExport {
+  id           String   @id @default(uuid())
+  patientId    String
+  orderIds     String[]
+  format       String
+  requestedBy  String
+  parameters   Json?
+  status       String
+  filePath     String?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  completedAt  DateTime?
 }

@@ -1,39 +1,47 @@
-import React, { useState } from 'react';
-import { useEncounterStore } from '../../../../store/encounterStore';
-import styles from '../../styles/history.module.css';
+import React, { useState } from "react";
+import { useEncounterStore } from "../../../../store/encounterStore";
+import styles from "../../styles/history.module.css";
 
 export const PastMedicalHistory: React.FC = () => {
   const { history, updateHistory } = useEncounterStore();
   const pmh = history.pastMedicalHistory;
-  
-  const [newCondition, setNewCondition] = useState('');
+
+  const [newCondition, setNewCondition] = useState("");
   const [newYear, setNewYear] = useState(new Date().getFullYear().toString());
-  const [newStatus, setNewStatus] = useState<'active' | 'resolved'>('active');
+  const [newStatus, setNewStatus] = useState<
+    "active" | "resolved" | "remission"
+  >("active");
+  const [newNotes, setNewNotes] = useState("");
 
   const handleAddCondition = () => {
     if (newCondition.trim()) {
-      updateHistory('pastMedicalHistory', [
+      updateHistory("pastMedicalHistory", [
         ...pmh,
         {
           condition: newCondition,
           yearDiagnosed: newYear,
           status: newStatus,
+          notes: newNotes,
         },
       ]);
-      setNewCondition('');
+      setNewCondition("");
       setNewYear(new Date().getFullYear().toString());
-      setNewStatus('active');
+      setNewStatus("active");
+      setNewNotes("");
     }
   };
 
   const handleRemoveCondition = (index: number) => {
-    updateHistory('pastMedicalHistory', pmh.filter((_, i) => i !== index));
+    updateHistory(
+      "pastMedicalHistory",
+      pmh.filter((_, i) => i !== index)
+    );
   };
 
   const handleUpdateCondition = (index: number, field: string, value: any) => {
     const updated = [...pmh];
     updated[index] = { ...updated[index], [field]: value };
-    updateHistory('pastMedicalHistory', updated);
+    updateHistory("pastMedicalHistory", updated);
   };
 
   return (
@@ -54,16 +62,26 @@ export const PastMedicalHistory: React.FC = () => {
           onChange={(e) => setNewYear(e.target.value)}
           placeholder="Year"
           className={styles.input}
-          style={{ width: '100px' }}
+          style={{ width: "100px" }}
         />
         <select
           value={newStatus}
-          onChange={(e) => setNewStatus(e.target.value as 'active' | 'resolved')}
+          onChange={(e) =>
+            setNewStatus(e.target.value as "active" | "resolved" | "remission")
+          }
           className={styles.select}
         >
           <option value="active">Active</option>
           <option value="resolved">Resolved</option>
+          <option value="remission">Remission</option>
         </select>
+        <input
+          type="text"
+          value={newNotes}
+          onChange={(e) => setNewNotes(e.target.value)}
+          placeholder="Notes (optional)"
+          className={styles.input}
+        />
         <button
           onClick={handleAddCondition}
           className={styles.addButton}
@@ -83,6 +101,7 @@ export const PastMedicalHistory: React.FC = () => {
                 <strong>{item.condition}</strong>
                 <span className={styles.itemMeta}>
                   {item.yearDiagnosed} • {item.status}
+                  {item.notes ? ` • ${item.notes}` : ""}
                 </span>
               </div>
               <button

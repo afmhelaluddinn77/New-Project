@@ -1,56 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { useEncounterStore } from '../store/encounterStore';
+import React, { useState } from "react";
+import { AutoSaveManager } from "../features/clinical-documentation/AutoSaveManager";
+import { ClinicalFlowWizard } from "../features/clinical-documentation/ClinicalFlowWizard";
+import { SOAPEditor } from "../features/clinical-documentation/SOAPEditor";
+import {
+  AbdominalExam,
+  CardiovascularExam,
+  GeneralExamination,
+  MusculoskeletalExam,
+  NeurologicalExam,
+  RespiratoryExam,
+  VitalSigns,
+} from "../features/encounter/components/examination";
 import {
   ChiefComplaintInput,
-  HistoryOfPresentIllness,
-  PastMedicalHistory,
-  MedicationHistory,
   FamilyHistory,
-  SocialHistory,
+  HistoryOfPresentIllness,
+  ImmunizationHistory,
+  MedicationHistory,
+  ObgynHistory,
+  PastMedicalHistory,
   ReviewOfSystems,
-} from '../features/encounter/components/history';
+  SocialHistory,
+  SurgicalHistory,
+} from "../features/encounter/components/history";
 import {
-  VitalSigns,
-  GeneralExamination,
-  CardiovascularExam,
-  RespiratoryExam,
-  AbdominalExam,
-  NeurologicalExam,
-  MusculoskeletalExam,
-} from '../features/encounter/components/examination';
+  buildFhirBundleForSteps1to3,
+  exportEncounterNdjsonForSteps1to3,
+} from "../services/fhirService";
+import { saveFhirExportToLocal } from "../services/localFhirExportStore";
+import { useEncounterStore } from "../store/encounterStore";
+import styles from "./EncounterEditorPage.module.css";
 const InvestigationSearchFeatureLazy = React.lazy(() =>
-  import('../features/encounter/components/investigations').then((m) => ({ default: m.InvestigationSearch })),
+  import("../features/encounter/components/investigations").then((m) => ({
+    default: m.InvestigationSearch,
+  }))
 );
 const InvestigationOrdersLazy = React.lazy(() =>
-  import('../features/encounter/components/investigations').then((m) => ({ default: m.InvestigationOrders })),
+  import("../features/encounter/components/investigations").then((m) => ({
+    default: m.InvestigationOrders,
+  }))
 );
 const InvestigationResultsLazy = React.lazy(() =>
-  import('../features/encounter/components/investigations').then((m) => ({ default: m.InvestigationResults })),
+  import("../features/encounter/components/investigations").then((m) => ({
+    default: m.InvestigationResults,
+  }))
 );
 const ImagingOrdersLazy = React.lazy(() =>
-  import('../features/encounter/components/investigations').then((m) => ({ default: m.ImagingOrders })),
+  import("../features/encounter/components/investigations").then((m) => ({
+    default: m.ImagingOrders,
+  }))
 );
 const MedicationSearchFeatureLazy = React.lazy(() =>
-  import('../features/encounter/components/medications').then((m) => ({ default: m.MedicationSearch })),
+  import("../features/encounter/components/medications").then((m) => ({
+    default: m.MedicationSearch,
+  }))
 );
 const MedicationPrescriptionLazy = React.lazy(() =>
-  import('../features/encounter/components/medications').then((m) => ({ default: m.MedicationPrescription })),
+  import("../features/encounter/components/medications").then((m) => ({
+    default: m.MedicationPrescription,
+  }))
 );
 const MedicationListLazy = React.lazy(() =>
-  import('../features/encounter/components/medications').then((m) => ({ default: m.MedicationList })),
+  import("../features/encounter/components/medications").then((m) => ({
+    default: m.MedicationList,
+  }))
 );
 const DrugInteractionCheckerLazy = React.lazy(() =>
-  import('../features/encounter/components/medications').then((m) => ({ default: m.DrugInteractionChecker })),
+  import("../features/encounter/components/medications").then((m) => ({
+    default: m.DrugInteractionChecker,
+  }))
 );
 const NewInvestigationSearchLazy = React.lazy(() =>
-  import('@/components/investigations/InvestigationSearch').then((m) => ({ default: m.InvestigationSearch })),
+  import("@/components/investigations/InvestigationSearch").then((m) => ({
+    default: m.InvestigationSearch,
+  }))
 );
 const NewMedicationSearchLazy = React.lazy(() =>
-  import('@/components/medications/MedicationSearch').then((m) => ({ default: m.MedicationSearch })),
+  import("@/components/medications/MedicationSearch").then((m) => ({
+    default: m.MedicationSearch,
+  }))
 );
-import styles from './EncounterEditorPage.module.css';
 
-type TabType = 'history' | 'examination' | 'investigations' | 'medications';
+type TabType =
+  | "soap"
+  | "history"
+  | "examination"
+  | "investigations"
+  | "medications";
 
 export const EncounterEditorPage: React.FC = () => {
   const {
@@ -62,33 +98,47 @@ export const EncounterEditorPage: React.FC = () => {
     encounterId,
     patientId,
     providerId,
+    encounterDate,
+    encounterType,
+    history,
+    examination,
+    investigations,
+    medications,
+    assessment,
+    plan,
   } = useEncounterStore();
 
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
-  const [saveMessage, setSaveMessage] = useState('');
-  const [showInvestigationPreview, setShowInvestigationPreview] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [saveMessage, setSaveMessage] = useState("");
+  const [showInvestigationPreview, setShowInvestigationPreview] =
+    useState(false);
   const [showMedicationPreview, setShowMedicationPreview] = useState(false);
+  const [useWizard, setUseWizard] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const tabs: Array<{ id: TabType; label: string; icon: string }> = [
-    { id: 'history', label: 'History', icon: '📋' },
-    { id: 'examination', label: 'Examination', icon: '🔍' },
-    { id: 'investigations', label: 'Investigations', icon: '🧪' },
-    { id: 'medications', label: 'Medications', icon: '💊' },
+    { id: "soap", label: "SOAP Note", icon: "📝" },
+    { id: "history", label: "History", icon: "📋" },
+    { id: "examination", label: "Examination", icon: "🔍" },
+    { id: "investigations", label: "Investigations", icon: "🧪" },
+    { id: "medications", label: "Medications", icon: "💊" },
   ];
 
   const handleSave = async () => {
-    setSaveStatus('saving');
+    setSaveStatus("saving");
     setIsSaving(true);
 
     try {
       await saveEncounter();
-      setSaveStatus('success');
-      setSaveMessage('Encounter saved successfully');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setSaveStatus("success");
+      setSaveMessage("Encounter saved successfully");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } catch (error) {
-      setSaveStatus('error');
-      setSaveMessage('Failed to save encounter');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setSaveStatus("error");
+      setSaveMessage("Failed to save encounter");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } finally {
       setIsSaving(false);
     }
@@ -99,14 +149,161 @@ export const EncounterEditorPage: React.FC = () => {
   };
 
   const handleFinalize = async () => {
-    if (window.confirm('Are you sure you want to finalize this encounter? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to finalize this encounter? This action cannot be undone."
+      )
+    ) {
       await handleSave();
       // TODO: Call API to finalize encounter
     }
   };
 
+  const handleExportFhirBundle = () => {
+    try {
+      const ctx = {
+        encounterId,
+        encounterDate,
+        encounterType,
+        patientId,
+        providerId,
+        history,
+        examination,
+        investigations,
+        medications,
+        assessment,
+        plan,
+      };
+
+      const bundle = buildFhirBundleForSteps1to3(ctx, encounterId || undefined);
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], {
+        type: "application/fhir+json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const safeEncounterId = encounterId || "draft";
+      link.href = url;
+      link.download = `encounter-${safeEncounterId}-all-steps-${timestamp}.bundle.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      // Non-invasive: log only, do not affect clinical workflow
+      // eslint-disable-next-line no-console
+      console.error("Failed to export FHIR bundle", error);
+    }
+  };
+
+  const handleExportNdjson = () => {
+    try {
+      const ctx = {
+        encounterId,
+        encounterDate,
+        encounterType,
+        patientId,
+        providerId,
+        history,
+        examination,
+        investigations,
+        medications,
+        assessment,
+        plan,
+      };
+
+      const {
+        encounterNdjson,
+        conditionNdjson,
+        observationNdjson,
+        medicationStatementNdjson,
+        procedureNdjson,
+        immunizationNdjson,
+        familyMemberHistoryNdjson,
+        serviceRequestNdjson,
+        diagnosticReportNdjson,
+        medicationRequestNdjson,
+        carePlanNdjson,
+      } = exportEncounterNdjsonForSteps1to3(ctx);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const safeEncounterId = encounterId || "draft";
+
+      const downloadNdjson = (content: string, resourceType: string) => {
+        if (!content) return;
+        const blob = new Blob(
+          [content.endsWith("\n") ? content : `${content}\n`],
+          {
+            type: "application/fhir+ndjson",
+          }
+        );
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `encounter-${safeEncounterId}-all-steps-${resourceType}-${timestamp}.ndjson`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
+
+      downloadNdjson(encounterNdjson, "Encounter");
+      downloadNdjson(conditionNdjson, "Condition");
+      downloadNdjson(observationNdjson, "Observation");
+      downloadNdjson(medicationStatementNdjson, "MedicationStatement");
+      downloadNdjson(procedureNdjson, "Procedure");
+      downloadNdjson(immunizationNdjson, "Immunization");
+      downloadNdjson(familyMemberHistoryNdjson, "FamilyMemberHistory");
+      downloadNdjson(serviceRequestNdjson, "ServiceRequest");
+      downloadNdjson(diagnosticReportNdjson, "DiagnosticReport");
+      downloadNdjson(medicationRequestNdjson, "MedicationRequest");
+      downloadNdjson(carePlanNdjson, "CarePlan");
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to export NDJSON", error);
+    } finally {
+      setShowMoreMenu(false);
+    }
+  };
+
+  const handleSaveExportLocally = () => {
+    try {
+      const ctx = {
+        encounterId,
+        encounterDate,
+        encounterType,
+        patientId,
+        providerId,
+        history,
+        examination,
+        investigations,
+        medications,
+        assessment,
+        plan,
+      };
+
+      const bundle = buildFhirBundleForSteps1to3(ctx, encounterId || undefined);
+      const ndjson = exportEncounterNdjsonForSteps1to3(ctx);
+
+      saveFhirExportToLocal({
+        encounterId,
+        patientId,
+        providerId,
+        bundle,
+        ndjson,
+        source: "provider-portal",
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to save FHIR export locally", error);
+    } finally {
+      setShowMoreMenu(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
+      <AutoSaveManager debounceMs={3000} />
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
@@ -120,12 +317,46 @@ export const EncounterEditorPage: React.FC = () => {
 
         <div className={styles.headerActions}>
           <button
+            onClick={() => setUseWizard((v) => !v)}
+            className={`${styles.button}`}
+            type="button"
+          >
+            {useWizard ? "Use Tabbed Editor" : "Use Clinical Flow Wizard"}
+          </button>
+          <button
+            onClick={handleExportFhirBundle}
+            className={`${styles.button}`}
+            type="button"
+          >
+            ⬇️ Export FHIR Bundle (All Steps)
+          </button>
+          <div className={styles.moreMenu}>
+            <button
+              onClick={() => setShowMoreMenu((v) => !v)}
+              className={`${styles.button}`}
+              type="button"
+            >
+              More ▾
+            </button>
+            {showMoreMenu && (
+              <div className={styles.moreMenuPopover}>
+                <button
+                  type="button"
+                  onClick={handleExportNdjson}
+                  className={styles.moreMenuItem}
+                >
+                  Export NDJSON (All Steps)
+                </button>
+              </div>
+            )}
+          </div>
+          <button
             onClick={handleSave}
             disabled={isSaving}
             className={`${styles.button} ${styles.saveButton}`}
             type="button"
           >
-            {isSaving ? '💾 Saving...' : '💾 Save'}
+            {isSaving ? "💾 Saving..." : "💾 Save"}
           </button>
           <button
             onClick={handlePrint}
@@ -145,132 +376,228 @@ export const EncounterEditorPage: React.FC = () => {
       </div>
 
       {/* Status Messages */}
-      {saveStatus !== 'idle' && (
+      {saveStatus !== "idle" && (
         <div className={`${styles.statusMessage} ${styles[saveStatus]}`}>
           {saveMessage}
         </div>
       )}
 
-      {/* Tabs */}
-      <div className={styles.tabsContainer}>
-        <div className={styles.tabs}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-              type="button"
-            >
-              <span className={styles.tabIcon}>{tab.icon}</span>
-              <span className={styles.tabLabel}>{tab.label}</span>
-            </button>
-          ))}
+      {/* Tabs - hidden when wizard mode is active */}
+      {!useWizard && (
+        <div className={styles.tabsContainer}>
+          <div className={styles.tabs}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`${styles.tab} ${activeTab === tab.id ? styles.active : ""}`}
+                type="button"
+              >
+                <span className={styles.tabIcon}>{tab.icon}</span>
+                <span className={styles.tabLabel}>{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <div className={styles.content}>
-        {/* History Tab */}
-        {activeTab === 'history' && (
+        {useWizard && (
           <div className={styles.tabContent}>
-            <h2>Patient History</h2>
-            <ChiefComplaintInput />
-            <HistoryOfPresentIllness />
-            <PastMedicalHistory />
-            <MedicationHistory />
-            <FamilyHistory />
-            <SocialHistory />
-            <ReviewOfSystems />
+            <ClinicalFlowWizard />
           </div>
         )}
 
-        {/* Examination Tab */}
-        {activeTab === 'examination' && (
-          <div className={styles.tabContent}>
-            <h2>Physical Examination</h2>
-            <VitalSigns />
-            <GeneralExamination />
-            <CardiovascularExam />
-            <RespiratoryExam />
-            <AbdominalExam />
-            <NeurologicalExam />
-            <MusculoskeletalExam />
-          </div>
-        )}
-
-        {/* Investigations Tab */}
-        {activeTab === 'investigations' && (
-          <div className={styles.tabContent}>
-            <h2>Investigations & Imaging</h2>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <InvestigationSearchFeatureLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <ImagingOrdersLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <InvestigationOrdersLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <InvestigationResultsLazy />
-            </React.Suspense>
-
-            <div style={{ marginTop: 16, border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Investigations Preview (New)</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowInvestigationPreview((v) => !v)}
-                  className={`${styles.button}`}
-                >
-                  {showInvestigationPreview ? 'Hide' : 'Show'}
-                </button>
+        {!useWizard && (
+          <>
+            {/* SOAP Tab */}
+            {activeTab === "soap" && (
+              <div className={styles.tabContent}>
+                <h2>SOAP Note</h2>
+                <SOAPEditor />
               </div>
-              {showInvestigationPreview && (
-                <React.Suspense fallback={<div>Loading preview…</div>}>
-                  <NewInvestigationSearchLazy onSelect={() => {}} />
-                </React.Suspense>
-              )}
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Medications Tab */}
-        {activeTab === 'medications' && (
-          <div className={styles.tabContent}>
-            <h2>Medications & Prescriptions</h2>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <MedicationSearchFeatureLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <MedicationPrescriptionLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <DrugInteractionCheckerLazy />
-            </React.Suspense>
-            <React.Suspense fallback={<div>Loading…</div>}>
-              <MedicationListLazy />
-            </React.Suspense>
-
-            <div style={{ marginTop: 16, border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Medications Preview (New)</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowMedicationPreview((v) => !v)}
-                  className={`${styles.button}`}
-                >
-                  {showMedicationPreview ? 'Hide' : 'Show'}
-                </button>
+            {/* History Tab */}
+            {activeTab === "history" && (
+              <div className={styles.tabContent}>
+                <h2>Patient History</h2>
+                <ChiefComplaintInput />
+                <HistoryOfPresentIllness />
+                <PastMedicalHistory />
+                <MedicationHistory />
+                <SurgicalHistory />
+                <ObgynHistory />
+                <ImmunizationHistory />
+                <FamilyHistory />
+                <SocialHistory />
+                <ReviewOfSystems />
               </div>
-              {showMedicationPreview && (
-                <React.Suspense fallback={<div>Loading preview…</div>}>
-                  <NewMedicationSearchLazy onSelect={() => {}} />
+            )}
+
+            {/* Examination Tab */}
+            {activeTab === "examination" && (
+              <div className={styles.tabContent}>
+                <h2>Physical Examination</h2>
+                <VitalSigns />
+                <GeneralExamination />
+                <CardiovascularExam />
+                <RespiratoryExam />
+                <AbdominalExam />
+                <NeurologicalExam />
+                <MusculoskeletalExam />
+              </div>
+            )}
+
+            {/* Investigations Tab */}
+            {activeTab === "investigations" && (
+              <div className={styles.tabContent}>
+                <h2>Investigations & Imaging</h2>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <InvestigationSearchFeatureLazy />
                 </React.Suspense>
-              )}
-            </div>
-          </div>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <ImagingOrdersLazy />
+                </React.Suspense>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <InvestigationOrdersLazy />
+                </React.Suspense>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <InvestigationResultsLazy />
+                </React.Suspense>
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <h3 style={{ fontSize: "1rem", fontWeight: 600 }}>
+                      Investigations Preview (New)
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowInvestigationPreview((v) => !v)}
+                      className={`${styles.button}`}
+                    >
+                      {showInvestigationPreview ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {showInvestigationPreview && (
+                    <React.Suspense fallback={<div>Loading preview…</div>}>
+                      <NewInvestigationSearchLazy onSelect={() => {}} />
+                    </React.Suspense>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Medications Tab */}
+            {activeTab === "medications" && (
+              <div className={styles.tabContent}>
+                <h2>Medications & Prescriptions</h2>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <MedicationSearchFeatureLazy />
+                </React.Suspense>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <MedicationPrescriptionLazy />
+                </React.Suspense>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <DrugInteractionCheckerLazy />
+                </React.Suspense>
+                <React.Suspense fallback={<div>Loading…</div>}>
+                  <MedicationListLazy />
+                </React.Suspense>
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <h3 style={{ fontSize: "1rem", fontWeight: 600 }}>
+                      Medications Preview (New)
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowMedicationPreview((v) => !v)}
+                      className={`${styles.button}`}
+                    >
+                      {showMedicationPreview ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  {showMedicationPreview && (
+                    <React.Suspense fallback={<div>Loading preview…</div>}>
+                      <NewMedicationSearchLazy onSelect={() => {}} />
+                    </React.Suspense>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
+
+        <div
+          style={{
+            marginTop: 24,
+            border: "1px solid var(--color-border-light)",
+            borderRadius: 12,
+            padding: 16,
+            background: "rgba(255,255,255,0.95)",
+          }}
+        >
+          <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+            All Steps FHIR Export
+          </h3>
+          <p style={{ marginBottom: 12, color: "#64748B", fontSize: 14 }}>
+            Export a FHIR Bundle and NDJSON streams covering all 15 steps of the
+            clinical flow, including history, examination, investigations,
+            medications, and advice/care plan.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleExportFhirBundle}
+              className={`${styles.button}`}
+            >
+              ⬇️ Download FHIR Bundle (All Steps)
+            </button>
+            <button
+              type="button"
+              onClick={handleExportNdjson}
+              className={`${styles.button}`}
+            >
+              ⬇️ Download NDJSON (All Steps)
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
@@ -286,7 +613,7 @@ export const EncounterEditorPage: React.FC = () => {
             className={`${styles.button} ${styles.saveButton}`}
             type="button"
           >
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

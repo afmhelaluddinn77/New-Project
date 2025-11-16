@@ -6,7 +6,7 @@ const mockClient = {
   put: jest.fn(),
   patch: jest.fn(),
   delete: jest.fn(),
-  defaults: { headers: { common: {} as Record<string, string> } },
+  defaults: { headers: { common: {} } },
 };
 
 describe("EncounterService - Misc functions coverage", () => {
