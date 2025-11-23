@@ -1,0 +1,352 @@
+# Kong Gateway Configuration - EMR HMS
+# HIPAA Compliant API Gateway Configuration
+
+_format_version: "3.0"
+
+services:
+  # ============================================================================
+  # AUTHENTICATION SERVICE
+  # ============================================================================
+  - name: authentication-service
+    url: http://authentication-service:3001
+    routes:
+      - name: auth-routes
+        paths:
+          - /api/auth
+        strip_path: false
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:5174" # Provider Portal
+            - "http://localhost:5175" # Patient Portal
+            - "http://localhost:5176" # Admin Portal
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Authorization
+            - Content-Type
+          credentials: true
+          max_age: 3600
+
+  # ============================================================================
+  # PATIENT SERVICE
+  # ============================================================================
+  - name: patient-service
+    url: http://patient-service:3011
+    routes:
+      - name: patient-routes
+        paths:
+          - /api/patients
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+          credentials: true
+
+  # ============================================================================
+  # APPOINTMENT SERVICE
+  # ============================================================================
+  - name: appointment-service
+    url: http://appointment-service:3015
+    routes:
+      - name: appointment-routes
+        paths:
+          - /api/appointments
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+          credentials: true
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+
+  # ============================================================================
+  # MESSAGING SERVICE
+  # ============================================================================
+  - name: messaging-service
+    url: http://messaging-service:3016
+    routes:
+      - name: messaging-routes
+        paths:
+          - /api/messages
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+          credentials: true
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+
+  # ============================================================================
+  # ENCOUNTER SERVICE
+  # ============================================================================
+  - name: encounter-service
+    url: http://encounter-service:3005
+    routes:
+      - name: encounter-routes
+        paths:
+          - /api/encounters
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+          credentials: true
+
+  # ============================================================================
+  # PHARMACY SERVICE
+  # ============================================================================
+  - name: pharmacy-service
+    url: http://pharmacy-service:3012
+    routes:
+      - name: pharmacy-routes
+        paths:
+          - /api/pharmacy
+          - /api/medications
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+          credentials: true
+
+  # ============================================================================
+  # LAB SERVICE
+  # ============================================================================
+  - name: lab-service
+    url: http://lab-service:3013
+    routes:
+      - name: lab-routes
+        paths:
+          - /api/lab
+          - /api/lab-results
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+          credentials: true
+
+  # ============================================================================
+  # RADIOLOGY SERVICE
+  # ============================================================================
+  - name: radiology-service
+    url: http://radiology-service:3014
+    routes:
+      - name: radiology-routes
+        paths:
+          - /api/radiology
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+          credentials: true
+
+  # ============================================================================
+  # AGGREGATION SERVICE (Read Models)
+  # ============================================================================
+  - name: aggregation-service
+    url: http://aggregation-service:3020
+    routes:
+      - name: aggregation-routes
+        paths:
+          - /api/aggregations
+          - /api/dashboard
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+          credentials: true
+      - name: response-transformer
+        config:
+          add:
+            headers:
+              - "X-Cache-Status: HIT"
+
+  # ============================================================================
+  # NOTIFICATION SERVICE
+  # ============================================================================
+  - name: notification-service
+    url: http://notification-service:3021
+    routes:
+      - name: notification-routes
+        paths:
+          - /api/notifications
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PATCH
+          credentials: true
+
+  # ============================================================================
+  # FHIR SERVICE
+  # ============================================================================
+  - name: fhir-service
+    url: http://fhir-service:3017
+    routes:
+      - name: fhir-routes
+        paths:
+          - /fhir
+        strip_path: false
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          key_claim_name: sub
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+          credentials: true
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "Accept: application/fhir+json"
+
+# ============================================================================
+# GLOBAL PLUGINS
+# ============================================================================
+plugins:
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 10 # 10MB max
+
+  - name: ip-restriction
+    config:
+      allow:
+        - 127.0.0.1
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+#
+# To apply this configuration:
+# 1. Ensure Kong is running: docker-compose up -d kong
+# 2. Apply config: deck sync -s kong-config.yml
+# 3. Verify: curl http://localhost:8001/services
+#
+# Service Ports:
+# - Kong Proxy: 8000
+# - Kong Admin: 8001
+# - Authentication: 3001
+# - Patient: 3011
+# - Appointment: 3015
+# - Messaging: 3016
+# - Encounter: 3005
+# - Pharmacy: 3012
+# - Lab: 3013
+# - Radiology: 3014
+# - Aggregation: 3020
+# - Notification: 3021
+# - FHIR: 3017

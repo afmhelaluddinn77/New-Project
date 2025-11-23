@@ -1,0 +1,243 @@
+// Appointment Service - Prisma Schema
+// HIPAA Compliant, HL7 FHIR R4 Compatible
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["appointment"]
+}
+
+// ============================================================================
+// APPOINTMENT MANAGEMENT
+// ============================================================================
+
+enum AppointmentStatus {
+  REQUESTED       // Patient requested appointment
+  PENDING_APPROVAL // Awaiting provider approval
+  CONFIRMED       // Appointment confirmed
+  CHECKED_IN      // Patient checked in
+  IN_PROGRESS     // Appointment in progress
+  COMPLETED       // Appointment completed
+  CANCELLED       // Cancelled by patient or provider
+  NO_SHOW         // Patient did not show up
+  RESCHEDULED     // Appointment rescheduled
+
+  @@schema("appointment")
+}
+
+enum AppointmentType {
+  GENERAL_CHECKUP
+  FOLLOW_UP
+  URGENT_CARE
+  ANNUAL_PHYSICAL
+  SPECIALIST_CONSULTATION
+  LAB_WORK
+  RADIOLOGY
+  TELEMEDICINE
+  VACCINATION
+  PROCEDURE
+  OTHER
+
+  @@schema("appointment")
+}
+
+model Appointment {
+  id                String            @id @default(uuid())
+  appointmentNumber String            @unique // Human-readable appointment number (e.g., APT-2024-001)
+
+  // Patient & Provider
+  patientId         String
+  providerId        String?           // Optional if not yet assigned
+
+  // Appointment Details
+  appointmentType   AppointmentType
+  status            AppointmentStatus @default(REQUESTED)
+
+  // Scheduling
+  requestedDate     DateTime?         // Date patient requested
+  requestedTime     String?           // Time slot requested (e.g., "10:00 AM")
+  scheduledDate     DateTime?         // Confirmed appointment date/time
+  duration          Int               @default(30) // Duration in minutes
+
+  // Location
+  location          String?           // Clinic location or room
+  isTelemedicine    Boolean           @default(false)
+  telemedicineUrl   String?           // Video call URL if telemedicine
+
+  // Clinical Information
+  reason            String?           // Chief complaint / reason for visit
+  notes             String?           // Additional notes
+  instructions      String?           // Pre-appointment instructions
+
+  // Check-in Data (Feature #20)
+  checkInTime       DateTime?
+  checkInSymptoms   String?           // Symptoms reported at check-in
+  checkInTemp       Float?            // Temperature at check-in
+
+  // Audit Fields (HIPAA)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String?           // User ID who created
+  updatedBy         String?           // User ID who last updated
+  isDeleted         Boolean           @default(false)
+  deletedAt         DateTime?
+  deletedBy         String?
+
+  // FHIR Support
+  fhirResourceId    String?           @unique // Link to FHIR Appointment resource
+
+  // Relationships
+  changes           AppointmentChange[]
+  reminders         AppointmentReminder[]
+
+  @@index([patientId])
+  @@index([providerId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@map("appointments")
+  @@schema("appointment")
+}
+
+// ============================================================================
+// APPOINTMENT CHANGES (for rescheduling tracking)
+// ============================================================================
+
+enum ChangeStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  APPLIED
+
+  @@schema("appointment")
+}
+
+model AppointmentChange {
+  id              String        @id @default(uuid())
+  appointmentId   String
+  appointment     Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  // Change Details
+  oldDate         DateTime?
+  newDate         DateTime?
+  oldProviderId   String?
+  newProviderId   String?
+  reason          String?
+  status          ChangeStatus  @default(REQUESTED)
+
+  // Audit
+  requestedBy     String        // User ID who requested change
+  requestedAt     DateTime      @default(now())
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  @@index([appointmentId])
+  @@map("appointment_changes")
+  @@schema("appointment")
+}
+
+// ============================================================================
+// APPOINTMENT REMINDERS (Feature #18)
+// ============================================================================
+
+enum ReminderType {
+  EMAIL
+  SMS
+  PUSH_NOTIFICATION
+
+  @@schema("appointment")
+}
+
+model AppointmentReminder {
+  id              String        @id @default(uuid())
+  appointmentId   String
+  appointment     Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  // Reminder Details
+  reminderType    ReminderType
+  scheduledFor    DateTime      // When to send reminder
+  sentAt          DateTime?     // When reminder was actually sent
+
+  // Message
+  subject         String?
+  message         String
+
+  // Status
+  isSent          Boolean       @default(false)
+  sendError       String?
+
+  @@index([appointmentId])
+  @@index([scheduledFor])
+  @@map("appointment_reminders")
+  @@schema("appointment")
+}
+
+// ============================================================================
+// PROVIDER AVAILABILITY (for scheduling)
+// ============================================================================
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+
+  @@schema("appointment")
+}
+
+model ProviderAvailability {
+  id            String      @id @default(uuid())
+  providerId    String
+
+  // Schedule
+  dayOfWeek     DayOfWeek
+  startTime     String      // e.g., "09:00"
+  endTime       String      // e.g., "17:00"
+  slotDuration  Int         @default(30) // minutes per slot
+
+  // Capacity
+  maxAppointments Int       @default(16) // max appointments per day
+
+  // Status
+  isActive      Boolean     @default(true)
+  effectiveFrom DateTime    @default(now())
+  effectiveTo   DateTime?
+
+  // Audit
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([providerId])
+  @@index([dayOfWeek])
+  @@map("provider_availability")
+  @@schema("appointment")
+}
+
+// ============================================================================
+// AUDIT LOG (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  userId        String?
+  action        String    // e.g., "CREATE_APPOINTMENT", "CANCEL_APPOINTMENT"
+  resourceType  String?   // "Appointment"
+  resourceId    String?   // Appointment ID
+  ipAddress     String?
+  userAgent     String?
+  success       Boolean   @default(true)
+  errorMessage  String?
+  metadata      Json?
+  timestamp     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+  @@schema("appointment")
+}

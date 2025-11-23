@@ -75,6 +75,11 @@ start_backend_services() {
       npm run start:dev >"$LOG_DIR/notification-service.log" 2>&1 &
   )
 
+  (
+    cd "$ROOT_DIR/services/fhir-service" && \
+      npm run start:dev >"$LOG_DIR/fhir-service.log" 2>&1 &
+  )
+
   info "Backend services starting (logs in $LOG_DIR/*-service.log)."
 }
 

@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import axios from 'axios'
-import { User, Lock, AlertCircle, Heart } from 'lucide-react'
-import './PatientLoginPage.css'
+import axios from "axios";
+import { AlertCircle, Heart, Lock, User } from "lucide-react";
+import { useState } from "react";
+import "./PatientLoginPage.css";
 
 function PatientLoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
-        email,
-        password,
-        portalType: 'PATIENT'
-      })
+      const response = await axios.post(
+        "http://localhost:3001/api/auth/login",
+        {
+          email,
+          password,
+          portalType: "PATIENT",
+        }
+      );
 
-      // Store token and redirect
-      localStorage.setItem('token', response.data.access_token)
-      window.location.href = '/dashboard'
+      // Store token and user data
+      const token = response.data.accessToken || response.data.access_token;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed')
+      setError(err.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
@@ -41,8 +46,8 @@ function PatientLoginPage() {
           </div>
           <h1 className="branding-title">Patient Portal</h1>
           <p className="branding-subtitle">
-            Your health, at your fingertips. Access medical records, schedule appointments, 
-            and communicate with your healthcare team.
+            Your health, at your fingertips. Access medical records, schedule
+            appointments, and communicate with your healthcare team.
           </p>
           <div className="branding-features">
             <div className="feature-item">
@@ -121,7 +126,9 @@ function PatientLoginPage() {
                 <input type="checkbox" />
                 <span>Remember me</span>
               </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
+              <a href="#" className="forgot-password">
+                Forgot password?
+              </a>
             </div>
 
             <button type="submit" className="login-button" disabled={loading}>
@@ -131,7 +138,7 @@ function PatientLoginPage() {
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>
@@ -144,8 +151,7 @@ function PatientLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default PatientLoginPage
-
+export default PatientLoginPage;

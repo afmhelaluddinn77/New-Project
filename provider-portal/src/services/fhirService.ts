@@ -7,6 +7,7 @@ import {
   MedicationData,
   SystemEnquiryEntry,
 } from "../store/encounterStore";
+import { useAuthStore } from "../store/authStore";
 
 interface FhirCoding {
   system?: string;
@@ -208,6 +209,132 @@ export interface FhirBundle {
   type: "collection";
   id?: string;
   entry: FhirBundleEntry[];
+}
+
+// Helper – read cookie by name (duplicated here to avoid coupling with api.ts)
+const getCookie = (name: string): string | undefined => {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+};
+
+// Helper to extract user ID from JWT token
+const extractUserIdFromToken = (token: string): string | null => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub || payload.userId || payload.id || null;
+  } catch {
+    return null;
+  }
+};
+
+// Best-effort upload of a FHIR Bundle to the backend FHIR service.
+// Returns true on HTTP 2xx, false otherwise. This never throws, so
+// callers can safely use the result only for toasts/logging.
+export async function uploadFhirBundleToServer(
+  bundle: FhirBundle
+): Promise<boolean> {
+  const url = "http://localhost:8000/fhir/Bundle";
+
+  try {
+    const { accessToken, user } = useAuthStore.getState();
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/fhir+json",
+    };
+
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
+    headers["x-user-role"] = user?.role || "PROVIDER";
+    headers["x-portal"] = "PROVIDER";
+
+    let userId = user?.id;
+    if (!userId && accessToken) {
+      userId = extractUserIdFromToken(accessToken) || undefined;
+    }
+    if (userId) {
+      headers["x-user-id"] = userId;
+    }
+
+    const csrf = getCookie("XSRF-TOKEN");
+    if (csrf) {
+      headers["X-XSRF-TOKEN"] = csrf;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(bundle),
+    });
+    if (!response.ok) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "FHIR bundle upload failed",
+        response.status,
+        await response.text()
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to upload FHIR bundle to backend FHIR service", error);
+    return false;
+  }
+}
+
+export async function checkFhirHealth(): Promise<boolean> {
+  const url = "http://localhost:8000/fhir/health";
+
+  try {
+    const { accessToken, user } = useAuthStore.getState();
+
+    const headers: Record<string, string> = {};
+
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
+    headers["x-user-role"] = user?.role || "PROVIDER";
+    headers["x-portal"] = "PROVIDER";
+
+    let userId = user?.id;
+    if (!userId && accessToken) {
+      userId = extractUserIdFromToken(accessToken) || undefined;
+    }
+    if (userId) {
+      headers["x-user-id"] = userId;
+    }
+
+    const csrf = getCookie("XSRF-TOKEN");
+    if (csrf) {
+      headers["X-XSRF-TOKEN"] = csrf;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "FHIR health check failed",
+        response.status,
+        await response.text()
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to call FHIR health endpoint", error);
+    return false;
+  }
 }
 
 export interface FhirBuildContext {
@@ -1571,11 +1698,7 @@ export function buildPhysicalExamObservations(
     Object.keys(fields).forEach((key) => {
       const value = fields[key];
       if (!value) return;
-      const label = key
-        .charAt(0)
-        .toUpperCase()
-        .concat(key.slice(1))
-        .replace(/([A-Z])/g, " $1");
+      const label = key.replace(/([A-Z])/g, " $1").toLowerCase();
       observations.push(
         makeObservation(
           {

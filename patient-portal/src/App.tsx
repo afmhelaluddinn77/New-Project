@@ -1,14 +1,19 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import PatientLoginPageClarity from './components/PatientLoginPageClarity'
-import ProtectedRoute from './components/ProtectedRoute'
-import PatientDashboardClarity from './components/PatientDashboardClarity'
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import PatientDashboardClarity from "./components/PatientDashboardClarity";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PatientLoginPage from "./pages/LoginPage";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<PatientLoginPageClarity />} />
+        <Route path="/login" element={<PatientLoginPage />} />
         <Route
           path="/dashboard"
           element={
@@ -19,8 +24,7 @@ function App() {
         />
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
-
+export default App;

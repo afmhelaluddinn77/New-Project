@@ -20,5 +20,10 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*", "generated/prisma/**/*.ts", "src/generated/prisma/**/*.ts"]
+  "include": [
+    "src/**/*",
+    "generated/prisma/**/*.ts",
+    "src/generated/prisma/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

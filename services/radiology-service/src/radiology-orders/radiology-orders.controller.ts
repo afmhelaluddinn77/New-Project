@@ -75,7 +75,10 @@ export class RadiologyOrdersController {
     const storagePath = await this.minioService.uploadImage(file, orderId);
 
     // Generate presigned URL for access
-    const imageUrl = await this.minioService.getPreSignedUrl(storagePath, 24 * 60 * 60); // 24 hours
+    const imageUrl = await this.minioService.getPreSignedUrl(
+      storagePath,
+      24 * 60 * 60,
+    ); // 24 hours
 
     // Create ImagingAsset record
     return this.radiologyOrdersService.createImagingAsset(orderId, {

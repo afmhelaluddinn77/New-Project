@@ -1,0 +1,414 @@
+/* Enhanced Patient Portal - All 20 Features */
+
+.enhanced-patient-portal {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-background, #f5f7fa);
+}
+
+/* Header */
+.portal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.portal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.portal-logo-icon {
+  color: #7fb3ff;
+  width: 32px;
+  height: 32px;
+}
+
+.portal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.portal-header-center {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 2rem;
+}
+
+.portal-search {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  width: 20px;
+  height: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.portal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-button {
+  position: relative;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.header-button:hover {
+  background: #f1f5f9;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Tabs Navigation */
+.portal-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 2rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+
+.portal-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.portal-tab:hover {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.portal-tab.active {
+  color: #7fb3ff;
+  border-bottom-color: #7fb3ff;
+  background: #f0f9ff;
+}
+
+.tab-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Main Content */
+.portal-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Tab Content */
+.tab-content h2 {
+  font-size: 1.75rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.tab-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Buttons */
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #7fb3ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary-btn:hover {
+  background: #6aa3ef;
+}
+
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+  border-color: #7fb3ff;
+  color: #7fb3ff;
+}
+
+.link-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #7fb3ff;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link-btn:hover {
+  color: #6aa3ef;
+  text-decoration: underline;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge.new {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.badge.unread {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge.normal {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge.abnormal {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.badge.outstanding {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge.upcoming {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.badge.current {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  border-color: #7fb3ff;
+  box-shadow: 0 4px 12px rgba(127, 179, 255, 0.1);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  color: #7fb3ff;
+  margin-bottom: 1rem;
+}
+
+.stat-card h3 {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Lists - Universal styling for all feature lists */
+.appointments-list,
+.medications-list,
+.lab-results-list,
+.vitals-list,
+.immunizations-list,
+.messages-list,
+.invoices-list,
+.documents-list,
+.resources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Cards */
+.appointment-card,
+.medication-card,
+.lab-card,
+.vital-card,
+.immunization-card,
+.allergy-card,
+.condition-card,
+.message-card,
+.invoice-card,
+.document-card,
+.resource-card {
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.appointment-card:hover,
+.medication-card:hover,
+.lab-card:hover,
+.message-card:hover,
+.invoice-card:hover,
+.document-card:hover,
+.resource-card:hover {
+  border-color: #7fb3ff;
+  box-shadow: 0 2px 8px rgba(127, 179, 255, 0.1);
+}
+
+/* Specific card types */
+.appointment-card.upcoming {
+  border-left: 4px solid #7fb3ff;
+}
+
+.appointment-card.past {
+  opacity: 0.7;
+}
+
+.medication-card.expiring {
+  border-left: 4px solid #f59e0b;
+}
+
+.lab-card.new {
+  border-left: 4px solid #10b981;
+}
+
+.message-card.unread {
+  border-left: 4px solid #7fb3ff;
+  background: #f0f9ff;
+}
+
+.invoice-card.outstanding {
+  border-left: 4px solid #f59e0b;
+}
+
+.invoice-card.paid {
+  opacity: 0.7;
+}
+
+.allergy-card.critical {
+  border-left: 4px solid #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .portal-tabs {
+    padding: 0 1rem;
+  }
+
+  .portal-content {
+    padding: 1rem;
+  }
+
+  .tab-label {
+    display: none;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

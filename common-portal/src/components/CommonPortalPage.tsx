@@ -1,104 +1,217 @@
-import { Heart, Stethoscope, Shield, Activity, Pill, FileText, Users, Settings, ChevronRight, Lock, CheckCircle, Clock, Globe } from 'lucide-react'
-import './CommonPortalPage.css'
+import {
+  Activity,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  FileText,
+  Globe,
+  Heart,
+  Lock,
+  Pill,
+  Settings,
+  Shield,
+  Stethoscope,
+  Users,
+} from "lucide-react";
+import "./CommonPortalPage.css";
 
 interface PortalCard {
-  id: string
-  title: string
-  description: string
-  icon: React.ComponentType<{ className?: string }>
-  url: string
-  color: string
-  features: string[]
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  url: string;
+  color: string;
+  features: string[];
 }
 
 const portalCards: PortalCard[] = [
   {
-    id: 'patient',
-    title: 'Patient Portal',
-    description: 'Access your medical records, schedule appointments, and communicate with your healthcare team.',
+    id: "patient",
+    title: "Patient Portal",
+    description:
+      "Access your medical records, schedule appointments, and communicate with your healthcare team.",
     icon: Heart,
-    url: 'http://localhost:5173',
-    color: 'var(--color-primary-500)',
-    features: ['Medical Records', 'Appointment Scheduling', 'Lab Results', 'Secure Messaging']
+    url: "http://localhost:5173",
+    color: "var(--color-primary-500)",
+    features: [
+      "Medical Records",
+      "Appointment Scheduling",
+      "Lab Results",
+      "Secure Messaging",
+    ],
   },
   {
-    id: 'provider',
-    title: 'Provider Portal',
-    description: 'Comprehensive clinical workflow management for healthcare professionals.',
+    id: "provider",
+    title: "Provider Portal",
+    description:
+      "Comprehensive clinical workflow management for healthcare professionals.",
     icon: Stethoscope,
-    url: 'http://localhost:5174',
-    color: 'var(--color-success-500)',
-    features: ['Patient Queue', 'Clinical Notes', 'Order Management', 'Care Coordination']
+    url: "http://localhost:5174",
+    color: "var(--color-success-500)",
+    features: [
+      "Patient Queue",
+      "Clinical Notes",
+      "Order Management",
+      "Care Coordination",
+    ],
   },
   {
-    id: 'admin',
-    title: 'Admin Portal',
-    description: 'System administration and operational oversight for healthcare facilities.',
+    id: "admin",
+    title: "Admin Portal",
+    description:
+      "System administration and operational oversight for healthcare facilities.",
     icon: Shield,
-    url: 'http://localhost:5175',
-    color: 'var(--color-warning-500)',
-    features: ['User Management', 'System Health', 'Compliance Tracking', 'Resource Planning']
+    url: "http://localhost:5175",
+    color: "var(--color-warning-500)",
+    features: [
+      "User Management",
+      "System Health",
+      "Compliance Tracking",
+      "Resource Planning",
+    ],
   },
   {
-    id: 'lab',
-    title: 'Laboratory Portal',
-    description: 'Efficient lab workflow management and result processing.',
+    id: "lab",
+    title: "Laboratory Portal",
+    description: "Efficient lab workflow management and result processing.",
     icon: Activity,
-    url: 'http://localhost:5176',
-    color: 'var(--color-info-500)',
-    features: ['Sample Tracking', 'Result Entry', 'Quality Control', 'Worklist Management']
+    url: "http://localhost:5176",
+    color: "var(--color-info-500)",
+    features: [
+      "Sample Tracking",
+      "Result Entry",
+      "Quality Control",
+      "Worklist Management",
+    ],
   },
   {
-    id: 'pharmacy',
-    title: 'Pharmacy Portal',
-    description: 'Medication management and prescription fulfillment system.',
+    id: "pharmacy",
+    title: "Pharmacy Portal",
+    description: "Medication management and prescription fulfillment system.",
     icon: Pill,
-    url: 'http://localhost:5177',
-    color: 'var(--color-error-500)',
-    features: ['Prescription Queue', 'Inventory Management', 'Drug Interactions', 'Patient Counseling']
+    url: "http://localhost:5177",
+    color: "var(--color-error-500)",
+    features: [
+      "Prescription Queue",
+      "Inventory Management",
+      "Drug Interactions",
+      "Patient Counseling",
+    ],
   },
   {
-    id: 'billing',
-    title: 'Billing Portal',
-    description: 'Financial management and insurance claims processing.',
+    id: "billing",
+    title: "Billing Portal",
+    description: "Financial management and insurance claims processing.",
     icon: FileText,
-    url: 'http://localhost:5178',
-    color: 'var(--color-text-secondary)',
-    features: ['Claims Processing', 'Revenue Tracking', 'Insurance Analytics', 'Patient Billing']
+    url: "http://localhost:5178",
+    color: "var(--color-text-secondary)",
+    features: [
+      "Claims Processing",
+      "Revenue Tracking",
+      "Insurance Analytics",
+      "Patient Billing",
+    ],
   },
   {
-    id: 'radiology',
-    title: 'Radiology Portal',
-    description: 'Imaging workflow management and diagnostic reporting.',
+    id: "radiology",
+    title: "Radiology Portal",
+    description: "Imaging workflow management and diagnostic reporting.",
     icon: Users,
-    url: 'http://localhost:5179',
-    color: 'var(--color-primary-600)',
-    features: ['Study Queue', 'Image Viewing', 'Report Generation', 'Quality Assurance']
+    url: "http://localhost:5179",
+    color: "var(--color-primary-600)",
+    features: [
+      "Study Queue",
+      "Image Viewing",
+      "Report Generation",
+      "Quality Assurance",
+    ],
   },
   {
-    id: 'system',
-    title: 'System Settings',
-    description: 'Platform configuration and technical management.',
+    id: "nurses",
+    title: "Nurses Portal",
+    description: "Patient care management and vital signs monitoring.",
+    icon: Heart,
+    url: "http://localhost:5180",
+    color: "#EC4899",
+    features: [
+      "Patient Assignment",
+      "Vitals Documentation",
+      "Medication Admin",
+      "Shift Handoff",
+    ],
+  },
+  {
+    id: "it",
+    title: "IT Portal",
+    description: "System infrastructure monitoring and user management.",
     icon: Settings,
-    url: '#',
-    color: 'var(--color-text-tertiary)',
-    features: ['Configuration', 'Integration', 'Security Settings', 'System Monitoring']
-  }
-]
+    url: "http://localhost:5181",
+    color: "#6366f1",
+    features: [
+      "System Monitoring",
+      "User Management",
+      "Security Alerts",
+      "Audit Logs",
+    ],
+  },
+  {
+    id: "hr",
+    title: "HR Portal",
+    description: "Human resources and employee management.",
+    icon: Users,
+    url: "http://localhost:5182",
+    color: "#8b5cf6",
+    features: [
+      "Employee Directory",
+      "Payroll",
+      "Leave Management",
+      "Recruitment",
+    ],
+  },
+  {
+    id: "engineering",
+    title: "Engineering Portal",
+    description: "Technical development and system maintenance.",
+    icon: Settings,
+    url: "http://localhost:5183",
+    color: "#10b981",
+    features: [
+      "Deployment Status",
+      "Error Logs",
+      "API Documentation",
+      "Database Management",
+    ],
+  },
+  {
+    id: "system",
+    title: "System Settings",
+    description: "Platform configuration and technical management.",
+    icon: Settings,
+    url: "#",
+    color: "var(--color-text-tertiary)",
+    features: [
+      "Configuration",
+      "Integration",
+      "Security Settings",
+      "System Monitoring",
+    ],
+  },
+];
 
 const trustBadges = [
-  { icon: Lock, text: 'HIPAA Compliant' },
-  { icon: CheckCircle, text: 'SOC 2 Certified' },
-  { icon: Shield, text: '256-bit Encryption' },
-  { icon: Globe, text: '24/7 Availability' }
-]
+  { icon: Lock, text: "HIPAA Compliant" },
+  { icon: CheckCircle, text: "SOC 2 Certified" },
+  { icon: Shield, text: "256-bit Encryption" },
+  { icon: Globe, text: "24/7 Availability" },
+];
 
 const healthStats = [
-  { value: '10,000+', label: 'Daily Active Users' },
-  { value: '99.9%', label: 'System Uptime' },
-  { value: '< 2s', label: 'Average Response Time' },
-  { value: '50M+', label: 'Protected Health Records' }
-]
+  { value: "10,000+", label: "Daily Active Users" },
+  { value: "99.9%", label: "System Uptime" },
+  { value: "< 2s", label: "Average Response Time" },
+  { value: "50M+", label: "Protected Health Records" },
+];
 
 export default function CommonPortalPage() {
   return (
@@ -112,14 +225,22 @@ export default function CommonPortalPage() {
             </div>
             <div>
               <h1 className="common-portal-title">EMR/HMS System</h1>
-              <p className="common-portal-subtitle">Your Complete Healthcare Management Solution</p>
+              <p className="common-portal-subtitle">
+                Your Complete Healthcare Management Solution
+              </p>
             </div>
           </div>
           <nav className="common-portal-nav">
-            <a href="#portals" className="clarity-button clarity-button-secondary">
+            <a
+              href="#portals"
+              className="clarity-button clarity-button-secondary"
+            >
               Access Portals
             </a>
-            <a href="#contact" className="clarity-button clarity-button-primary">
+            <a
+              href="#contact"
+              className="clarity-button clarity-button-primary"
+            >
               Get Support
             </a>
           </nav>
@@ -135,15 +256,22 @@ export default function CommonPortalPage() {
                 Secure, Unified Access to All Your Medical Services
               </h2>
               <p className="common-portal-hero-description">
-                Experience the next generation of healthcare management with our integrated platform. 
-                Designed for clarity, performance, and clinical excellence.
+                Experience the next generation of healthcare management with our
+                integrated platform. Designed for clarity, performance, and
+                clinical excellence.
               </p>
               <div className="common-portal-hero-actions">
-                <a href="#portals" className="clarity-button clarity-button-primary clarity-button-large">
+                <a
+                  href="#portals"
+                  className="clarity-button clarity-button-primary clarity-button-large"
+                >
                   Get Started
                   <ChevronRight className="common-portal-button-icon" />
                 </a>
-                <a href="#features" className="clarity-button clarity-button-tertiary clarity-button-large">
+                <a
+                  href="#features"
+                  className="clarity-button clarity-button-tertiary clarity-button-large"
+                >
                   Learn More
                 </a>
               </div>
@@ -198,18 +326,15 @@ export default function CommonPortalPage() {
               Select the appropriate portal based on your role and requirements
             </p>
           </div>
-          
+
           <div className="common-portal-grid">
             {portalCards.map((portal) => {
-              const Icon = portal.icon
+              const Icon = portal.icon;
 
               return (
-                <div
-                  key={portal.id}
-                  className="common-portal-card"
-                >
+                <div key={portal.id} className="common-portal-card">
                   <div className="common-portal-card-header">
-                    <div 
+                    <div
                       className="common-portal-card-icon"
                       style={{ color: portal.color }}
                     >
@@ -217,11 +342,11 @@ export default function CommonPortalPage() {
                     </div>
                     <h3 className="common-portal-card-title">{portal.title}</h3>
                   </div>
-                  
+
                   <p className="common-portal-card-description">
                     {portal.description}
                   </p>
-                  
+
                   <div className="common-portal-card-features">
                     {portal.features.map((feature, index) => (
                       <div key={index} className="common-portal-feature-item">
@@ -230,14 +355,14 @@ export default function CommonPortalPage() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="common-portal-card-footer">
-                    <a 
+                    <a
                       href={portal.url}
                       className="clarity-button clarity-button-primary common-portal-card-button"
-                      style={{ 
+                      style={{
                         backgroundColor: portal.color,
-                        borderColor: portal.color 
+                        borderColor: portal.color,
                       }}
                     >
                       Access Portal
@@ -245,7 +370,7 @@ export default function CommonPortalPage() {
                     </a>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -260,14 +385,18 @@ export default function CommonPortalPage() {
                 Emergency Access Available
               </h2>
               <p className="common-portal-emergency-description">
-                For urgent medical situations, emergency access to critical patient information 
-                is available 24/7 with proper authentication.
+                For urgent medical situations, emergency access to critical
+                patient information is available 24/7 with proper
+                authentication.
               </p>
               <div className="common-portal-emergency-actions">
                 <button className="clarity-button clarity-button-destructive">
                   Emergency Access
                 </button>
-                <a href="tel:1-800-MEDICAL" className="clarity-button clarity-button-secondary">
+                <a
+                  href="tel:1-800-MEDICAL"
+                  className="clarity-button clarity-button-secondary"
+                >
                   Call: 1-800-MEDICAL
                 </a>
               </div>
@@ -294,40 +423,64 @@ export default function CommonPortalPage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="common-portal-footer-links">
               <div className="common-portal-footer-section">
                 <h4>Support</h4>
                 <ul>
-                  <li><a href="#help">Help Center</a></li>
-                  <li><a href="#training">Training Resources</a></li>
-                  <li><a href="#contact">Contact Support</a></li>
-                  <li><a href="#status">System Status</a></li>
+                  <li>
+                    <a href="#help">Help Center</a>
+                  </li>
+                  <li>
+                    <a href="#training">Training Resources</a>
+                  </li>
+                  <li>
+                    <a href="#contact">Contact Support</a>
+                  </li>
+                  <li>
+                    <a href="#status">System Status</a>
+                  </li>
                 </ul>
               </div>
-              
+
               <div className="common-portal-footer-section">
                 <h4>Security</h4>
                 <ul>
-                  <li><a href="#hipaa">HIPAA Compliance</a></li>
-                  <li><a href="#privacy">Privacy Policy</a></li>
-                  <li><a href="#security">Security Features</a></li>
-                  <li><a href="#audit">Audit Logs</a></li>
+                  <li>
+                    <a href="#hipaa">HIPAA Compliance</a>
+                  </li>
+                  <li>
+                    <a href="#privacy">Privacy Policy</a>
+                  </li>
+                  <li>
+                    <a href="#security">Security Features</a>
+                  </li>
+                  <li>
+                    <a href="#audit">Audit Logs</a>
+                  </li>
                 </ul>
               </div>
-              
+
               <div className="common-portal-footer-section">
                 <h4>Resources</h4>
                 <ul>
-                  <li><a href="#api">API Documentation</a></li>
-                  <li><a href="#integration">Integration Guide</a></li>
-                  <li><a href="#updates">System Updates</a></li>
-                  <li><a href="#feedback">Feedback</a></li>
+                  <li>
+                    <a href="#api">API Documentation</a>
+                  </li>
+                  <li>
+                    <a href="#integration">Integration Guide</a>
+                  </li>
+                  <li>
+                    <a href="#updates">System Updates</a>
+                  </li>
+                  <li>
+                    <a href="#feedback">Feedback</a>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
-          
+
           <div className="common-portal-footer-bottom">
             <p>&copy; 2024 EMR/HMS System. All rights reserved.</p>
             <div className="common-portal-footer-legal">
@@ -339,5 +492,5 @@ export default function CommonPortalPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

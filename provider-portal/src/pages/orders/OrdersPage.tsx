@@ -5,6 +5,7 @@ import {
   Activity,
   Beaker,
   ClipboardList,
+  Filter,
   Pill,
   PlusCircle,
   Radiation,
@@ -19,7 +20,6 @@ import { useAuthStore } from "../../store/authStore";
 import { useOrdersStore } from "../../store/ordersStore";
 import type {
   OrderItemPayload,
-  OrderItemStatus,
   OrderItemType,
   UnifiedOrder,
 } from "../../types/workflow";
@@ -32,6 +32,45 @@ const ORDER_PRIORITIES = [
 ] as const;
 
 const STUDY_TYPES = ["XRAY", "CT", "MRI", "ULTRASOUND", "OTHER"] as const;
+
+const MEDICATION_ROUTES = [
+  "Oral",
+  "Intravenous (IV)",
+  "Intramuscular (IM)",
+  "Subcutaneous (SC)",
+  "Topical",
+  "Inhalation",
+  "Rectal",
+  "Sublingual",
+] as const;
+
+const MEDICATION_FREQUENCIES = [
+  "Once daily (QD)",
+  "Twice daily (BID)",
+  "Three times daily (TID)",
+  "Four times daily (QID)",
+  "Every 4 hours (q4h)",
+  "Every 6 hours (q6h)",
+  "Every 8 hours (q8h)",
+  "Every 12 hours (q12h)",
+  "As needed (PRN)",
+] as const;
+
+const DIAGNOSIS_CODES = [
+  { code: "J01.90", system: "ICD-10", display: "Acute sinusitis, unspecified" },
+  {
+    code: "E11.9",
+    system: "ICD-10",
+    display: "Type 2 diabetes mellitus without complications",
+  },
+  {
+    code: "I10",
+    system: "ICD-10",
+    display: "Essential (primary) hypertension",
+  },
+  { code: "R05", system: "ICD-10", display: "Cough" },
+  { code: "R50.9", system: "ICD-10", display: "Fever, unspecified" },
+];
 
 type OrderPriority = (typeof ORDER_PRIORITIES)[number]["value"];
 
@@ -52,6 +91,7 @@ interface LabFormState {
   loincCode: string;
   testName: string;
   specimenType: string;
+  collectionSite: string;
 }
 
 interface RadiologyFormState {
@@ -68,6 +108,8 @@ interface CreateOrderFormState {
   encounterId: string;
   priority: OrderPriority;
   notes: string;
+  diagnosisCode: string;
+  providerSignature: string;
   pharmacy: PharmacyFormState;
   lab: LabFormState;
   radiology: RadiologyFormState;
@@ -79,13 +121,15 @@ const initialFormState: CreateOrderFormState = {
   encounterId: "",
   priority: "ROUTINE",
   notes: "",
+  diagnosisCode: "",
+  providerSignature: "",
   pharmacy: {
     enabled: true,
     rxNormId: "0000",
     drugName: "",
     dosage: "",
     route: "Oral",
-    frequency: "BID",
+    frequency: "Twice daily (BID)",
     duration: "7 days",
     quantity: 14,
     instructions: "",
@@ -95,6 +139,7 @@ const initialFormState: CreateOrderFormState = {
     loincCode: "24323-8",
     testName: "Complete Blood Count",
     specimenType: "Whole blood",
+    collectionSite: "",
   },
   radiology: {
     enabled: false,
@@ -107,11 +152,15 @@ const initialFormState: CreateOrderFormState = {
 
 const formatDate = (iso: string) => new Date(iso).toLocaleString();
 
-const STATUS_BADGE_CLASS: Record<OrderItemStatus, string> = {
+const STATUS_BADGE_CLASS: Record<string, string> = {
   REQUESTED: "status-badge status-requested",
+  NEW: "status-badge status-requested",
   IN_PROGRESS: "status-badge status-progress",
+  PARTIALLY_FULFILLED: "status-badge status-progress",
+  VERIFIED: "status-badge status-verified",
   COMPLETED: "status-badge status-completed",
   ERROR: "status-badge status-error",
+  CANCELLED: "status-badge status-error",
 };
 
 const ITEM_LABEL: Record<OrderItemType, string> = {
@@ -147,6 +196,8 @@ export default function OrdersPage() {
 
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [providerFilter, setProviderFilter] = useState<string>("");
 
   // Removed: useEffect to fetch orders - React Query handles this automatically
 
@@ -170,6 +221,16 @@ export default function OrdersPage() {
       orders.find((order) => order.id === selectedOrderId) ?? orders[0] ?? null,
     [orders, selectedOrderId]
   );
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const statusMatch = statusFilter === "ALL" || o.status === statusFilter;
+      const providerMatch =
+        !providerFilter ||
+        o.providerId.toLowerCase().includes(providerFilter.toLowerCase());
+      return statusMatch && providerMatch;
+    });
+  }, [orders, statusFilter, providerFilter]);
 
   const handleSelectOrder = (orderId: string) => {
     selectOrder(orderId);
@@ -273,6 +334,7 @@ export default function OrdersPage() {
           encounterId,
           priority,
           clinicalNotes: notes,
+          collectionSite: formState.lab.collectionSite,
           tests: [
             {
               loincCode: formState.lab.loincCode,
@@ -376,14 +438,48 @@ export default function OrdersPage() {
       <div className="orders-content">
         <div className="orders-left">
           <section className="orders-list-card">
-            <header>
-              <ClipboardList size={20} />
-              <h2>Worklist</h2>
+            <header className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <ClipboardList size={20} />
+                <h2>Worklist</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  placeholder="Ordered By..."
+                  value={providerFilter}
+                  onChange={(e) => setProviderFilter(e.target.value)}
+                  className="text-sm border rounded p-1 bg-white"
+                  style={{
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "4px",
+                    padding: "2px 6px",
+                    width: "120px",
+                  }}
+                />
+                <Filter size={16} className="text-gray-500" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="text-sm border rounded p-1 bg-white"
+                  style={{
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "4px",
+                    padding: "2px 6px",
+                  }}
+                >
+                  <option value="ALL">All Status</option>
+                  <option value="NEW">New / Requested</option>
+                  <option value="PARTIALLY_FULFILLED">In Progress</option>
+                  <option value="VERIFIED">Verified</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
             </header>
             {loading && <p className="muted">Loading orders…</p>}
             {queryError && <p className="error">{queryError.message}</p>}
             <ul>
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <li
                   key={order.id}
                   className={
@@ -406,8 +502,8 @@ export default function OrdersPage() {
                   </span>
                 </li>
               ))}
-              {!loading && orders.length === 0 && (
-                <li className="muted">No unified orders yet.</li>
+              {!loading && filteredOrders.length === 0 && (
+                <li className="muted">No orders found.</li>
               )}
             </ul>
           </section>
@@ -467,6 +563,33 @@ export default function OrdersPage() {
                     ))}
                   </select>
                 </label>
+                <label>
+                  <span>Diagnosis Code</span>
+                  <select
+                    value={formState.diagnosisCode}
+                    onChange={(e) =>
+                      handleInputChange("diagnosisCode", e.target.value)
+                    }
+                  >
+                    <option value="">Select Diagnosis</option>
+                    {DIAGNOSIS_CODES.map((d) => (
+                      <option key={d.code} value={d.code}>
+                        {d.code} - {d.display}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="span-2">
+                  <span>Ordering Provider Signature</span>
+                  <input
+                    value={formState.providerSignature}
+                    onChange={(e) =>
+                      handleInputChange("providerSignature", e.target.value)
+                    }
+                    placeholder="Type full name to sign"
+                    style={{ fontFamily: "monospace" }}
+                  />
+                </label>
               </div>
 
               <label>
@@ -516,25 +639,50 @@ export default function OrdersPage() {
                         handlePharmacyChange("dosage", e.target.value)
                       }
                       required={formState.pharmacy.enabled}
+                      placeholder="e.g. 500mg"
                     />
                   </label>
                   <label>
                     <span>Route</span>
-                    <input
+                    <select
                       value={formState.pharmacy.route}
                       onChange={(e) =>
                         handlePharmacyChange("route", e.target.value)
                       }
-                    />
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid var(--color-border)",
+                      }}
+                    >
+                      {MEDICATION_ROUTES.map((route) => (
+                        <option key={route} value={route}>
+                          {route}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label>
                     <span>Frequency</span>
-                    <input
+                    <select
                       value={formState.pharmacy.frequency}
                       onChange={(e) =>
                         handlePharmacyChange("frequency", e.target.value)
                       }
-                    />
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid var(--color-border)",
+                      }}
+                    >
+                      {MEDICATION_FREQUENCIES.map((freq) => (
+                        <option key={freq} value={freq}>
+                          {freq}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label>
                     <span>Duration</span>
@@ -543,6 +691,7 @@ export default function OrdersPage() {
                       onChange={(e) =>
                         handlePharmacyChange("duration", e.target.value)
                       }
+                      placeholder="e.g. 7 days"
                     />
                   </label>
                   <label>
@@ -605,6 +754,16 @@ export default function OrdersPage() {
                       onChange={(e) =>
                         handleLabChange("specimenType", e.target.value)
                       }
+                    />
+                  </label>
+                  <label className="span-2">
+                    <span>Collection Site</span>
+                    <input
+                      value={formState.lab.collectionSite}
+                      onChange={(e) =>
+                        handleLabChange("collectionSite", e.target.value)
+                      }
+                      placeholder="e.g. Left Arm, Central Line"
                     />
                   </label>
                 </div>
@@ -772,6 +931,12 @@ interface OrderDetailPanelProps {
 }
 
 function OrderDetailPanel({ order }: OrderDetailPanelProps) {
+  const steps = ["NEW", "PARTIALLY_FULFILLED", "VERIFIED", "COMPLETED"];
+  // Default to 0 if status not found
+  const currentStepIndex = Math.max(0, steps.indexOf(order.status));
+  // Check items for error since order status doesn't have ERROR
+  const isError = order.items.some((i) => i.status === "ERROR");
+
   return (
     <div className="order-detail-card">
       <header>
@@ -786,20 +951,185 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
         </span>
       </header>
 
+      {/* Visual Stepper */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "24px",
+          marginTop: "12px",
+          position: "relative",
+        }}
+      >
+        {/* Line behind steps */}
+        <div
+          style={{
+            position: "absolute",
+            top: "14px",
+            left: "0",
+            right: "0",
+            height: "2px",
+            background: "#E2E8F0",
+            zIndex: 0,
+          }}
+        />
+        {steps.map((step, idx) => {
+          const isCompleted = idx <= currentStepIndex;
+          const isCurrent = idx === currentStepIndex;
+          let color = isCompleted ? "#2563EB" : "#CBD5E1"; // Blue or Gray
+          let bg = isCompleted ? "#EFF6FF" : "#F8FAFC";
+          if (isError && isCurrent) {
+            color = "#DC2626"; // Red
+            bg = "#FEF2F2";
+          }
+
+          // Map status to label
+          const label = {
+            NEW: "Requested",
+            PARTIALLY_FULFILLED: "In Progress",
+            VERIFIED: "Verified",
+            COMPLETED: "Completed",
+          }[step];
+
+          return (
+            <div
+              key={step}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                zIndex: 1,
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: bg,
+                  border: `2px solid ${color}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "bold",
+                  color: color,
+                  marginBottom: "8px",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {idx + 1}
+              </div>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: isCompleted ? "#1E293B" : "#94A3B8",
+                  textTransform: "capitalize",
+                }}
+              >
+                {label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
       <section>
+        {(order.status === "COMPLETED" || order.status === "VERIFIED") && (
+          <div style={{ marginBottom: "16px", textAlign: "right" }}>
+            <button
+              onClick={() =>
+                alert(
+                  `Notes from order #${order.orderNumber} appended to Patient History.`
+                )
+              }
+              style={{
+                background: "#fff",
+                border: "1px solid #CBD5E1",
+                padding: "6px 12px",
+                borderRadius: "4px",
+                fontSize: "12px",
+                cursor: "pointer",
+                color: "#475569",
+                fontWeight: 500,
+              }}
+            >
+              Append Notes to History
+            </button>
+          </div>
+        )}
+        {order.diagnosisCodes && order.diagnosisCodes.length > 0 && (
+          <div style={{ marginBottom: "16px" }}>
+            <h3>Diagnosis</h3>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {order.diagnosisCodes.map((code) => (
+                <span
+                  key={code}
+                  style={{
+                    background: "#F1F5F9",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    border: "1px solid #E2E8F0",
+                  }}
+                >
+                  {code}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <h3>Fulfillment Items</h3>
         <ul className="items-list">
           {order.items.map((item) => (
             <li key={item.id}>
-              <div>
-                <span className="item-title">{ITEM_LABEL[item.itemType]}</span>
-                <span className="item-subtitle">
-                  Target #{item.targetServiceOrderId}
-                </span>
+              <div style={{ width: "100%" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                  }}
+                >
+                  <div>
+                    <span className="item-title">
+                      {ITEM_LABEL[item.itemType]}
+                    </span>
+                    <span className="item-subtitle">
+                      Target #{item.targetServiceOrderId}
+                    </span>
+                  </div>
+                  <span className={STATUS_BADGE_CLASS[item.status]}>
+                    {item.status}
+                  </span>
+                </div>
+                {/* Expanded Details */}
+                {item.metadata && (
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      paddingTop: "8px",
+                      borderTop: "1px dashed #E2E8F0",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "4px",
+                      fontSize: "11px",
+                      color: "#64748B",
+                    }}
+                  >
+                    {Object.entries(item.metadata).map(([k, v]) => (
+                      <div key={k}>
+                        <span style={{ fontWeight: 600, marginRight: "4px" }}>
+                          {k}:
+                        </span>
+                        {String(v)}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <span className={STATUS_BADGE_CLASS[item.status]}>
-                {item.status}
-              </span>
             </li>
           ))}
         </ul>

@@ -30,10 +30,7 @@ export class LabResultsController {
    */
   @Get(':orderId')
   @Roles('PROVIDER', 'LAB_TECH', 'CLINICAL_WORKFLOW')
-  async getLabResult(
-    @Param('orderId') orderId: string,
-    @UserContext() user: RequestUserContext,
-  ) {
+  async getLabResult(@Param('orderId') orderId: string) {
     try {
       const result = await this.labResultsService.getDetailedResult(orderId);
 
@@ -42,7 +39,7 @@ export class LabResultsController {
         data: result,
         message: 'Lab result retrieved successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -69,7 +66,6 @@ export class LabResultsController {
     @Query('limit') limit?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @UserContext() user?: RequestUserContext,
   ) {
     try {
       const history = await this.labResultsService.getPatientHistory(
@@ -87,7 +83,7 @@ export class LabResultsController {
         data: history,
         message: 'Patient lab history retrieved successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -108,10 +104,7 @@ export class LabResultsController {
    */
   @Get('templates/:testCode')
   @Roles('LAB_TECH', 'PROVIDER')
-  async getTestTemplate(
-    @Param('testCode') testCode: string,
-    @UserContext() user: RequestUserContext,
-  ) {
+  async getTestTemplate(@Param('testCode') testCode: string) {
     try {
       const template = await this.labResultsService.getTestTemplate(testCode);
 
@@ -120,7 +113,7 @@ export class LabResultsController {
         data: template,
         message: 'Test template retrieved successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -158,7 +151,7 @@ export class LabResultsController {
         data: result,
         message: 'Detailed lab result created successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -198,7 +191,7 @@ export class LabResultsController {
         },
         message: 'Export job created successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -219,10 +212,7 @@ export class LabResultsController {
    */
   @Get('export/:exportId/status')
   @Roles('PROVIDER', 'LAB_TECH')
-  async getExportStatus(
-    @Param('exportId') exportId: string,
-    @UserContext() user: RequestUserContext,
-  ) {
+  async getExportStatus(@Param('exportId') exportId: string) {
     try {
       const exportStatus =
         await this.labResultsService.getExportStatus(exportId);
@@ -232,7 +222,7 @@ export class LabResultsController {
         data: exportStatus,
         message: 'Export status retrieved successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -252,10 +242,7 @@ export class LabResultsController {
    */
   @Get('critical/pending')
   @Roles('PROVIDER', 'LAB_TECH')
-  async getCriticalResults(
-    @Query('limit') limit?: string,
-    @UserContext() user?: RequestUserContext,
-  ) {
+  async getCriticalResults(@Query('limit') limit?: string) {
     try {
       const criticalResults = await this.labResultsService.getCriticalResults(
         limit ? parseInt(limit) : 20,
@@ -271,7 +258,7 @@ export class LabResultsController {
             .length,
         },
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
@@ -290,7 +277,6 @@ export class LabResultsController {
   @Roles('PROVIDER', 'LAB_TECH', 'LAB_SUPERVISOR')
   async getDashboardStats(
     @Query('period') period?: string, // 'today', 'week', 'month'
-    @UserContext() user?: RequestUserContext,
   ) {
     try {
       const stats = await this.labResultsService.getDashboardStats(
@@ -302,7 +288,7 @@ export class LabResultsController {
         data: stats,
         message: 'Dashboard statistics retrieved successfully',
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {

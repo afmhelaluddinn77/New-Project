@@ -248,6 +248,9 @@ export interface EncounterState {
   encounterDate: string;
   encounterType: string;
 
+  setPatientId: (id: string) => void;
+  setProviderId: (id: string) => void;
+
   // History data
   history: HistoryData;
   setHistory: (history: Partial<HistoryData>) => void;
@@ -407,6 +410,9 @@ export const useEncounterStore = create<EncounterState>((set) => ({
   providerId: "",
   encounterDate: new Date().toISOString(),
   encounterType: "OUTPATIENT",
+
+  setPatientId: (patientId) => set({ patientId }),
+  setProviderId: (providerId) => set({ providerId }),
 
   history: initialHistoryState,
   examination: initialExaminationState,

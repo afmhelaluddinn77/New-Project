@@ -66,7 +66,9 @@ export class LabResultsService {
       resultedAt: result.createdAt.toISOString(),
       performingLab: 'Central Clinical Laboratory',
       verifiedBy: result.verifiedBy || 'Lab Technician #3',
-      interpretation: this.generateClinicalInterpretation(result.components || []),
+      interpretation: this.generateClinicalInterpretation(
+        result.components || [],
+      ),
       components: (result.components || []).map((component) => ({
         code: component.code,
         name: component.name,

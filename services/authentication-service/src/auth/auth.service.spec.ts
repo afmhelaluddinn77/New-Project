@@ -1,31 +1,36 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
-import { Repository } from "typeorm";
 import { AuthService } from "./auth.service";
 import { LoginDto, PortalType } from "./login.dto";
-import { User } from "./user.entity";
+import { PrismaService } from "../prisma/prisma.service";
 
 describe("AuthService", () => {
   let service: AuthService;
   let jwtService: JwtService;
-  let usersRepo: Repository<User>;
+  let prisma: PrismaService;
 
   // Mock data
-  const mockUser = {
-    id: "1",
-    email: "test@example.com",
+  const providerDbUser = {
+    id: "2",
+    email: "provider@example.com",
     password: "$2b$10$hashedpassword",
-    portals: [PortalType.PROVIDER],
     role: "PROVIDER",
+    portal: "PROVIDER",
+    firstName: "Provider",
+    lastName: "User",
+    hashedRefreshToken: null as string | null,
   };
 
   const mockUserEntity = {
     id: "1",
     email: "test@example.com",
     role: "PROVIDER",
+    portal: "PROVIDER",
+    password: "$2b$10$hashedpassword",
+    firstName: "Test",
+    lastName: "User",
     hashedRefreshToken: "$2b$10$hashedRefreshToken",
   };
 
@@ -34,10 +39,11 @@ describe("AuthService", () => {
     verify: jest.fn(),
   };
 
-  const mockUsersRepository = {
-    save: jest.fn(),
-    findOneBy: jest.fn(),
-    update: jest.fn(),
+  const mockPrisma: any = {
+    user: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
@@ -49,18 +55,22 @@ describe("AuthService", () => {
           useValue: mockJwtService,
         },
         {
-          provide: getRepositoryToken(User),
-          useValue: mockUsersRepository,
+          provide: PrismaService,
+          useValue: mockPrisma,
         },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     jwtService = module.get<JwtService>(JwtService);
-    usersRepo = module.get<Repository<User>>(getRepositoryToken(User));
+    prisma = module.get<PrismaService>(PrismaService);
 
     // Reset mocks
     jest.clearAllMocks();
+    mockPrisma.user.findUnique.mockReset();
+    mockPrisma.user.update.mockReset();
+    mockJwtService.sign.mockReset();
+    mockJwtService.verify.mockReset();
   });
 
   it("should be defined", () => {
@@ -79,14 +89,19 @@ describe("AuthService", () => {
       const mockRefreshToken = "mock.refresh.token";
       const mockHashedRefreshToken = "hashed.refresh.token";
 
+      mockPrisma.user.findUnique.mockResolvedValue(providerDbUser as any);
+      jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
+
       mockJwtService.sign
         .mockReturnValueOnce(mockAccessToken) // First call for access token
         .mockReturnValueOnce(mockRefreshToken); // Second call for refresh token
 
       jest
         .spyOn(bcrypt, "hash")
-        .mockImplementation(() => Promise.resolve(mockHashedRefreshToken));
-      mockUsersRepository.save.mockResolvedValue(mockUserEntity);
+        .mockImplementation(
+          () => Promise.resolve(mockHashedRefreshToken) as unknown as Promise<string>
+        );
+      mockPrisma.user.update.mockResolvedValue({} as any);
 
       const result = await service.login(loginDto);
 
@@ -98,6 +113,8 @@ describe("AuthService", () => {
           email: "provider@example.com",
           role: "PROVIDER",
           portal: PortalType.PROVIDER,
+          firstName: "Provider",
+          lastName: "User",
         },
       });
 
@@ -132,11 +149,11 @@ describe("AuthService", () => {
 
       // Verify refresh token was hashed and saved
       expect(bcrypt.hash).toHaveBeenCalledWith(mockRefreshToken, 10);
-      expect(mockUsersRepository.save).toHaveBeenCalledWith({
-        id: "2",
-        email: "provider@example.com",
-        role: "PROVIDER",
-        hashedRefreshToken: mockHashedRefreshToken,
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: "2" },
+        data: expect.objectContaining({
+          hashedRefreshToken: mockHashedRefreshToken,
+        }),
       });
     });
 
@@ -147,12 +164,12 @@ describe("AuthService", () => {
         portalType: PortalType.PROVIDER,
       };
 
+      mockPrisma.user.findUnique.mockResolvedValue(null as any);
+
       await expect(service.login(loginDto)).rejects.toThrow(
         UnauthorizedException
       );
-      await expect(service.login(loginDto)).rejects.toThrow(
-        "Invalid credentials"
-      );
+      await expect(service.login(loginDto)).rejects.toThrow("Invalid credentials");
     });
 
     it("should throw UnauthorizedException for unauthorized portal access", async () => {
@@ -161,6 +178,8 @@ describe("AuthService", () => {
         password: "password",
         portalType: PortalType.ADMIN, // Provider trying to access Admin portal
       };
+      mockPrisma.user.findUnique.mockResolvedValue(providerDbUser as any);
+      jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
 
       await expect(service.login(loginDto)).rejects.toThrow(
         UnauthorizedException
@@ -186,13 +205,66 @@ describe("AuthService", () => {
         },
       ];
 
+      mockPrisma.user.findUnique.mockImplementation(({ where }: any) => {
+        const email = where.email;
+        switch (email) {
+          case "patient@example.com":
+            return Promise.resolve({
+              id: "1",
+              email,
+              password: "$2b$10$hashedpassword",
+              role: "PATIENT",
+              portal: "PATIENT",
+              firstName: "Patient",
+              lastName: "User",
+              hashedRefreshToken: null,
+            });
+          case "admin@example.com":
+            return Promise.resolve({
+              id: "2",
+              email,
+              password: "$2b$10$hashedpassword",
+              role: "ADMIN",
+              portal: "ADMIN",
+              firstName: "Admin",
+              lastName: "User",
+              hashedRefreshToken: null,
+            });
+          case "lab@example.com":
+            return Promise.resolve({
+              id: "3",
+              email,
+              password: "$2b$10$hashedpassword",
+              role: "LAB",
+              portal: "LAB",
+              firstName: "Lab",
+              lastName: "User",
+              hashedRefreshToken: null,
+            });
+          case "pharmacy@example.com":
+            return Promise.resolve({
+              id: "4",
+              email,
+              password: "$2b$10$hashedpassword",
+              role: "PHARMACY",
+              portal: "PHARMACY",
+              firstName: "Pharmacy",
+              lastName: "User",
+              hashedRefreshToken: null,
+            });
+          default:
+            return Promise.resolve(null);
+        }
+      });
+
+      jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
+      jest.spyOn(bcrypt, "hash").mockResolvedValue("hashed" as never);
+      mockPrisma.user.update.mockResolvedValue({} as any);
+
       for (const testCase of testCases) {
         mockJwtService.sign
           .mockReturnValueOnce("access.token")
           .mockReturnValueOnce("refresh.token");
-
-        jest.spyOn(bcrypt, "hash").mockResolvedValue("hashed" as never);
-        mockUsersRepository.save.mockResolvedValue({});
 
         const loginDto: LoginDto = {
           email: testCase.email,
@@ -219,7 +291,7 @@ describe("AuthService", () => {
       const newAccessToken = "new.access.token";
 
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue(mockUserEntity);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUserEntity as any);
       jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
       mockJwtService.sign.mockReturnValue(newAccessToken);
 
@@ -241,7 +313,9 @@ describe("AuthService", () => {
       });
 
       // Verify user was fetched from DB
-      expect(mockUsersRepository.findOneBy).toHaveBeenCalledWith({ id: "1" });
+      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: "1" },
+      });
 
       // Verify token hash was compared
       expect(bcrypt.compare).toHaveBeenCalledWith(
@@ -283,7 +357,7 @@ describe("AuthService", () => {
       };
 
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue(null);
+      mockPrisma.user.findUnique.mockResolvedValue(null as any);
 
       await expect(service.refreshTokens(providedToken)).rejects.toThrow(
         UnauthorizedException
@@ -302,7 +376,7 @@ describe("AuthService", () => {
       };
 
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue({
+      mockPrisma.user.findUnique.mockResolvedValue({
         ...mockUserEntity,
         hashedRefreshToken: null, // Token revoked
       });
@@ -324,7 +398,7 @@ describe("AuthService", () => {
       };
 
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue(mockUserEntity);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUserEntity as any);
       jest.spyOn(bcrypt, "compare").mockResolvedValue(false as never); // Hash mismatch
 
       await expect(service.refreshTokens(providedToken)).rejects.toThrow(
@@ -354,38 +428,38 @@ describe("AuthService", () => {
     it("should clear refresh token from database on logout", async () => {
       const userId = "1";
 
-      mockUsersRepository.update.mockResolvedValue({ affected: 1 });
+      mockPrisma.user.update.mockResolvedValue({} as any);
 
       await service.logout(userId);
 
-      expect(mockUsersRepository.update).toHaveBeenCalledWith(
-        { id: userId },
-        { hashedRefreshToken: null }
-      );
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: { hashedRefreshToken: null },
+      });
     });
 
     it("should handle logout for non-existent user gracefully", async () => {
       const userId = "999";
 
-      mockUsersRepository.update.mockResolvedValue({ affected: 0 });
+      mockPrisma.user.update.mockResolvedValue({} as any);
 
       await expect(service.logout(userId)).resolves.not.toThrow();
 
-      expect(mockUsersRepository.update).toHaveBeenCalledWith(
-        { id: userId },
-        { hashedRefreshToken: null }
-      );
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: { hashedRefreshToken: null },
+      });
     });
 
     it("should allow multiple logouts for the same user", async () => {
       const userId = "1";
 
-      mockUsersRepository.update.mockResolvedValue({ affected: 1 });
+      mockPrisma.user.update.mockResolvedValue({} as any);
 
       await service.logout(userId);
       await service.logout(userId);
 
-      expect(mockUsersRepository.update).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.user.update).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -400,7 +474,7 @@ describe("AuthService", () => {
 
       // Simulate token after logout (hashedRefreshToken is null)
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue({
+      mockPrisma.user.findUnique.mockResolvedValue({
         ...mockUserEntity,
         hashedRefreshToken: null,
       });
@@ -418,11 +492,28 @@ describe("AuthService", () => {
         portalType: PortalType.PROVIDER,
       };
 
+      let currentUser = { ...providerDbUser, hashedRefreshToken: null as string | null };
+
+      mockPrisma.user.findUnique.mockImplementation(async () => currentUser);
+      mockPrisma.user.update.mockImplementation(async ({ data }: any) => {
+        currentUser = { ...currentUser, ...data };
+        return currentUser;
+      });
+
       mockJwtService.sign
         .mockReturnValueOnce("access1")
         .mockReturnValueOnce("refresh1");
-      jest.spyOn(bcrypt, "hash").mockResolvedValueOnce("hash1" as never);
-      mockUsersRepository.save.mockResolvedValue({});
+
+      jest
+        .spyOn(bcrypt, "hash")
+        .mockResolvedValueOnce("hash1" as never)
+        .mockResolvedValueOnce("hash2" as never);
+
+      jest
+        .spyOn(bcrypt, "compare")
+        .mockResolvedValueOnce(true as never) // first login password check
+        .mockResolvedValueOnce(true as never) // second login password check
+        .mockResolvedValueOnce(false as never); // refresh token mismatch
 
       await service.login(loginDto);
 
@@ -430,7 +521,6 @@ describe("AuthService", () => {
       mockJwtService.sign
         .mockReturnValueOnce("access2")
         .mockReturnValueOnce("refresh2");
-      jest.spyOn(bcrypt, "hash").mockResolvedValueOnce("hash2" as never);
 
       await service.login(loginDto);
 
@@ -443,13 +533,6 @@ describe("AuthService", () => {
       };
 
       mockJwtService.verify.mockReturnValue(mockPayload);
-      mockUsersRepository.findOneBy.mockResolvedValue({
-        id: "2",
-        email: "provider@example.com",
-        role: "PROVIDER",
-        hashedRefreshToken: "hash2", // New hash
-      });
-      jest.spyOn(bcrypt, "compare").mockResolvedValue(false as never);
 
       await expect(service.refreshTokens(oldToken)).rejects.toThrow(
         "Invalid refresh token"

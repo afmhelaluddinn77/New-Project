@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum OrderType {
@@ -50,6 +49,7 @@ model PrescriptionOrder {
   priority       OrderPriority
   status         PrescriptionStatus @default(NEW)
   notes          String?
+  providerSignature String?
   submittedAt    DateTime            @default(now())
   verifiedAt     DateTime?
   dispensedAt    DateTime?

@@ -164,7 +164,15 @@ export class PdfExportService {
                 <tbody>
                     ${resultData.components
                       .map(
-                        (component: { displayName: string; name: string; value: string; unit: string; referenceRangeText: string; interpretation: string; trend?: string }) => `
+                        (component: {
+                          displayName: string;
+                          name: string;
+                          value: string;
+                          unit: string;
+                          referenceRangeText: string;
+                          interpretation: string;
+                          trend?: string;
+                        }) => `
                         <tr class="result-row ${this.getRowClass(component.interpretation)}">
                             <td class="component-name">
                                 <strong>${component.displayName}</strong>

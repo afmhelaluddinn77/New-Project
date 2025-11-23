@@ -1,22 +1,40 @@
-import { Home, Calendar, FileText, Pill, MessageSquare, CreditCard, Users, ClipboardList, Settings, BarChart, Shield, Activity, Database, FlaskConical, CheckCircle, Package, AlertTriangle, TrendingUp, Image, Monitor, Receipt } from 'lucide-react'
-import DashboardLayout from './shared/DashboardLayout'
-import DashboardCard from './shared/DashboardCard'
-import Breadcrumb from './shared/Breadcrumb'
-import './DashboardPage.css'
+import {
+  AlertTriangle,
+  BarChart,
+  Calendar,
+  CreditCard,
+  FileText,
+  Home,
+  MessageSquare,
+  Receipt,
+  Settings,
+  Shield,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import "./DashboardPage.css";
+import Breadcrumb from "./shared/Breadcrumb";
+import DashboardCard from "./shared/DashboardCard";
+import DashboardLayout from "./shared/DashboardLayout";
 
-const PORTAL_COLOR = '#7B9FE5'
+const PORTAL_COLOR = "#7B9FE5";
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: Home },
-  { id: 'claims', label: 'Claims', path: '/claims', icon: FileText },
-  { id: 'payments', label: 'Payments', path: '/payments', icon: CreditCard },
-  { id: 'insurance', label: 'Insurance', path: '/insurance', icon: Shield },
-  { id: 'reports', label: 'Financial Reports', path: '/reports', icon: BarChart },
-  { id: 'invoices', label: 'Invoices', path: '/invoices', icon: Receipt },
-]
+  { id: "dashboard", label: "Dashboard", path: "/dashboard", icon: Home },
+  { id: "claims", label: "Claims", path: "/claims", icon: FileText },
+  { id: "payments", label: "Payments", path: "/payments", icon: CreditCard },
+  { id: "insurance", label: "Insurance", path: "/insurance", icon: Shield },
+  {
+    id: "reports",
+    label: "Financial Reports",
+    path: "/reports",
+    icon: BarChart,
+  },
+  { id: "invoices", label: "Invoices", path: "/invoices", icon: Receipt },
+];
 
 interface DashboardPageProps {
-  portalType: string
+  portalType: string;
 }
 
 export default function DashboardPage({ portalType }: DashboardPageProps) {
@@ -29,12 +47,19 @@ export default function DashboardPage({ portalType }: DashboardPageProps) {
       userRole="Billing Specialist"
     >
       <div className="dashboard-page">
-        <Breadcrumb items={[{ label: 'Home', path: '/dashboard' }, { label: 'Dashboard' }]} />
-        
+        <Breadcrumb
+          items={[
+            { label: "Home", path: "/dashboard" },
+            { label: "Dashboard" },
+          ]}
+        />
+
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">Welcome back, Billing Admin</h1>
-            <p className="dashboard-subtitle">Here's what's happening with your billing portal today.</p>
+            <p className="dashboard-subtitle">
+              Here's what's happening with your billing portal today.
+            </p>
           </div>
         </div>
 
@@ -134,10 +159,17 @@ export default function DashboardPage({ portalType }: DashboardPageProps) {
                 <Settings size={20} />
                 <span>Settings</span>
               </button>
+              <button
+                className="quick-action-btn"
+                onClick={() => alert("Exporting invoice data to CSV...")}
+              >
+                <Download size={20} />
+                <span>Export Invoices</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }

@@ -39,4 +39,14 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: ["node_modules/(?!(.*\\.mjs$))"],
+  testEnvironmentOptions: {
+    customExportConditions: ["node", "node-addons"],
+  },
+  globals: {
+    "ts-jest": {
+      tsconfig: {
+        jsx: "react",
+      },
+    },
+  },
 };

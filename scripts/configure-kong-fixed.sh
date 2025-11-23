@@ -15,9 +15,11 @@ curl -s -X DELETE $KONG_ADMIN/routes/auth-refresh 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/routes/auth-logout 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/routes/workflow-api 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/routes/encounter-api 2>/dev/null
+curl -s -X DELETE $KONG_ADMIN/routes/fhir-api 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/services/authentication-service 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/services/clinical-workflow-service 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/services/encounter-service 2>/dev/null
+curl -s -X DELETE $KONG_ADMIN/services/fhir-service 2>/dev/null
 curl -s -X DELETE $KONG_ADMIN/plugins 2>/dev/null
 echo ""
 
@@ -110,7 +112,26 @@ curl -s -X POST $KONG_ADMIN/services/encounter-service/routes \
 
 echo ""
 
-# 7. Enable CORS plugin globally
+# 7. Create FHIR Service
+echo "📦 Creating fhir-service..."
+curl -s -X POST $KONG_ADMIN/services \
+  --data "name=fhir-service" \
+  --data "url=http://host.docker.internal:3022" | grep -o '"name":"[^"]*"' || echo "Created"
+echo ""
+
+# 8. Create FHIR route
+echo "🛣️  Creating FHIR route..."
+curl -s -X POST $KONG_ADMIN/services/fhir-service/routes \
+  --data "name=fhir-api" \
+  --data "paths[]=/fhir" \
+  --data "methods[]=GET" \
+  --data "methods[]=POST" \
+  --data "methods[]=OPTIONS" \
+  --data "strip_path=false" | grep -o '"name":"[^"]*"'
+
+echo ""
+
+# 9. Enable CORS plugin globally
 echo "🌐 Configuring CORS..."
 curl -s -X POST $KONG_ADMIN/plugins \
   --data "name=cors" \

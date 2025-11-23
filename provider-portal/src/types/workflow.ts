@@ -1,7 +1,17 @@
-export type OrderPriority = 'ROUTINE' | 'URGENT' | 'STAT';
-export type UnifiedOrderStatus = 'NEW' | 'PARTIALLY_FULFILLED' | 'COMPLETED' | 'CANCELLED';
-export type OrderItemType = 'PHARMACY' | 'LAB' | 'RADIOLOGY' | 'PROCEDURE';
-export type OrderItemStatus = 'REQUESTED' | 'IN_PROGRESS' | 'COMPLETED' | 'ERROR';
+export type OrderPriority = "ROUTINE" | "URGENT" | "STAT";
+export enum UnifiedOrderStatus {
+  NEW = "NEW",
+  PARTIALLY_FULFILLED = "PARTIALLY_FULFILLED",
+  COMPLETED = "COMPLETED",
+  VERIFIED = "VERIFIED",
+  CANCELLED = "CANCELLED",
+}
+export type OrderItemType = "PHARMACY" | "LAB" | "RADIOLOGY" | "PROCEDURE";
+export type OrderItemStatus =
+  | "REQUESTED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "ERROR";
 
 export interface UnifiedOrderItem {
   id: string;
@@ -30,6 +40,7 @@ export interface UnifiedOrder {
   encounterId: string;
   priority: OrderPriority;
   status: UnifiedOrderStatus;
+  diagnosisCodes?: string[] | null; // Added diagnosisCodes
   createdAt: string;
   updatedAt: string;
   items: UnifiedOrderItem[];
@@ -49,4 +60,3 @@ export interface CreateUnifiedOrderInput {
   notes?: string;
   items: OrderItemPayload[];
 }
-

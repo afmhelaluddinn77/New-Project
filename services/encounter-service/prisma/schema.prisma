@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -17,22 +16,22 @@ datasource db {
 model Encounter {
   id                String   @id @default(uuid())
   encounterNumber   String   @unique // Human-readable encounter number
-  
+
   // Patient & Provider Information
   patientId         String
   providerId        String
   facilityId        String?
-  
+
   // Encounter Metadata
   encounterDate     DateTime @default(now())
   encounterType     EncounterType
   encounterClass    EncounterClass
   status            EncounterStatus @default(IN_PROGRESS)
   priority          Priority @default(ROUTINE)
-  
+
   // Chief Complaint
   chiefComplaint    String?
-  
+
   // History Data (JSONB for flexibility)
   historyOfPresentIllness Json?
   pastMedicalHistory      Json?
@@ -40,23 +39,23 @@ model Encounter {
   familyHistory           Json?
   socialHistory           Json?
   reviewOfSystems         Json?
-  
+
   // Physical Examination Data
   vitalSigns              Json?
   generalExamination      Json?
   systemicExamination     Json?
-  
+
   // Clinical Assessment
   assessment              String?  // Clinical impression
   diagnosisCodes          Json?    // ICD-10, SNOMED CT codes
-  
+
   // Plan
   plan                    String?
-  
+
   // FHIR Compatibility
   fhirResourceId          String?  @unique
   fhirVersion             String?  @default("R4")
-  
+
   // Audit Trail (HIPAA Requirement)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
@@ -64,13 +63,13 @@ model Encounter {
   updatedBy               String
   deletedAt               DateTime?
   deletedBy               String?
-  
+
   // Relationships
   investigations          Investigation[]
   prescriptions           Prescription[]
   encounterNotes          EncounterNote[]
   auditLogs               AuditLog[]
-  
+
   @@index([patientId])
   @@index([providerId])
   @@index([encounterDate])
@@ -87,20 +86,20 @@ model Investigation {
   id                String   @id @default(uuid())
   encounterId       String
   encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-  
+
   // Investigation Details
   investigationType InvestigationType
   loincCode         String?  // LOINC code for lab tests
   snomedCode        String?  // SNOMED CT code
   name              String
   description       String?
-  
+
   // Order Information
   orderedDate       DateTime @default(now())
   orderedBy         String
   priority          Priority @default(ROUTINE)
   status            InvestigationStatus @default(ORDERED)
-  
+
   // Results
   resultDate        DateTime?
   resultValue       String?
@@ -108,15 +107,15 @@ model Investigation {
   referenceRange    String?
   interpretation    ResultInterpretation?
   resultNotes       String?
-  
+
   // Imaging specific
   imagingModality   String?
   imagingBodySite   String?
-  
+
   // Audit
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([encounterId])
   @@index([status])
   @@index([loincCode])
@@ -131,13 +130,13 @@ model Prescription {
   id                String   @id @default(uuid())
   encounterId       String
   encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-  
+
   // Medication Details
   medicationId      String?  // Reference to medication database
   rxNormCode        String?  // RxNorm code
   genericName       String
   brandName         String?
-  
+
   // Dosage Information
   dosage            String
   dosageForm        String   // tablet, capsule, syrup, injection, etc.
@@ -146,29 +145,29 @@ model Prescription {
   duration          String
   quantity          Int
   refills           Int      @default(0)
-  
+
   // Instructions
   instructions      String?
   indication        String?
-  
+
   // Prescription Metadata
   prescribedDate    DateTime @default(now())
   prescribedBy      String
   status            PrescriptionStatus @default(ACTIVE)
-  
+
   // Safety
   allergyChecked    Boolean  @default(false)
   interactionChecked Boolean @default(false)
-  
+
   // Dispensing
   dispensedDate     DateTime?
   dispensedBy       String?
   pharmacyId        String?
-  
+
   // Audit
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([encounterId])
   @@index([status])
   @@index([prescribedDate])
@@ -183,16 +182,16 @@ model EncounterNote {
   id                String   @id @default(uuid())
   encounterId       String
   encounter         Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-  
+
   noteType          NoteType
   noteText          String
   authorId          String
   authorRole        String
-  
+
   // Timestamps
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([encounterId])
   @@index([noteType])
   @@map("encounter_notes")
@@ -206,26 +205,26 @@ model AuditLog {
   id                String   @id @default(uuid())
   encounterId       String?
   encounter         Encounter? @relation(fields: [encounterId], references: [id], onDelete: SetNull)
-  
+
   // Action Details
   action            AuditAction
   resourceType      String   // Encounter, Prescription, Investigation
   resourceId        String
-  
+
   // User Information
   userId            String
   userRole          String
   userIp            String?
   userAgent         String?
-  
+
   // Change Details
   oldValue          Json?
   newValue          Json?
-  
+
   // Metadata
   timestamp         DateTime @default(now())
   sessionId         String?
-  
+
   @@index([encounterId])
   @@index([userId])
   @@index([timestamp])
@@ -234,8 +233,34 @@ model AuditLog {
 }
 
 // ============================================================================
+// BILLING & INVOICES
+// ============================================================================
+
+model Invoice {
+  id          String   @id @default(uuid())
+  patientId   String
+  encounterId String
+  amount      Decimal
+  status      InvoiceStatus @default(PENDING)
+  items       Json     // Line items: { description, quantity, unitPrice, total }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([status])
+  @@map("invoices")
+}
+
+// ============================================================================
 // ENUMS
 // ============================================================================
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
 
 enum EncounterType {
   OUTPATIENT

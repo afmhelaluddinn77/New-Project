@@ -26,9 +26,12 @@ import {
 import {
   buildFhirBundleForSteps1to3,
   exportEncounterNdjsonForSteps1to3,
+  uploadFhirBundleToServer,
+  checkFhirHealth,
 } from "../services/fhirService";
 import { saveFhirExportToLocal } from "../services/localFhirExportStore";
 import { useEncounterStore } from "../store/encounterStore";
+import { useAuthStore } from "../store/authStore";
 import styles from "./EncounterEditorPage.module.css";
 const InvestigationSearchFeatureLazy = React.lazy(() =>
   import("../features/encounter/components/investigations").then((m) => ({
@@ -88,6 +91,17 @@ type TabType =
   | "investigations"
   | "medications";
 
+const TEST_PATIENTS = [
+  {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    label: "John Doe (Demo Patient)",
+  },
+  {
+    id: "550e8400-e29b-41d4-a716-446655440001",
+    label: "Jane Smith (Demo Patient)",
+  },
+];
+
 export const EncounterEditorPage: React.FC = () => {
   const {
     activeTab,
@@ -98,6 +112,8 @@ export const EncounterEditorPage: React.FC = () => {
     encounterId,
     patientId,
     providerId,
+    setPatientId,
+    setProviderId,
     encounterDate,
     encounterType,
     history,
@@ -108,10 +124,28 @@ export const EncounterEditorPage: React.FC = () => {
     plan,
   } = useEncounterStore();
 
+  const { user } = useAuthStore();
+
+  React.useEffect(() => {
+    if (user?.id && !providerId) {
+      setProviderId(user.id);
+    }
+  }, [user?.id, providerId, setProviderId]);
+
+  React.useEffect(() => {
+    if (!patientId && TEST_PATIENTS.length > 0) {
+      setPatientId(TEST_PATIENTS[0].id);
+    }
+  }, [patientId, setPatientId]);
+
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "success" | "error"
   >("idle");
   const [saveMessage, setSaveMessage] = useState("");
+  const [fhirUploadMessage, setFhirUploadMessage] = useState<string | null>(
+    null
+  );
+  const [fhirUploadIsError, setFhirUploadIsError] = useState(false);
   const [showInvestigationPreview, setShowInvestigationPreview] =
     useState(false);
   const [showMedicationPreview, setShowMedicationPreview] = useState(false);
@@ -159,6 +193,18 @@ export const EncounterEditorPage: React.FC = () => {
     }
   };
 
+  const handleCheckFhirHealth = () => {
+    void checkFhirHealth().then((ok) => {
+      setFhirUploadIsError(!ok);
+      setFhirUploadMessage(
+        ok
+          ? "FHIR service health check succeeded via gateway"
+          : "FHIR service health check failed (see console/Kong logs)"
+      );
+      setTimeout(() => setFhirUploadMessage(null), 4000);
+    });
+  };
+
   const handleExportFhirBundle = () => {
     try {
       const ctx = {
@@ -175,7 +221,22 @@ export const EncounterEditorPage: React.FC = () => {
         plan,
       };
 
-      const bundle = buildFhirBundleForSteps1to3(ctx, encounterId || undefined);
+      const bundle = buildFhirBundleForSteps1to3(
+        ctx,
+        encounterId || undefined
+      );
+
+      // Best-effort upload to backend FHIR service via Kong.
+      // Use the result only for a lightweight toast/log.
+      void uploadFhirBundleToServer(bundle).then((ok) => {
+        setFhirUploadIsError(!ok);
+        setFhirUploadMessage(
+          ok
+            ? "FHIR bundle upload succeeded via gateway"
+            : "FHIR bundle upload failed (see console/Kong logs)"
+        );
+        setTimeout(() => setFhirUploadMessage(null), 4000);
+      });
       const blob = new Blob([JSON.stringify(bundle, null, 2)], {
         type: "application/fhir+json",
       });
@@ -313,6 +374,21 @@ export const EncounterEditorPage: React.FC = () => {
             {patientId && <span>Patient ID: {patientId}</span>}
             {providerId && <span>Provider ID: {providerId}</span>}
           </div>
+          <div className={styles.encounterInfo}>
+            <label>
+              Test Patient:
+              <select
+                value={patientId || TEST_PATIENTS[0].id}
+                onChange={(e) => setPatientId(e.target.value)}
+              >
+                {TEST_PATIENTS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
 
         <div className={styles.headerActions}>
@@ -366,6 +442,13 @@ export const EncounterEditorPage: React.FC = () => {
             🖨️ Print
           </button>
           <button
+            onClick={handleCheckFhirHealth}
+            className={`${styles.button}`}
+            type="button"
+          >
+            🔎 Check FHIR Health
+          </button>
+          <button
             onClick={handleFinalize}
             className={`${styles.button} ${styles.finalizeButton}`}
             type="button"
@@ -379,6 +462,18 @@ export const EncounterEditorPage: React.FC = () => {
       {saveStatus !== "idle" && (
         <div className={`${styles.statusMessage} ${styles[saveStatus]}`}>
           {saveMessage}
+        </div>
+      )}
+      {fhirUploadMessage && (
+        <div
+          className={styles.statusMessage}
+          style={{
+            marginTop: 8,
+            backgroundColor: fhirUploadIsError ? "#FEE2E2" : "#ECFDF3",
+            color: fhirUploadIsError ? "#B91C1C" : "#166534",
+          }}
+        >
+          {fhirUploadMessage}
         </div>
       )}
 

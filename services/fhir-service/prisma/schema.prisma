@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FhirResource {
+  id           String   @id @default(uuid())
+  resourceType String
+  resourceId   String
+  version      String?  @default("R4")
+  body         Json
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([resourceType, resourceId])
+  @@index([resourceType])
+  @@map("fhir_resources")
+}

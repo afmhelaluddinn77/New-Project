@@ -1,0 +1,647 @@
+// Billing Service - Comprehensive Prisma Schema
+// HIPAA Compliant, X12 EDI Ready, FHIR Financial Resources Compatible
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["billing"]
+}
+
+// ============================================================================
+// PAYER MANAGEMENT
+// ============================================================================
+
+model Payer {
+  id                    String          @id @default(uuid())
+
+  // Basic Information
+  name                  String
+  payerId               String          @unique
+  taxId                 String?
+  npi                   String?         // National Provider Identifier
+
+  // Contact Information
+  contactPerson         String?
+  contactTitle          String?
+  phone                 String
+  fax                   String?
+  email                 String?
+  website               String?
+
+  // Address
+  address1              String
+  address2              String?
+  city                  String
+  state                 String
+  zipCode               String
+  country               String          @default("USA")
+
+  // Claim Submission
+  claimSubmissionMethod String          // electronic | paper | both
+  clearinghouseId       String?
+  ediReceiverId         String?
+  submissionUrl         String?         // For electronic submissions
+
+  // Remittance
+  remittanceMethod      String          // electronic | paper | both
+  remittanceEmail       String?
+  eftEnrolled           Boolean         @default(false)
+
+  // Protocols & Requirements
+  timeLimitDays         Int             @default(90)
+  requiresAuth          Boolean         @default(false)
+  requiresReferral      Boolean         @default(false)
+  acceptsSecondary      Boolean         @default(true)
+
+  // Status
+  isActive              Boolean         @default(true)
+  contractStartDate     DateTime?
+  contractEndDate       DateTime?
+
+  // Audit
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  createdBy             String?
+
+  // Relationships
+  claims                Claim[]
+  payments              Payment[]
+  contracts             PayerContract[]
+  feeSchedules          FeeSchedule[]
+  denialReasons         DenialReason[]
+
+  @@index([payerId])
+  @@index([name])
+  @@map("payers")
+  @@schema("billing")
+}
+
+// ============================================================================
+// CLAIMS MANAGEMENT
+// ============================================================================
+
+model Claim {
+  id                    String          @id @default(uuid())
+  claimNumber           String          @unique
+
+  // Patient & Provider
+  patientId             String
+  patientName           String
+  providerId            String
+  providerName          String
+  facilityId            String?
+
+  // Payer Information
+  payerId               String
+  payer                 Payer           @relation(fields: [payerId], references: [id])
+  policyNumber          String
+  groupNumber           String?
+
+  // Claim Details
+  claimType             ClaimType       // professional | institutional | dental
+  serviceDate           DateTime
+  admissionDate         DateTime?
+  dischargeDate         DateTime?
+
+  // Diagnosis & Procedures
+  primaryDiagnosis      String          // ICD-10
+  additionalDiagnoses   String[]        // ICD-10 codes
+
+  // Status Tracking
+  status                ClaimStatus     @default(DRAFT)
+  submissionStatus      SubmissionStatus @default(PENDING)
+  submittedAt           DateTime?
+  acceptedAt            DateTime?
+
+  // Financial
+  totalCharges          Float
+  allowedAmount         Float?
+  paidAmount            Float           @default(0)
+  adjustmentAmount      Float           @default(0)
+  patientResponsibility Float           @default(0)
+
+  // Tracking
+  lastActionDate        DateTime        @default(now())
+  lastActionBy          String?
+  priority              ClaimPriority   @default(NORMAL)
+
+  // Audit
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  // Relationships
+  lineItems             ClaimLineItem[]
+  denials               Denial[]
+  payments              Payment[]
+  attachments           ClaimAttachment[]
+  notes                 ClaimNote[]
+  statusHistory         ClaimStatusHistory[]
+
+  @@index([claimNumber])
+  @@index([patientId])
+  @@index([status])
+  @@index([submissionStatus])
+  @@map("claims")
+  @@schema("billing")
+}
+
+enum ClaimType {
+  PROFESSIONAL      // CMS-1500
+  INSTITUTIONAL     // UB-04
+  DENTAL           // ADA Dental
+
+  @@schema("billing")
+}
+
+enum ClaimStatus {
+  DRAFT
+  READY_TO_SUBMIT
+  SUBMITTED
+  ACCEPTED
+  IN_REVIEW
+  APPROVED
+  PARTIALLY_APPROVED
+  DENIED
+  PAID
+  CLOSED
+  APPEALED
+  VOID
+
+  @@schema("billing")
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  PAYER_PENDING
+  PAID
+
+  @@schema("billing")
+}
+
+enum ClaimPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  STAT
+
+  @@schema("billing")
+}
+
+// ============================================================================
+// CLAIM LINE ITEMS
+// ============================================================================
+
+model ClaimLineItem {
+  id                String          @id @default(uuid())
+  claimId           String
+  claim             Claim           @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  lineNumber        Int
+  serviceDate       DateTime
+
+  // Codes
+  procedureCode     String          // CPT/HCPCS
+  modifiers         String[]        // CPT modifiers
+  diagnosisPointer  Int[]           // Points to diagnosis codes
+
+  // Service Details
+  description       String
+  units             Float
+  unitPrice         Float
+  totalCharge       Float
+
+  // Location
+  placeOfService    String          // POS code
+
+  // Provider
+  renderingProviderId String?
+  renderingProviderNpi String?
+
+  // AI Suggestions
+  aiSuggestedCodes  Json?           // { cpt: [], icd10: [], confidence: 0.95 }
+  aiSuggestionDate  DateTime?
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([claimId])
+  @@map("claim_line_items")
+  @@schema("billing")
+}
+
+// ============================================================================
+// DENIAL MANAGEMENT
+// ============================================================================
+
+model Denial {
+  id                String          @id @default(uuid())
+  claimId           String
+  claim             Claim           @relation(fields: [claimId], references: [id])
+
+  // Denial Details
+  denialDate        DateTime
+  denialCode        String
+  denialReason      String
+  category          DenialCategory
+
+  // Categorization for Analytics
+  rootCause         String?         // For root cause analysis
+  responsibility    DenialResponsibility
+
+  // Appeal Management
+  isAppealable      Boolean         @default(true)
+  appealDeadline    DateTime?
+  appealStatus      AppealStatus?
+  appealedAt        DateTime?
+  appealedBy        String?
+
+  // Assignment
+  assignedTo        String?
+  assignedAt        DateTime?
+  priority          String?         // high | medium | low
+
+  // Resolution
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolutionNotes   String?
+
+  // Financial Impact
+  deniedAmount      Float
+  recoveredAmount   Float           @default(0)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relationships
+  notes             DenialNote[]
+  actions           DenialAction[]
+
+  @@index([claimId])
+  @@index([category])
+  @@index([appealStatus])
+  @@map("denials")
+  @@schema("billing")
+}
+
+enum DenialCategory {
+  ADMINISTRATIVE    // Missing info, wrong codes
+  CLINICAL         // Medical necessity
+  ELIGIBILITY      // Coverage issues
+  AUTHORIZATION    // Prior auth required
+  TECHNICAL        // EDI/submission errors
+  OTHER
+
+  @@schema("billing")
+}
+
+enum DenialResponsibility {
+  PROVIDER
+  PAYER
+  PATIENT
+  CLEARINGHOUSE
+
+  @@schema("billing")
+}
+
+enum AppealStatus {
+  NOT_APPEALED
+  PREPARING
+  SUBMITTED
+  PENDING_RESPONSE
+  APPROVED
+  DENIED
+  WITHDRAWN
+
+  @@schema("billing")
+}
+
+// ============================================================================
+// PAYMENT POSTING
+// ============================================================================
+
+model Payment {
+  id                String          @id @default(uuid())
+  paymentNumber     String          @unique
+
+  // Source
+  payerId           String?
+  payer             Payer?          @relation(fields: [payerId], references: [id])
+  patientId         String?
+
+  // Payment Details
+  paymentDate       DateTime
+  paymentMethod     PaymentMethod
+  referenceNumber   String?         // Check/EFT number
+
+  // Amount
+  totalAmount       Float
+  appliedAmount     Float           @default(0)
+  unappliedAmount   Float
+
+  // Posting
+  postingDate       DateTime        @default(now())
+  postedBy          String
+  postingStatus     PostingStatus   @default(PENDING)
+
+  // AI Matching
+  aiMatchScore      Float?          // 0-1 confidence score
+  aiMatchedClaims   String[]        // Suggested claim IDs
+  aiMatchedAt       DateTime?
+
+  // Batch
+  batchId           String?
+  batchNumber       String?
+
+  // Audit
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relationships
+  claims            Claim[]
+  allocations       PaymentAllocation[]
+  adjustments       PaymentAdjustment[]
+
+  @@index([paymentNumber])
+  @@index([referenceNumber])
+  @@index([postingStatus])
+  @@map("payments")
+  @@schema("billing")
+}
+
+enum PaymentMethod {
+  CHECK
+  EFT
+  CREDIT_CARD
+  CASH
+  INSURANCE
+  PATIENT_PAYMENT
+  OTHER
+
+  @@schema("billing")
+}
+
+enum PostingStatus {
+  PENDING
+  PARTIALLY_POSTED
+  POSTED
+  VOID
+  REVERSED
+
+  @@schema("billing")
+}
+
+model PaymentAllocation {
+  id                String          @id @default(uuid())
+  paymentId         String
+  payment           Payment         @relation(fields: [paymentId], references: [id])
+  claimId           String
+
+  allocatedAmount   Float
+  allocationDate    DateTime        @default(now())
+  allocatedBy       String
+
+  notes             String?
+
+  @@index([paymentId])
+  @@index([claimId])
+  @@map("payment_allocations")
+  @@schema("billing")
+}
+
+// ============================================================================
+// AI CODING SUGGESTIONS
+// ============================================================================
+
+model CodingSuggestion {
+  id                String          @id @default(uuid())
+
+  // Input
+  clinicalText      String          @db.Text
+  serviceType       String?
+  specialty         String?
+
+  // AI Results
+  suggestedIcd10    Json            // [{ code, description, confidence }]
+  suggestedCpt      Json            // [{ code, description, confidence }]
+  suggestedModifiers Json?          // [{ modifier, reason }]
+
+  // Metadata
+  aiModel           String
+  aiVersion         String
+  confidence        Float           // Overall confidence 0-1
+  processingTime    Int             // milliseconds
+
+  // Feedback
+  wasAccepted       Boolean?
+  finalIcd10        String[]        // What was actually used
+  finalCpt          String[]        // What was actually used
+  feedbackNotes     String?
+
+  // Usage
+  usedForClaimId    String?
+  usedBy            String?
+  usedAt            DateTime?
+
+  createdAt         DateTime        @default(now())
+
+  @@index([createdAt])
+  @@map("coding_suggestions")
+  @@schema("billing")
+}
+
+// ============================================================================
+// FEE SCHEDULES
+// ============================================================================
+
+model FeeSchedule {
+  id                String          @id @default(uuid())
+  payerId           String
+  payer             Payer           @relation(fields: [payerId], references: [id])
+
+  name              String
+  effectiveDate     DateTime
+  expirationDate    DateTime?
+
+  isActive          Boolean         @default(true)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relationships
+  fees              FeeScheduleItem[]
+
+  @@index([payerId])
+  @@map("fee_schedules")
+  @@schema("billing")
+}
+
+model FeeScheduleItem {
+  id                String          @id @default(uuid())
+  feeScheduleId     String
+  feeSchedule       FeeSchedule     @relation(fields: [feeScheduleId], references: [id])
+
+  procedureCode     String
+  modifier          String?
+  allowedAmount     Float
+
+  @@unique([feeScheduleId, procedureCode, modifier])
+  @@map("fee_schedule_items")
+  @@schema("billing")
+}
+
+// ============================================================================
+// SUPPORTING TABLES
+// ============================================================================
+
+model PayerContract {
+  id                String          @id @default(uuid())
+  payerId           String
+  payer             Payer           @relation(fields: [payerId], references: [id])
+
+  contractNumber    String
+  startDate         DateTime
+  endDate           DateTime?
+  terms             String?         @db.Text
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("payer_contracts")
+  @@schema("billing")
+}
+
+model DenialReason {
+  id                String          @id @default(uuid())
+  payerId           String
+  payer             Payer           @relation(fields: [payerId], references: [id])
+
+  code              String
+  description       String
+  category          DenialCategory
+  isActive          Boolean         @default(true)
+
+  @@unique([payerId, code])
+  @@map("denial_reasons")
+  @@schema("billing")
+}
+
+model ClaimAttachment {
+  id                String          @id @default(uuid())
+  claimId           String
+  claim             Claim           @relation(fields: [claimId], references: [id])
+
+  fileName          String
+  fileType          String
+  fileSize          Int
+  storageUrl        String
+
+  uploadedAt        DateTime        @default(now())
+  uploadedBy        String
+
+  @@map("claim_attachments")
+  @@schema("billing")
+}
+
+model ClaimNote {
+  id                String          @id @default(uuid())
+  claimId           String
+  claim             Claim           @relation(fields: [claimId], references: [id])
+
+  note              String          @db.Text
+  noteType          String          // internal | payer | patient
+
+  createdAt         DateTime        @default(now())
+  createdBy         String
+
+  @@map("claim_notes")
+  @@schema("billing")
+}
+
+model DenialNote {
+  id                String          @id @default(uuid())
+  denialId          String
+  denial            Denial          @relation(fields: [denialId], references: [id])
+
+  note              String          @db.Text
+
+  createdAt         DateTime        @default(now())
+  createdBy         String
+
+  @@map("denial_notes")
+  @@schema("billing")
+}
+
+model DenialAction {
+  id                String          @id @default(uuid())
+  denialId          String
+  denial            Denial          @relation(fields: [denialId], references: [id])
+
+  action            String          // appealed | resubmitted | written_off
+  actionDate        DateTime
+  actionBy          String
+  notes             String?
+
+  @@map("denial_actions")
+  @@schema("billing")
+}
+
+model ClaimStatusHistory {
+  id                String          @id @default(uuid())
+  claimId           String
+  claim             Claim           @relation(fields: [claimId], references: [id])
+
+  fromStatus        ClaimStatus
+  toStatus          ClaimStatus
+  changedAt         DateTime        @default(now())
+  changedBy         String
+  reason            String?
+
+  @@map("claim_status_history")
+  @@schema("billing")
+}
+
+model PaymentAdjustment {
+  id                String          @id @default(uuid())
+  paymentId         String
+  payment           Payment         @relation(fields: [paymentId], references: [id])
+
+  adjustmentCode    String
+  adjustmentReason  String
+  adjustmentAmount  Float
+
+  createdAt         DateTime        @default(now())
+
+  @@map("payment_adjustments")
+  @@schema("billing")
+}
+
+// ============================================================================
+// AUDIT LOG (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id                String          @id @default(uuid())
+  userId            String?
+  action            String          // VIEW_CLAIM, POST_PAYMENT, etc.
+  resourceType      String?
+  resourceId        String?
+  ipAddress         String?
+  userAgent         String?
+  success           Boolean         @default(true)
+  errorMessage      String?
+  metadata          Json?
+  timestamp         DateTime        @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+  @@schema("billing")
+}

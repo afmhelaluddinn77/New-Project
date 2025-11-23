@@ -1,0 +1,540 @@
+// Patient Service - Extended Prisma Schema
+// HIPAA Compliant, HL7 FHIR R4 Compatible
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["patient"]
+}
+
+// ============================================================================
+// CORE PATIENT MANAGEMENT
+// ============================================================================
+
+model Patient {
+  id                String      @id @default(uuid())
+  mrn               String      @unique
+  firstName         String
+  lastName          String
+  middleName        String?
+  dateOfBirth       DateTime
+  gender            String      // "male" | "female" | "other"
+  ssn               String?     // Encrypted
+
+  // Contact Information
+  email             String?
+  phone             String?
+  alternatePhone    String?
+  preferredLanguage String      @default("en")
+
+  // Status
+  status            PatientStatus @default(ACTIVE)
+  isDeceased        Boolean     @default(false)
+  dateOfDeath       DateTime?
+
+  // Audit (HIPAA)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  isDeleted         Boolean     @default(false)
+  deletedAt         DateTime?
+
+  // FHIR
+  fhirResourceId    String?     @unique
+
+  // Relationships
+  demographics      Demographics?
+  addresses         Address[]
+  emergencyContacts EmergencyContact[]
+  insurances        Insurance[]
+  allergies         Allergy[]
+  conditions        Condition[]
+  vitals            Vitals[]
+  immunizations     Immunization[]
+  preferences       PatientPreference?
+  consents          Consent[]
+
+  @@index([mrn])
+  @@index([lastName, firstName])
+  @@index([dateOfBirth])
+  @@index([status])
+  @@map("patients")
+  @@schema("patient")
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  DECEASED
+  MERGED
+
+  @@schema("patient")
+}
+
+// ============================================================================
+// DEMOGRAPHICS (Extended Patient Information)
+// ============================================================================
+
+model Demographics {
+  id                String   @id @default(uuid())
+  patientId         String   @unique
+  patient           Patient  @relation(fields: [patientId], references: [id])
+
+  // Identity
+  race              String?  // CDC race codes
+  ethnicity         String?  // CDC ethnicity codes
+  religion          String?
+  maritalStatus     String?  // single | married | divorced | widowed
+
+  // Social
+  occupation        String?
+  employer          String?
+  educationLevel    String?
+
+  // Preferences
+  bloodType         String?  // A+ | A- | B+ | B- | AB+ | AB- | O+ | O-
+  organDonor        Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("demographics")
+  @@schema("patient")
+}
+
+// ============================================================================
+// ADDRESS MANAGEMENT
+// ============================================================================
+
+model Address {
+  id            String      @id @default(uuid())
+  patientId     String
+  patient       Patient     @relation(fields: [patientId], references: [id])
+
+  type          AddressType @default(HOME)
+  street1       String
+  street2       String?
+  city          String
+  state         String
+  zipCode       String
+  country       String      @default("USA")
+
+  isPrimary     Boolean     @default(false)
+  isActive      Boolean     @default(true)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([patientId])
+  @@map("addresses")
+  @@schema("patient")
+}
+
+enum AddressType {
+  HOME
+  WORK
+  TEMPORARY
+  BILLING
+
+  @@schema("patient")
+}
+
+// ============================================================================
+// EMERGENCY CONTACTS
+// ============================================================================
+
+model EmergencyContact {
+  id            String   @id @default(uuid())
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id])
+
+  name          String
+  relationship  String   // spouse | parent | child | sibling | friend | other
+  phone         String
+  alternatePhone String?
+  email         String?
+
+  isPrimary     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([patientId])
+  @@map("emergency_contacts")
+  @@schema("patient")
+}
+
+// ============================================================================
+// INSURANCE
+// ============================================================================
+
+model Insurance {
+  id                String    @id @default(uuid())
+  patientId         String
+  patient           Patient   @relation(fields: [patientId], references: [id])
+
+  // Payer Information
+  payerName         String
+  payerId           String?
+  planName          String?
+  planType          String?   // HMO | PPO | EPO | POS
+
+  // Policy Details
+  policyNumber      String
+  groupNumber       String?
+  subscriberId      String
+  subscriberName    String
+  relationship      String    // self | spouse | child | other
+
+  // Coverage
+  effectiveDate     DateTime
+  terminationDate   DateTime?
+  isPrimary         Boolean   @default(true)
+
+  // Verification
+  isVerified        Boolean   @default(false)
+  verifiedAt        DateTime?
+  verifiedBy        String?
+
+  // Status
+  isActive          Boolean   @default(true)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([patientId])
+  @@index([policyNumber])
+  @@map("insurances")
+  @@schema("patient")
+}
+
+// ============================================================================
+// ALLERGIES
+// ============================================================================
+
+model Allergy {
+  id                String          @id @default(uuid())
+  patientId         String
+  patient           Patient         @relation(fields: [patientId], references: [id])
+
+  // Allergy Details
+  allergen          String          // What patient is allergic to
+  allergenType      AllergenType    // medication | food | environmental | other
+  reaction          String[]        // Array of reactions
+  severity          AllergySeverity
+
+  // Clinical
+  onsetDate         DateTime?
+  resolvedDate      DateTime?
+  isActive          Boolean        @default(true)
+
+  // Verification
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  source            String?         // self-reported | provider | pharmacy
+
+  // Coding
+  snomedCode        String?
+  rxNormCode        String?         // For medication allergies
+
+  // FHIR
+  fhirResourceId    String?        @unique
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([patientId])
+  @@index([isActive])
+  @@map("allergies")
+  @@schema("patient")
+}
+
+enum AllergenType {
+  MEDICATION
+  FOOD
+  ENVIRONMENTAL
+  OTHER
+
+  @@schema("patient")
+}
+
+enum AllergySeverity {
+  MILD
+  MODERATE
+  SEVERE
+  LIFE_THREATENING
+
+  @@schema("patient")
+}
+
+// ============================================================================
+// CONDITIONS (Medical Problems)
+// ============================================================================
+
+model Condition {
+  id                String          @id @default(uuid())
+  patientId         String
+  patient           Patient         @relation(fields: [patientId], references: [id])
+
+  // Condition Details
+  name              String
+  clinicalStatus    ClinicalStatus
+  verificationStatus String         // confirmed | provisional | differential | refuted
+  severity          String?         // mild | moderate | severe
+
+  // Dates
+  onsetDate         DateTime?
+  abatementDate     DateTime?
+  recordedDate      DateTime       @default(now())
+
+  // Clinical
+  bodySite          String?
+  stage             String?
+  evidence          String?
+  note              String?
+
+  // Provider
+  recordedBy        String?
+  recordedByType    String?        // provider | patient | related-person
+
+  // Coding
+  icd10Code         String?
+  snomedCode        String?
+
+  // FHIR
+  fhirResourceId    String?        @unique
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([patientId])
+  @@index([clinicalStatus])
+  @@map("conditions")
+  @@schema("patient")
+}
+
+enum ClinicalStatus {
+  ACTIVE
+  RECURRENCE
+  RELAPSE
+  INACTIVE
+  REMISSION
+  RESOLVED
+
+  @@schema("patient")
+}
+
+// ============================================================================
+// VITALS
+// ============================================================================
+
+model Vitals {
+  id                String    @id @default(uuid())
+  patientId         String
+  patient           Patient   @relation(fields: [patientId], references: [id])
+
+  // Vital Signs
+  bloodPressureSystolic  Int?       // mmHg
+  bloodPressureDiastolic Int?       // mmHg
+  heartRate              Int?       // bpm
+  respiratoryRate        Int?       // breaths/min
+  temperature            Float?     // Celsius
+  oxygenSaturation       Int?       // percentage
+  weight                 Float?     // kg
+  height                 Float?     // cm
+  bmi                    Float?     // calculated
+
+  // Additional
+  painScore              Int?       // 0-10
+  bloodGlucose           Float?     // mg/dL
+
+  // Context
+  measurementDate        DateTime
+  measurementLocation    String?    // home | clinic | hospital
+  measuredBy             String?
+  measuredByType         String?    // self | provider | caregiver
+
+  // Notes
+  notes                  String?
+
+  // FHIR
+  fhirResourceIds       String[]   // Multiple Observation resources
+
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@index([patientId])
+  @@index([measurementDate])
+  @@map("vitals")
+  @@schema("patient")
+}
+
+// ============================================================================
+// IMMUNIZATIONS
+// ============================================================================
+
+model Immunization {
+  id                String    @id @default(uuid())
+  patientId         String
+  patient           Patient   @relation(fields: [patientId], references: [id])
+
+  // Vaccine Details
+  vaccineName       String
+  vaccineCode       String    // CVX code
+  manufacturer      String?
+  lotNumber         String?
+
+  // Administration
+  administeredDate  DateTime
+  expirationDate    DateTime?
+  doseNumber        Int?
+  seriesComplete    Boolean   @default(false)
+
+  // Site & Route
+  site              String?   // left arm | right arm | left thigh | right thigh
+  route             String?   // IM | SubQ | Oral | Nasal
+
+  // Provider
+  administeredBy    String?
+  facility          String?
+
+  // Reaction
+  hasReaction       Boolean   @default(false)
+  reactionDetails   String?
+
+  // FHIR
+  fhirResourceId    String?   @unique
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([patientId])
+  @@index([administeredDate])
+  @@map("immunizations")
+  @@schema("patient")
+}
+
+// ============================================================================
+// PATIENT PREFERENCES
+// ============================================================================
+
+model PatientPreference {
+  id                String    @id @default(uuid())
+  patientId         String    @unique
+  patient           Patient   @relation(fields: [patientId], references: [id])
+
+  // Communication
+  preferredContactMethod String?   // phone | email | text | mail
+  preferredContactTime   String?   // morning | afternoon | evening
+  preferredPharmacyId    String?
+  preferredPharmacyName  String?
+
+  // Appointment
+  preferredProviderId    String?
+  preferredLocation      String?
+  preferredDayOfWeek     String[]  // ["Monday", "Wednesday"]
+  preferredTimeOfDay     String?   // morning | afternoon | evening
+
+  // Reminders
+  appointmentReminders   Boolean   @default(true)
+  medicationReminders    Boolean   @default(true)
+  labResultNotifications Boolean   @default(true)
+
+  // Privacy
+  allowVoicemail         Boolean   @default(true)
+  allowTextMessages      Boolean   @default(false)
+  allowEmailMarketing    Boolean   @default(false)
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("patient_preferences")
+  @@schema("patient")
+}
+
+// ============================================================================
+// CONSENT MANAGEMENT
+// ============================================================================
+
+model Consent {
+  id                String        @id @default(uuid())
+  patientId         String
+  patient           Patient       @relation(fields: [patientId], references: [id])
+
+  type              ConsentType
+  status            ConsentStatus
+
+  // Details
+  scope             String        // treatment | research | disclosure
+  category          String[]      // medical-record | sensitive | mental-health
+
+  // Dates
+  dateTime          DateTime      @default(now())
+  startDate         DateTime?
+  endDate           DateTime?
+
+  // Parties
+  consentingParty   String?       // self | parent | guardian
+  organization      String?
+
+  // Documentation
+  policyUrl         String?
+  verificationMethod String?      // written | verbal | electronic
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([patientId])
+  @@index([type])
+  @@map("consents")
+  @@schema("patient")
+}
+
+enum ConsentType {
+  HIPAA
+  TREATMENT
+  DISCLOSURE
+  RESEARCH
+  ADVANCE_DIRECTIVE
+  DNR
+
+  @@schema("patient")
+}
+
+enum ConsentStatus {
+  DRAFT
+  PROPOSED
+  ACTIVE
+  REJECTED
+  INACTIVE
+  EXPIRED
+
+  @@schema("patient")
+}
+
+// ============================================================================
+// AUDIT LOG (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  action        String   // "VIEW_PATIENT", "UPDATE_DEMOGRAPHICS", etc.
+  resourceType  String?  // "Patient", "Allergy", etc.
+  resourceId    String?
+  ipAddress     String?
+  userAgent     String?
+  success       Boolean  @default(true)
+  errorMessage  String?
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+  @@schema("patient")
+}

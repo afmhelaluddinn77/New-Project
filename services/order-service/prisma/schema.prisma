@@ -1,0 +1,186 @@
+// Order Service Schema - CPOE System
+// Following FEATURE_IMPLEMENTATION_LAW.md Phase 2
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ProviderOrder {
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  patientId         String
+  providerId        String
+  orderType         OrderType
+  orderDetails      Json
+  priority          OrderPriority
+  orderDateTime     DateTime @default(now())
+  scheduledDateTime DateTime?
+  status            OrderStatus
+  clinicalIndication String
+  allergiesReviewed Boolean  @default(false)
+  interactionsChecked Boolean @default(false)
+  cosignRequired    Boolean  @default(false)
+  cosignedBy        String?
+  cosignedAt        DateTime?
+
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String
+  modifiedBy        String?
+  isDeleted         Boolean  @default(false)
+  deletedAt         DateTime?
+
+  // Relations
+  alerts            ClinicalAlert[]
+  auditLogs         OrderAuditLog[]
+
+  @@index([patientId])
+  @@index([providerId])
+  @@index([status])
+  @@index([orderDateTime])
+  @@map("provider_orders")
+}
+
+model ClinicalAlert {
+  id              String    @id @default(uuid())
+  alertId         String    @unique
+  orderId         String?
+  patientId       String
+  alertType       AlertType
+  severity        AlertSeverity
+  sourceSystem    String
+  alertMessage    String
+  recommendations String[]
+  evidenceLinks   String[]
+  acknowledgedBy  String?
+  acknowledgedAt  DateTime?
+  overridden      Boolean   @default(false)
+  overrideReason  String?
+  firedAt         DateTime  @default(now())
+
+  // Relations
+  order           ProviderOrder? @relation(fields: [orderId], references: [id])
+
+  // Audit fields
+  createdAt       DateTime  @default(now())
+  isActive        Boolean   @default(true)
+
+  @@index([patientId])
+  @@index([alertType])
+  @@index([severity])
+  @@index([firedAt])
+  @@map("clinical_alerts")
+}
+
+model OrderAuditLog {
+  id          String   @id @default(uuid())
+  orderId     String
+  action      String
+  userId      String
+  userRole    String
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+
+  // Relations
+  order       ProviderOrder @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("order_audit_logs")
+}
+
+model OrderSet {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  description String?
+  orders      Json     // Array of order templates
+  evidence    String?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+  @@map("order_sets")
+}
+
+model DrugFormulary {
+  id              String   @id @default(uuid())
+  medicationId    String   @unique
+  genericName     String
+  brandName       String?
+  strength        String
+  dosageForm      String
+  route           String[]
+  therapeuticClass String
+  formularyStatus String   // preferred, non-preferred, restricted
+  requiresPriorAuth Boolean @default(false)
+  costTier        Int?
+  alternatives    String[]
+  clinicalGuidelines String?
+  blackBoxWarning String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([genericName])
+  @@index([formularyStatus])
+  @@map("drug_formulary")
+}
+
+// Enums
+enum OrderType {
+  MEDICATION
+  LAB
+  IMAGING
+  PROCEDURE
+  CONSULT
+  NURSING
+  DIET
+  THERAPY
+}
+
+enum OrderPriority {
+  STAT
+  URGENT
+  ROUTINE
+  TIMED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISCONTINUED
+  EXPIRED
+}
+
+enum AlertType {
+  DRUG_INTERACTION
+  ALLERGY
+  DUPLICATE_ORDER
+  DOSAGE_WARNING
+  CONTRAINDICATION
+  LAB_CRITICAL
+  FORMULARY
+  PRIOR_AUTH
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}

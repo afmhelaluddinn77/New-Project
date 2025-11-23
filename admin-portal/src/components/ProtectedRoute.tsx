@@ -1,34 +1,24 @@
-import { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Box, CircularProgress } from "@mui/material";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-interface ProtectedRouteProps {
-  children: ReactNode
-}
+export default function ProtectedRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const location = useLocation()
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-
-  const isTokenValidForPortal = (jwt: string | null, expectedPortal: string) => {
-    if (!jwt) return false
-    const parts = jwt.split('.')
-    if (parts.length !== 3) return false
-    try {
-      const payload = JSON.parse(atob(parts[1])) as { exp?: number; portal?: string }
-      if (!payload.exp) return false
-      const nowSeconds = Math.floor(Date.now() / 1000)
-      if (payload.exp <= nowSeconds) return false
-      if (payload.portal !== expectedPortal) return false
-      return true
-    } catch {
-      return false
-    }
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  if (!isTokenValidForPortal(token, 'ADMIN')) {
-    if (typeof window !== 'undefined') localStorage.removeItem('token')
-    return <Navigate to="/login" state={{ from: location }} replace />
-  }
-
-  return <>{children}</>
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }

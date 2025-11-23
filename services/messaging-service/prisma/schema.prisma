@@ -1,0 +1,176 @@
+// Messaging Service - Prisma Schema
+// HIPAA Compliant, HL7 FHIR R4 Compatible (Communication resource)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["messaging"]
+}
+
+// ============================================================================
+// SECURE MESSAGING (Feature #11)
+// ============================================================================
+
+enum MessageStatus {
+  DRAFT
+  SENT
+  DELIVERED
+  READ
+  ARCHIVED
+  DELETED
+
+  @@schema("messaging")
+}
+
+enum MessagePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@schema("messaging")
+}
+
+enum ParticipantRole {
+  SENDER
+  RECIPIENT
+  CC
+
+  @@schema("messaging")
+}
+
+model Message {
+  id              String          @id @default(uuid())
+  threadId        String?         // For conversation threading
+
+  // Participants
+  senderId        String
+  senderType      String          // "patient" | "provider" | "admin"
+
+  // Message Content (PHI - ENCRYPTED)
+  subject         String
+  body            String          @db.Text // Encrypted in production
+  isEncrypted     Boolean         @default(false)
+
+  // Metadata
+  priority        MessagePriority @default(NORMAL)
+  status          MessageStatus   @default(SENT)
+
+  // Timestamps
+  sentAt          DateTime        @default(now())
+  deliveredAt     DateTime?
+  readAt          DateTime?
+
+  // Audit (HIPAA)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  isDeleted       Boolean         @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  // FHIR
+  fhirResourceId  String?         @unique
+
+  // Relationships
+  recipients      MessageRecipient[]
+  attachments     MessageAttachment[]
+  replies         Message[]       @relation("MessageReplies")
+  parentMessage   Message?        @relation("MessageReplies", fields: [threadId], references: [id])
+
+  @@index([senderId])
+  @@index([threadId])
+  @@index([status])
+  @@index([sentAt])
+  @@map("messages")
+  @@schema("messaging")
+}
+
+model MessageRecipient {
+  id          String          @id @default(uuid())
+  messageId   String
+  message     Message         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  recipientId String
+  recipientType String        // "patient" | "provider" | "admin"
+  role        ParticipantRole @default(RECIPIENT)
+
+  // Read tracking
+  isRead      Boolean         @default(false)
+  readAt      DateTime?
+
+  @@index([messageId])
+  @@index([recipientId])
+  @@map("message_recipients")
+  @@schema("messaging")
+}
+
+model MessageAttachment {
+  id          String   @id @default(uuid())
+  messageId   String
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  // File info
+  fileName    String
+  fileSize    Int      // bytes
+  mimeType    String
+  storageUrl  String   // MinIO/S3 URL (encrypted)
+
+  // Security
+  isScanned   Boolean  @default(false)
+  scanResult  String?  // "clean" | "threat_detected"
+
+  // Audit
+  uploadedAt  DateTime @default(now())
+  uploadedBy  String
+
+  @@index([messageId])
+  @@map("message_attachments")
+  @@schema("messaging")
+}
+
+// ============================================================================
+// MESSAGE TEMPLATES (for common scenarios)
+// ============================================================================
+
+model MessageTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  subject     String
+  body        String   @db.Text
+  category    String   // "appointment_reminder", "prescription_ready", etc.
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  @@map("message_templates")
+  @@schema("messaging")
+}
+
+// ============================================================================
+// AUDIT LOG (HIPAA Compliance)
+// ============================================================================
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  action        String   // "SEND_MESSAGE", "READ_MESSAGE", "DELETE_MESSAGE"
+  resourceType  String?  // "Message"
+  resourceId    String?  // Message ID
+  ipAddress     String?
+  userAgent     String?
+  success       Boolean  @default(true)
+  errorMessage  String?
+  metadata      Json?
+  timestamp     DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+  @@schema("messaging")
+}

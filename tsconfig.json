@@ -10,7 +10,20 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "exclude": [
+    "patient-portal",
+    "provider-portal",
+    "admin-portal",
+    "lab-portal",
+    "pharmacy-portal",
+    "billing-portal",
+    "radiology-portal",
+    "nurses-portal",
+    "it-portal",
+    "common-portal"
+  ]
 }
-
