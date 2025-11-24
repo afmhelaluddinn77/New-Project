@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Container,
-  CssBaseline,
   Paper,
   TextField,
   Typography,
@@ -32,7 +31,7 @@ export default function PatientLoginPage() {
           email,
           password,
           portalType: "PATIENT",
-        }
+        },
       );
 
       if (response.data.accessToken || response.data.access_token) {
@@ -41,10 +40,11 @@ export default function PatientLoginPage() {
         localStorage.setItem("user", JSON.stringify(response.data.user));
         navigate("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } };
       setError(
-        err.response?.data?.message ||
-          "Invalid credentials. Please check your email and password and try again."
+        axiosError.response?.data?.message ||
+          "Invalid credentials. Please check your email and password and try again.",
       );
     } finally {
       setLoading(false);
@@ -52,18 +52,18 @@ export default function PatientLoginPage() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        }}
-      >
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        background: (theme) =>
+          `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
+      }}
+    >
+      <Container component="main" maxWidth="xs">
         <Paper
           elevation={10}
           sx={{
@@ -78,7 +78,7 @@ export default function PatientLoginPage() {
           <Avatar
             sx={{
               m: 1,
-              bgcolor: "#667eea",
+              bgcolor: "primary.main",
               width: 56,
               height: 56,
             }}
@@ -88,11 +88,14 @@ export default function PatientLoginPage() {
           <Typography
             component="h1"
             variant="h4"
-            sx={{ fontWeight: 600, color: "#2D3748" }}
+            sx={{ fontWeight: 600, color: "text.primary" }}
           >
             Patient Portal
           </Typography>
-          <Typography variant="body2" sx={{ mt: 1, mb: 3, color: "#718096" }}>
+          <Typography
+            variant="body2"
+            sx={{ mt: 1, mb: 3, color: "text.secondary" }}
+          >
             Access your health records securely
           </Typography>
           <Box
@@ -115,7 +118,7 @@ export default function PatientLoginPage() {
               sx={{
                 "& .MuiOutlinedInput-root": {
                   "&:hover fieldset": {
-                    borderColor: "#667eea",
+                    borderColor: "primary.main",
                   },
                 },
               }}
@@ -136,7 +139,7 @@ export default function PatientLoginPage() {
               sx={{
                 "& .MuiOutlinedInput-root": {
                   "&:hover fieldset": {
-                    borderColor: "#667eea",
+                    borderColor: "primary.main",
                   },
                 },
               }}
@@ -150,9 +153,9 @@ export default function PatientLoginPage() {
                 mt: 3,
                 mb: 2,
                 py: 1.5,
-                bgcolor: "#667eea",
+                bgcolor: "primary.main",
                 "&:hover": {
-                  bgcolor: "#764ba2",
+                  bgcolor: "primary.dark",
                 },
                 textTransform: "none",
                 fontSize: "1rem",
@@ -164,12 +167,12 @@ export default function PatientLoginPage() {
           </Box>
           <Typography
             variant="body2"
-            sx={{ mt: 2, color: "#718096", textAlign: "center" }}
+            sx={{ mt: 2, color: "text.secondary", textAlign: "center" }}
           >
             HIPAA Compliant • Secure • Available 24/7
           </Typography>
         </Paper>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 }

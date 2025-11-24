@@ -4,7 +4,11 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-background, #f5f7fa);
+  /* Force light background for patient portal regardless of dark mode toggle */
+  background: #f8fafc;
+  /* larger base font for high readability */
+  font-size: 1.3rem;
+  color: #0f172a;
 }
 
 /* Header */
@@ -33,7 +37,7 @@
 }
 
 .portal-title {
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   font-weight: 600;
   margin: 0;
 }
@@ -64,7 +68,7 @@
   padding: 0.75rem 1rem 0.75rem 2.75rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
 }
 
 .portal-header-right {
@@ -113,15 +117,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.25rem;
+  padding: 1rem 1.6rem;
   border: none;
   background: transparent;
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
   white-space: nowrap;
-  font-size: 0.95rem;
-  color: #64748b;
+  font-size: 1.3rem;
+  color: #334155;
 }
 
 .portal-tab:hover {
@@ -130,9 +134,9 @@
 }
 
 .portal-tab.active {
-  color: #7fb3ff;
-  border-bottom-color: #7fb3ff;
-  background: #f0f9ff;
+  color: #0f766e;
+  border-bottom-color: #0f766e;
+  background: #e0f2fe;
 }
 
 .tab-icon {
@@ -151,8 +155,15 @@
 
 /* Tab Content */
 .tab-content h2 {
-  font-size: 1.75rem;
+  font-size: 2.6rem;
   margin: 0 0 1.5rem 0;
+  color: #0f172a;
+}
+
+/* default paragraph text in tab content */
+.tab-content p {
+  font-size: 1.3rem;
+  color: #334155;
 }
 
 .tab-header {
@@ -276,28 +287,31 @@
 
 .stat-card {
   padding: 1.5rem;
-  background: white;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  /* stronger but soft 3D shadow */
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
 }
 
 .stat-card:hover {
-  border-color: #7fb3ff;
-  box-shadow: 0 4px 12px rgba(127, 179, 255, 0.1);
+  border-color: #0f766e;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
 }
 
 .card-icon {
   width: 40px;
   height: 40px;
-  color: #7fb3ff;
+  /* primary teal accent for dashboard icons */
+  color: #0f766e;
   margin-bottom: 1rem;
 }
 
 .stat-card h3 {
-  font-size: 0.95rem;
-  color: #64748b;
+  font-size: 1.4rem;
+  color: #334155;
   margin: 0 0 0.5rem 0;
   font-weight: 500;
 }
@@ -311,8 +325,83 @@
 }
 
 .stat-label {
-  font-size: 0.875rem;
-  color: #64748b;
+  font-size: 1.2rem;
+  color: #475569;
+}
+
+/* Card content typography across all feature cards */
+.appointment-card h3,
+.medication-card h3,
+.lab-card h3,
+.message-card h3,
+.invoice-card h4,
+.document-card h3,
+.resource-card h3 {
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.appointment-card p,
+.medication-card p,
+.lab-card p,
+.vital-card p,
+.immunization-card p,
+.allergy-card p,
+.condition-card p,
+.message-card p,
+.invoice-card p,
+.document-card p,
+.resource-card p {
+  font-size: 1.3rem;
+  color: #334155;
+}
+
+/* Generic card 3D shadow and background for all feature cards */
+.appointment-card,
+.medication-card,
+.lab-card,
+.vital-card,
+.immunization-card,
+.allergy-card,
+.condition-card,
+.message-card,
+.invoice-card,
+.document-card,
+.resource-card {
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.appointment-card:hover,
+.medication-card:hover,
+.lab-card:hover,
+.message-card:hover,
+.invoice-card:hover,
+.document-card:hover,
+.resource-card:hover {
+  border-color: #0f766e;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+}
+
+/* Icon colors inside specific cards for a colorful but soft look */
+.med-icon {
+  color: #0f766e;
+}
+
+.immun-icon {
+  color: #0ea5e9;
+}
+
+.alert-icon {
+  color: #ef4444;
+}
+
+.message-card .message-header h3 {
+  color: #0f172a;
+}
+
+.invoice-card .invoice-amount {
+  color: #0f766e;
 }
 
 /* Lists - Universal styling for all feature lists */

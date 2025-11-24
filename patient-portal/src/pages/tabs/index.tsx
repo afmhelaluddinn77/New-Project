@@ -1,55 +1,175 @@
 // Consolidated tab components for Patient Portal - All 20 Features
 import {
-    Activity,
-    AlertCircle,
-    BookOpen,
-    Building2,
-    Calendar,
-    CheckSquare,
-    FileArchive,
-    FileText,
-    Pill,
-    Plus,
-    Syringe
-} from 'lucide-react';
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  Chip,
+  Grid,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import {
+  Activity,
+  AlertCircle,
+  BookOpen,
+  Building2,
+  Calendar,
+  CheckSquare,
+  FileArchive,
+  FileText,
+  Pill,
+  Plus,
+  Syringe,
+} from "lucide-react";
 
 // Dashboard Tab - Feature #1: Personalized Dashboard
-export function DashboardTab({ onNavigate }: { onNavigate: (tab: string) => void }) {
+export function DashboardTab({
+  onNavigate,
+}: {
+  onNavigate: (tab: string) => void;
+}) {
   return (
-    <div className="tab-content">
-      <h2>Welcome back, John Doe!</h2>
-      <p>Your health overview at a glance</p>
+    <Box sx={{ mt: 1 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          mb: 1,
+          fontSize: { xs: "2.2rem", md: "2.4rem" },
+        }}
+      >
+        Welcome back, John Doe!
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+        Your health overview at a glance
+      </Typography>
 
-      <div className="dashboard-grid">
-        <div className="stat-card" onClick={() => onNavigate('appointments')}>
-          <Calendar className="card-icon" />
-          <h3>Next Appointment</h3>
-          <p className="stat-value">Tomorrow, 10:00 AM</p>
-          <p className="stat-label">Dr. Sarah Johnson</p>
-        </div>
+      {/* Health Overview chips (inspired by PatientDashboardClarity vitals summary) */}
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
+        <Chip
+          label="BP: 120/80 mmHg (Normal)"
+          color="success"
+          variant="outlined"
+        />
+        <Chip label="HR: 72 bpm" color="primary" variant="outlined" />
+        <Chip
+          label="Blood Sugar: 95 mg/dL"
+          color="warning"
+          variant="outlined"
+        />
+        <Chip label="Next visit in 5 days" color="info" variant="outlined" />
+      </Box>
 
-        <div className="stat-card" onClick={() => onNavigate('medications')}>
-          <Pill className="card-icon" />
-          <h3>Active Medications</h3>
-          <p className="stat-value">5</p>
-          <p className="stat-label">2 refills needed</p>
-        </div>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            elevation={2}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardActionArea onClick={() => onNavigate("appointments")}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Calendar className="card-icon" />
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ ml: 1 }}
+                  >
+                    Next Appointment
+                  </Typography>
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  Tomorrow, 10:00 AM
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Dr. Sarah Johnson
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
 
-        <div className="stat-card" onClick={() => onNavigate('lab-results')}>
-          <FileText className="card-icon" />
-          <h3>Lab Results</h3>
-          <p className="stat-value">1 New</p>
-          <p className="stat-label">CBC - Jan 15</p>
-        </div>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={2}>
+            <CardActionArea onClick={() => onNavigate("medications")}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Pill className="card-icon" />
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ ml: 1 }}
+                  >
+                    Active Medications
+                  </Typography>
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  5
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  2 refills needed
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
 
-        <div className="stat-card" onClick={() => onNavigate('vitals')}>
-          <Activity className="card-icon" />
-          <h3>Latest Vitals</h3>
-          <p className="stat-value">120/80</p>
-          <p className="stat-label">Blood Pressure - Normal</p>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={2}>
+            <CardActionArea onClick={() => onNavigate("lab-results")}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <FileText className="card-icon" />
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ ml: 1 }}
+                  >
+                    Lab Results
+                  </Typography>
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  1 New
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  CBC - Jan 15
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={2}>
+            <CardActionArea onClick={() => onNavigate("vitals")}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <Activity className="card-icon" />
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ ml: 1 }}
+                  >
+                    Latest Vitals
+                  </Typography>
+                </Box>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  120/80
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Blood Pressure - Normal
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
@@ -60,8 +180,12 @@ export function AppointmentsTab() {
       <div className="tab-header">
         <h2>Appointments</h2>
         <div className="tab-actions">
-          <button className="primary-btn"><Plus /> Schedule New</button>
-          <button className="secondary-btn"><CheckSquare /> Check-In</button>
+          <button className="primary-btn">
+            <Plus /> Schedule New
+          </button>
+          <button className="secondary-btn">
+            <CheckSquare /> Check-In
+          </button>
         </div>
       </div>
 
@@ -104,7 +228,9 @@ export function MedicationsTab() {
     <div className="tab-content">
       <div className="tab-header">
         <h2>Medications</h2>
-        <button className="primary-btn"><Plus /> Add Medication</button>
+        <button className="primary-btn">
+          <Plus /> Add Medication
+        </button>
       </div>
 
       <div className="medications-list">
@@ -145,188 +271,660 @@ export function MedicationsTab() {
 // Lab Results Tab - Feature #7
 export function LabResultsTab() {
   return (
-    <div className="tab-content">
-      <h2>Lab Results</h2>
+    <Box sx={{ mt: 1 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          mb: 1,
+          fontSize: { xs: "2.2rem", md: "2.4rem" },
+        }}
+      >
+        Lab Results
+      </Typography>
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ mb: 3, fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+      >
+        Review your recent lab results and trends
+      </Typography>
 
-      <div className="lab-results-list">
-        <div className="lab-card new">
-          <div className="lab-header">
-            <h3>Complete Blood Count (CBC)</h3>
-            <span className="badge new">New</span>
-          </div>
-          <p>Jan 15, 2024</p>
-          <div className="lab-summary">
-            <span className="status normal">All values normal</span>
-          </div>
-          <button className="link-btn">View Detailed Results</button>
-        </div>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={4}>
+          <Card
+            elevation={2}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: { xs: "1.4rem", md: "1.5rem" } }}
+                >
+                  Complete Blood Count (CBC)
+                </Typography>
+                <Chip label="New" color="info" size="small" />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                Jan 15, 2024
+              </Typography>
+              <Typography
+                variant="body2"
+                color="success.main"
+                sx={{ mb: 2, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                All values normal
+              </Typography>
+              <Typography
+                variant="button"
+                color="primary"
+                sx={{ cursor: "pointer" }}
+              >
+                View Detailed Results
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="lab-card">
-          <div className="lab-header">
-            <h3>Lipid Panel</h3>
-            <span className="badge abnormal">Abnormal</span>
-          </div>
-          <p>Jan 15, 2024</p>
-          <div className="lab-summary">
-            <p>Total Cholesterol: 220 mg/dL (High)</p>
-            <p className="note">Recommended: <200 mg/dL</p>
-          </div>
-          <button className="link-btn">View Details</button>
-        </div>
+        <Grid item xs={12} md={4}>
+          <Card elevation={2}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: { xs: "1.4rem", md: "1.5rem" } }}
+                >
+                  Lipid Panel
+                </Typography>
+                <Chip label="Abnormal" color="warning" size="small" />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                Jan 15, 2024
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}
+                >
+                  Total Cholesterol: 220 mg/dL (High)
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}
+                >
+                  Recommended: &lt;200 mg/dL
+                </Typography>
+              </Box>
+              <Typography
+                variant="button"
+                color="primary"
+                sx={{ cursor: "pointer" }}
+              >
+                View Details
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="lab-card">
-          <div className="lab-header">
-            <h3>Hemoglobin A1c</h3>
-            <span className="badge normal">Normal</span>
-          </div>
-          <p>Jan 10, 2024</p>
-          <div className="lab-summary">
-            <p>5.8% (Normal)</p>
-          </div>
-          <button className="link-btn">View Trend Chart</button>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} md={4}>
+          <Card elevation={2}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: { xs: "1.4rem", md: "1.5rem" } }}
+                >
+                  Hemoglobin A1c
+                </Typography>
+                <Chip label="Normal" color="success" size="small" />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 1, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                Jan 10, 2024
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ mb: 2, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                5.8% (Normal)
+              </Typography>
+              <Typography
+                variant="button"
+                color="primary"
+                sx={{ cursor: "pointer" }}
+              >
+                View Trend Chart
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
-
 // Vitals Tab - Feature #8
 export function VitalsTab() {
+  const theme = useTheme();
+
   return (
-    <div className="tab-content">
-      <div className="tab-header">
-        <h2>Vitals Tracking</h2>
-        <button className="primary-btn"><Plus /> Add Entry</button>
-      </div>
+    <Box sx={{ mt: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 600,
+              mb: 0.5,
+              fontSize: { xs: "2.2rem", md: "2.4rem" },
+            }}
+          >
+            Vitals Tracking
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+          >
+            Monitor your key health measurements over time
+          </Typography>
+        </Box>
+        <Chip
+          label="Add Entry"
+          color="primary"
+          variant="filled"
+          icon={<Plus size={16} />}
+          sx={{ borderRadius: 999, fontWeight: 500 }}
+        />
+      </Box>
 
-      <div className="vitals-chart-placeholder">
-        <h3>Blood Pressure Trend</h3>
-        <div className="chart-area" style={{ height: '200px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p>Line Chart: 120/80, 118/78, 122/82, 119/80 (Last 4 readings)</p>
-        </div>
-      </div>
+      {/* Chart placeholder with light background */}
+      <Card
+        elevation={1}
+        sx={{
+          mb: 3,
+          backgroundColor: "background.paper",
+          boxShadow: 3,
+          borderRadius: 2,
+        }}
+      >
+        <CardContent>
+          <Typography
+            variant="h6"
+            sx={{ mb: 1, fontSize: { xs: "1.4rem", md: "1.5rem" } }}
+          >
+            Blood Pressure Trend
+          </Typography>
+          <Box
+            sx={{
+              height: 200,
+              bgcolor: "background.default",
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "text.secondary",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}
+            >
+              Line Chart: 120/80, 118/78, 122/82, 119/80 (Last 4 readings)
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
 
-      <div className="vitals-list">
-        <div className="vital-card">
-          <h3>Blood Pressure</h3>
-          <p className="vital-value">120/80 mmHg</p>
-          <p className="vital-status normal">Normal</p>
-          <p className="vital-date">Jan 15, 2024</p>
-        </div>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            elevation={1}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Activity size={24} color={theme.palette.success.main} />
+                <Typography
+                  variant="subtitle2"
+                  sx={{ ml: 1, fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+                >
+                  Blood Pressure
+                </Typography>
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.6rem", md: "1.7rem" },
+                }}
+              >
+                120/80 mmHg
+              </Typography>
+              <Chip
+                label="Normal"
+                size="small"
+                sx={{
+                  mt: 1,
+                  bgcolor: theme.palette.success.light,
+                  color: theme.palette.success.dark,
+                }}
+              />
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 1, fontSize: { xs: "1rem", md: "1.1rem" } }}
+              >
+                Jan 15, 2024
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="vital-card">
-          <h3>Heart Rate</h3>
-          <p className="vital-value">72 bpm</p>
-          <p className="vital-status normal">Normal</p>
-          <p className="vital-date">Jan 15, 2024</p>
-        </div>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            elevation={1}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Activity size={24} color={theme.palette.info.main} />
+                <Typography
+                  variant="subtitle2"
+                  sx={{ ml: 1, fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+                >
+                  Heart Rate
+                </Typography>
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.6rem", md: "1.7rem" },
+                }}
+              >
+                72 bpm
+              </Typography>
+              <Chip
+                label="Normal"
+                size="small"
+                sx={{
+                  mt: 1,
+                  bgcolor: theme.palette.info.light,
+                  color: theme.palette.info.dark,
+                }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Jan 15, 2024
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="vital-card">
-          <h3>Blood Sugar</h3>
-          <p className="vital-value">95 mg/dL</p>
-          <p className="vital-status caution">Slightly elevated</p>
-          <p className="vital-date">Jan 15, 2024</p>
-        </div>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            elevation={1}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Activity size={24} color={theme.palette.warning.main} />
+                <Typography
+                  variant="subtitle2"
+                  sx={{ ml: 1, fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+                >
+                  Blood Sugar
+                </Typography>
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.6rem", md: "1.7rem" },
+                }}
+              >
+                95 mg/dL
+              </Typography>
+              <Chip
+                label="Slightly elevated"
+                size="small"
+                sx={{
+                  mt: 1,
+                  bgcolor: theme.palette.warning.light,
+                  color: theme.palette.warning.dark,
+                }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Jan 15, 2024
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="vital-card">
-          <h3>Weight</h3>
-          <p className="vital-value">180 lbs</p>
-          <p className="vital-status normal">Stable</p>
-          <p className="vital-date">Jan 15, 2024</p>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            elevation={1}
+            sx={{
+              backgroundColor: "background.paper",
+              boxShadow: 3,
+              borderRadius: 2,
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Activity size={24} color={theme.palette.success.main} />
+                <Typography
+                  variant="subtitle2"
+                  sx={{ ml: 1, fontSize: { xs: "1.1rem", md: "1.2rem" } }}
+                >
+                  Weight
+                </Typography>
+              </Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.6rem", md: "1.7rem" },
+                }}
+              >
+                180 lbs
+              </Typography>
+              <Chip
+                label="Stable"
+                size="small"
+                sx={{
+                  mt: 1,
+                  bgcolor: theme.palette.success.light,
+                  color: theme.palette.success.dark,
+                }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Jan 15, 2024
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
 // Immunizations Tab - Feature #9
 export function ImmunizationsTab() {
+  const theme = useTheme();
   return (
-    <div className="tab-content">
-      <h2>Immunization Record</h2>
+    <Box sx={{ mt: 1 }}>
+      <Typography variant="h4" sx={{ fontWeight: 600, mb: 0.5 }}>
+        Immunization Record
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        Keep track of your vaccination history and upcoming doses
+      </Typography>
 
-      <div className="immunizations-list">
-        <div className="immunization-card">
-          <Syringe className="immun-icon" />
-          <div className="immun-info">
-            <h3>COVID-19 Vaccine (Pfizer)</h3>
-            <p>Administered: Dec 15, 2023</p>
-            <p>Lot: EK9899</p>
-            <p>Provider: CVS Pharmacy</p>
-          </div>
-          <span className="badge current">Current</span>
-        </div>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={4}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Syringe
+                  className="immun-icon"
+                  color={theme.palette.success.main}
+                />
+                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                  COVID-19 Vaccine (Pfizer)
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Administered: Dec 15, 2023
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Lot: EK9899
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Provider: CVS Pharmacy
+              </Typography>
+              <Chip
+                label="Current"
+                size="small"
+                color="success"
+                variant="outlined"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="immunization-card">
-          <Syringe className="immun-icon" />
-          <div className="immun-info">
-            <h3>Influenza Vaccine</h3>
-            <p>Administered: Oct 1, 2023</p>
-            <p>Lot: FL7721</p>
-            <p>Provider: Main Clinic</p>
-          </div>
-          <span className="badge current">Current</span>
-        </div>
+        <Grid item xs={12} md={4}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Syringe
+                  className="immun-icon"
+                  color={theme.palette.info.main}
+                />
+                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                  Influenza Vaccine
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Administered: Oct 1, 2023
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Lot: FL7721
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Provider: Main Clinic
+              </Typography>
+              <Chip
+                label="Current"
+                size="small"
+                color="info"
+                variant="outlined"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="immunization-card due">
-          <Syringe className="immun-icon" />
-          <div className="immun-info">
-            <h3>Tetanus Booster (Td/Tdap)</h3>
-            <p>Last: Jan 2018</p>
-            <p>Due: Jan 2028</p>
-          </div>
-          <span className="badge upcoming">Upcoming</span>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} md={4}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Syringe
+                  className="immun-icon"
+                  color={theme.palette.warning.main}
+                />
+                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                  Tetanus Booster (Td/Tdap)
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Last: Jan 2018
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Due: Jan 2028
+              </Typography>
+              <Chip
+                label="Upcoming"
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
 // Allergies & Conditions Tab - Feature #10
 export function AllergiesTab() {
+  const theme = useTheme();
   return (
-    <div className="tab-content">
-      <div className="tab-header">
-        <h2>Allergies & Conditions</h2>
-        <button className="primary-btn"><Plus /> Add New</button>
-      </div>
+    <Box sx={{ mt: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 600, mb: 0.5 }}>
+            Allergies & Conditions
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Review your critical allergies and chronic conditions
+          </Typography>
+        </Box>
+        <Chip
+          label="Add New"
+          color="primary"
+          variant="filled"
+          icon={<Plus size={16} />}
+          sx={{ borderRadius: 999, fontWeight: 500 }}
+        />
+      </Box>
 
-      <div className="section">
-        <h3>Allergies</h3>
-        <div className="allergy-card critical">
-          <AlertCircle className="alert-icon" />
-          <div className="allergy-info">
-            <h4>Penicillin</h4>
-            <p>Severity: Critical</p>
-            <p>Reaction: Anaphylaxis</p>
-          </div>
-        </div>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={6}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <AlertCircle color={theme.palette.error.main} />
+                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                  Penicillin
+                </Typography>
+              </Box>
+              <Typography variant="body2">Severity: Critical</Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Reaction: Anaphylaxis
+              </Typography>
+              <Chip
+                label="Critical Allergy"
+                size="small"
+                color="error"
+                variant="outlined"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="allergy-card moderate">
-          <AlertCircle className="alert-icon" />
-          <div className="allergy-info">
-            <h4>Pollen (Seasonal)</h4>
-            <p>Severity: Moderate</p>
-            <p>Reaction: Rhinitis, congestion</p>
-          </div>
-        </div>
-      </div>
+        <Grid item xs={12} md={6}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <AlertCircle color={theme.palette.warning.main} />
+                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                  Pollen (Seasonal)
+                </Typography>
+              </Box>
+              <Typography variant="body2">Severity: Moderate</Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Reaction: Rhinitis, congestion
+              </Typography>
+              <Chip
+                label="Moderate Allergy"
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <div className="section">
-        <h3>Chronic Conditions</h3>
-        <div className="condition-card">
-          <h4>Type 2 Diabetes Mellitus</h4>
-          <p>Onset: 2018</p>
-          <p>Status: Controlled</p>
-        </div>
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Chronic Conditions
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Typography variant="subtitle1">
+                Type 2 Diabetes Mellitus
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Onset: 2018
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Status: Controlled
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="condition-card">
-          <h4>Hypertension</h4>
-          <p>Onset: 2015</p>
-          <p>Status: Controlled with medication</p>
-        </div>
-      </div>
-    </div>
+        <Grid item xs={12} md={6}>
+          <Card elevation={1} sx={{ backgroundColor: "background.paper" }}>
+            <CardContent>
+              <Typography variant="subtitle1">Hypertension</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Onset: 2015
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Status: Controlled with medication
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
@@ -336,7 +934,9 @@ export function MessagingTab() {
     <div className="tab-content">
       <div className="tab-header">
         <h2>Secure Messages</h2>
-        <button className="primary-btn"><Plus /> New Message</button>
+        <button className="primary-btn">
+          <Plus /> New Message
+        </button>
       </div>
 
       <div className="messages-list">
@@ -346,7 +946,9 @@ export function MessagingTab() {
             <span className="message-date">Jan 16, 2024</span>
           </div>
           <p className="message-subject">Re: Lab Results Follow-up</p>
-          <p className="message-preview">Your recent cholesterol levels are slightly elevated...</p>
+          <p className="message-preview">
+            Your recent cholesterol levels are slightly elevated...
+          </p>
           <span className="badge unread">Unread</span>
         </div>
 
@@ -356,7 +958,9 @@ export function MessagingTab() {
             <span className="message-date">Jan 15, 2024</span>
           </div>
           <p className="message-subject">Upcoming appointment reminder</p>
-          <p className="message-preview">This is a reminder for your appointment on Jan 20...</p>
+          <p className="message-preview">
+            This is a reminder for your appointment on Jan 20...
+          </p>
         </div>
 
         <div className="message-card">
@@ -365,7 +969,9 @@ export function MessagingTab() {
             <span className="message-date">Jan 10, 2024</span>
           </div>
           <p className="message-subject">Invoice #INV-2024-001</p>
-          <p className="message-preview">Your invoice for the recent visit is now available...</p>
+          <p className="message-preview">
+            Your invoice for the recent visit is now available...
+          </p>
         </div>
       </div>
     </div>
@@ -455,7 +1061,10 @@ export function ProfileTab() {
 
           <div className="form-row">
             <label>Address</label>
-            <textarea readOnly value="123 Main St&#10;Anytown, ST 12345" />
+            <textarea
+              readOnly
+              value="123 Main St&#10;Anytown, ST 12345"
+            />
             <button className="link-btn">Edit</button>
           </div>
         </div>
@@ -528,7 +1137,10 @@ export function EducationTab() {
           <BookOpen className="resource-icon" />
           <div className="resource-info">
             <h3>Managing Type 2 Diabetes</h3>
-            <p>Learn about diet, exercise, and medication management for diabetes control.</p>
+            <p>
+              Learn about diet, exercise, and medication management for diabetes
+              control.
+            </p>
             <div className="resource-meta">
               <span>Article</span>
               <span>•</span>
@@ -542,7 +1154,10 @@ export function EducationTab() {
           <BookOpen className="resource-icon" />
           <div className="resource-info">
             <h3>Understanding Cholesterol</h3>
-            <p>What your cholesterol numbers mean and how to maintain healthy levels.</p>
+            <p>
+              What your cholesterol numbers mean and how to maintain healthy
+              levels.
+            </p>
             <div className="resource-meta">
               <span>Video</span>
               <span>•</span>
@@ -556,7 +1171,9 @@ export function EducationTab() {
           <BookOpen className="resource-icon" />
           <div className="resource-info">
             <h3>Healthy Eating Guide</h3>
-            <p>Tips for creating a balanced diet that supports your health goals.</p>
+            <p>
+              Tips for creating a balanced diet that supports your health goals.
+            </p>
             <div className="resource-meta">
               <span>PDF Guide</span>
               <span>•</span>
@@ -576,7 +1193,9 @@ export function DocumentsTab() {
     <div className="tab-content">
       <div className="tab-header">
         <h2>Medical Documents</h2>
-        <button className="primary-btn"><Plus /> Upload Document</button>
+        <button className="primary-btn">
+          <Plus /> Upload Document
+        </button>
       </div>
 
       <div className="documents-list">
