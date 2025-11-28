@@ -5,13 +5,17 @@ import {
   Activity,
   Beaker,
   ClipboardList,
+  FileText,
   Filter,
   Pill,
   PlusCircle,
   Radiation,
+  Search,
+  User,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Breadcrumb from "../../components/shared/Breadcrumb";
+import Tabs, { Tab } from "../../components/shared/Tabs";
 import { useCreateOrder } from "../../hooks/mutations/useCreateOrder";
 import { useOrdersQuery } from "../../hooks/queries/useOrdersQuery";
 import { queryKeys } from "../../lib/queryClient";
@@ -171,7 +175,6 @@ const ITEM_LABEL: Record<OrderItemType, string> = {
 };
 
 export default function OrdersPage() {
-  // React Query hooks (server state)
   const {
     data: orders = [],
     isLoading: loading,
@@ -180,12 +183,11 @@ export default function OrdersPage() {
   const createOrderMutation = useCreateOrder();
   const queryClient = useQueryClient();
 
-  // Zustand hooks (UI state only)
   const selectOrder = useOrdersStore((state) => state.selectOrder);
   const selectedOrderId = useOrdersStore((state) => state.selectedOrderId);
-
-  // Get user from authStore instead of decoding token from localStorage
   const user = useAuthStore((state) => state.user);
+
+  const [activeTab, setActiveTab] = useState("worklist");
 
   const [formState, setFormState] = useState<CreateOrderFormState>(() => {
     return {
@@ -199,12 +201,9 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [providerFilter, setProviderFilter] = useState<string>("");
 
-  // Removed: useEffect to fetch orders - React Query handles this automatically
-
   useEffect(() => {
     const socket = getWorkflowSocket();
     const handler = (payload: { orderId: string }) => {
-      // Invalidate queries to refetch updated order
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       queryClient.invalidateQueries({
         queryKey: queryKeys.orders.detail(payload.orderId),
@@ -234,6 +233,7 @@ export default function OrdersPage() {
 
   const handleSelectOrder = (orderId: string) => {
     selectOrder(orderId);
+    setActiveTab("detail");
   };
 
   const handleToggleService = (service: "pharmacy" | "lab" | "radiology") => {
@@ -400,14 +400,13 @@ export default function OrdersPage() {
       },
       {
         onSuccess: (createdOrder) => {
-          // Select the newly created order
           selectOrder(createdOrder.id);
-          // Reset form
           setFormState((prev) => ({
             ...initialFormState,
             providerId: prev.providerId,
           }));
           setSubmitting(false);
+          setActiveTab("detail");
         },
         onError: (error) => {
           setSubmissionError(error.message);
@@ -417,55 +416,399 @@ export default function OrdersPage() {
     );
   };
 
-  return (
-    <div className="orders-page">
-      <Breadcrumb
-        items={[
-          { label: "Dashboard", path: "/dashboard" },
-          { label: "Unified Orders" },
-        ]}
-      />
-      <div className="orders-header">
-        <div>
-          <h1>Unified Orders</h1>
-          <p>
-            Create, track, and orchestrate pharmacy, laboratory, and radiology
-            fulfillment from a single cockpit.
-          </p>
-        </div>
-      </div>
+  // Sub-tabs for New Order
+  const newOrderTabs: Tab[] = [
+    {
+      id: "context",
+      label: "Patient & Context",
+      icon: <User size={18} />,
+      content: (
+        <div className="sub-tab-content">
+          <div className="form-grid">
+            <label>
+              <span>Patient ID</span>
+              <input
+                value={formState.patientId}
+                onChange={(e) => handleInputChange("patientId", e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span>Provider ID</span>
+              <input
+                value={formState.providerId}
+                onChange={(e) =>
+                  handleInputChange("providerId", e.target.value)
+                }
+                required
+              />
+            </label>
+            <label>
+              <span>Encounter ID</span>
+              <input
+                value={formState.encounterId}
+                onChange={(e) =>
+                  handleInputChange("encounterId", e.target.value)
+                }
+                required
+              />
+            </label>
+            <label>
+              <span>Priority</span>
+              <select
+                value={formState.priority}
+                onChange={(e) =>
+                  handleInputChange("priority", e.target.value as OrderPriority)
+                }
+              >
+                {ORDER_PRIORITIES.map((priority) => (
+                  <option key={priority.value} value={priority.value}>
+                    {priority.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Diagnosis Code</span>
+              <select
+                value={formState.diagnosisCode}
+                onChange={(e) =>
+                  handleInputChange("diagnosisCode", e.target.value)
+                }
+              >
+                <option value="">Select Diagnosis</option>
+                {DIAGNOSIS_CODES.map((d) => (
+                  <option key={d.code} value={d.code}>
+                    {d.code} - {d.display}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="span-2">
+              <span>Ordering Provider Signature</span>
+              <input
+                value={formState.providerSignature}
+                onChange={(e) =>
+                  handleInputChange("providerSignature", e.target.value)
+                }
+                placeholder="Type full name to sign"
+                style={{ fontFamily: "monospace" }}
+              />
+            </label>
+          </div>
 
-      <div className="orders-content">
-        <div className="orders-left">
+          <label style={{ marginTop: "var(--space-4)" }}>
+            <span>Clinical Notes</span>
+            <textarea
+              rows={3}
+              value={formState.notes}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
+              placeholder="Brief clinical context for fulfillment teams"
+            />
+          </label>
+        </div>
+      ),
+    },
+    {
+      id: "pharmacy",
+      label: "Pharmacy",
+      icon: <Pill size={18} />,
+      content: (
+        <div className="sub-tab-content">
+          <div className="service-toggle-header">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={formState.pharmacy.enabled}
+                onChange={() => handleToggleService("pharmacy")}
+              />
+              <span className="slider" />
+            </label>
+            <span>Enable Pharmacy Order</span>
+          </div>
+
+          <div
+            className={`service-grid ${!formState.pharmacy.enabled ? "disabled-section" : ""}`}
+          >
+            <label>
+              <span>RxNorm ID</span>
+              <input
+                value={formState.pharmacy.rxNormId}
+                onChange={(e) =>
+                  handlePharmacyChange("rxNormId", e.target.value)
+                }
+                required={formState.pharmacy.enabled}
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+            <label>
+              <span>Medication</span>
+              <input
+                value={formState.pharmacy.drugName}
+                onChange={(e) =>
+                  handlePharmacyChange("drugName", e.target.value)
+                }
+                required={formState.pharmacy.enabled}
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+            <label>
+              <span>Dosage</span>
+              <input
+                value={formState.pharmacy.dosage}
+                onChange={(e) => handlePharmacyChange("dosage", e.target.value)}
+                required={formState.pharmacy.enabled}
+                placeholder="e.g. 500mg"
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+            <label>
+              <span>Route</span>
+              <select
+                value={formState.pharmacy.route}
+                onChange={(e) => handlePharmacyChange("route", e.target.value)}
+                disabled={!formState.pharmacy.enabled}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--color-border)",
+                }}
+              >
+                {MEDICATION_ROUTES.map((route) => (
+                  <option key={route} value={route}>
+                    {route}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Frequency</span>
+              <select
+                value={formState.pharmacy.frequency}
+                onChange={(e) =>
+                  handlePharmacyChange("frequency", e.target.value)
+                }
+                disabled={!formState.pharmacy.enabled}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--color-border)",
+                }}
+              >
+                {MEDICATION_FREQUENCIES.map((freq) => (
+                  <option key={freq} value={freq}>
+                    {freq}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Duration</span>
+              <input
+                value={formState.pharmacy.duration}
+                onChange={(e) =>
+                  handlePharmacyChange("duration", e.target.value)
+                }
+                placeholder="e.g. 7 days"
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+            <label>
+              <span>Quantity</span>
+              <input
+                type="number"
+                min={1}
+                value={formState.pharmacy.quantity}
+                onChange={(e) =>
+                  handlePharmacyChange("quantity", Number(e.target.value))
+                }
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+            <label className="span-2">
+              <span>Instructions</span>
+              <input
+                value={formState.pharmacy.instructions}
+                onChange={(e) =>
+                  handlePharmacyChange("instructions", e.target.value)
+                }
+                placeholder="Take with meals, monitor blood pressure, etc."
+                disabled={!formState.pharmacy.enabled}
+              />
+            </label>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "lab",
+      label: "Laboratory",
+      icon: <Beaker size={18} />,
+      content: (
+        <div className="sub-tab-content">
+          <div className="service-toggle-header">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={formState.lab.enabled}
+                onChange={() => handleToggleService("lab")}
+              />
+              <span className="slider" />
+            </label>
+            <span>Enable Laboratory Order</span>
+          </div>
+
+          <div
+            className={`service-grid ${!formState.lab.enabled ? "disabled-section" : ""}`}
+          >
+            <label>
+              <span>LOINC Code</span>
+              <input
+                value={formState.lab.loincCode}
+                onChange={(e) => handleLabChange("loincCode", e.target.value)}
+                required={formState.lab.enabled}
+                disabled={!formState.lab.enabled}
+              />
+            </label>
+            <label>
+              <span>Test Name</span>
+              <input
+                value={formState.lab.testName}
+                onChange={(e) => handleLabChange("testName", e.target.value)}
+                required={formState.lab.enabled}
+                disabled={!formState.lab.enabled}
+              />
+            </label>
+            <label className="span-2">
+              <span>Specimen Type</span>
+              <input
+                value={formState.lab.specimenType}
+                onChange={(e) =>
+                  handleLabChange("specimenType", e.target.value)
+                }
+                disabled={!formState.lab.enabled}
+              />
+            </label>
+            <label className="span-2">
+              <span>Collection Site</span>
+              <input
+                value={formState.lab.collectionSite}
+                onChange={(e) =>
+                  handleLabChange("collectionSite", e.target.value)
+                }
+                placeholder="e.g. Left Arm, Central Line"
+                disabled={!formState.lab.enabled}
+              />
+            </label>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "radiology",
+      label: "Radiology",
+      icon: <Radiation size={18} />,
+      content: (
+        <div className="sub-tab-content">
+          <div className="service-toggle-header">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={formState.radiology.enabled}
+                onChange={() => handleToggleService("radiology")}
+              />
+              <span className="slider" />
+            </label>
+            <span>Enable Radiology Order</span>
+          </div>
+
+          <div
+            className={`service-grid ${!formState.radiology.enabled ? "disabled-section" : ""}`}
+          >
+            <label>
+              <span>Study Type</span>
+              <select
+                value={formState.radiology.studyType}
+                onChange={(e) =>
+                  handleRadiologyChange(
+                    "studyType",
+                    e.target.value as (typeof STUDY_TYPES)[number]
+                  )
+                }
+                disabled={!formState.radiology.enabled}
+              >
+                {STUDY_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Body Part</span>
+              <input
+                value={formState.radiology.bodyPart}
+                onChange={(e) =>
+                  handleRadiologyChange("bodyPart", e.target.value)
+                }
+                required={formState.radiology.enabled}
+                disabled={!formState.radiology.enabled}
+              />
+            </label>
+            <label className="span-2">
+              <span>Clinical Indication</span>
+              <input
+                value={formState.radiology.clinicalIndication}
+                onChange={(e) =>
+                  handleRadiologyChange("clinicalIndication", e.target.value)
+                }
+                required={formState.radiology.enabled}
+                disabled={!formState.radiology.enabled}
+              />
+            </label>
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={formState.radiology.contrast}
+                onChange={(e) =>
+                  handleRadiologyChange("contrast", e.target.checked)
+                }
+                disabled={!formState.radiology.enabled}
+              />
+              <span>Requires contrast</span>
+            </label>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const tabs: Tab[] = [
+    {
+      id: "worklist",
+      label: "Worklist",
+      icon: <ClipboardList size={18} />,
+      content: (
+        <div className="orders-tab-content">
           <section className="orders-list-card">
             <header className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <ClipboardList size={20} />
-                <h2>Worklist</h2>
+                <h2>Active Orders</h2>
               </div>
               <div className="flex items-center gap-2">
                 <input
                   placeholder="Ordered By..."
                   value={providerFilter}
                   onChange={(e) => setProviderFilter(e.target.value)}
-                  className="text-sm border rounded p-1 bg-white"
-                  style={{
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "4px",
-                    padding: "2px 6px",
-                    width: "120px",
-                  }}
+                  className="filter-input"
                 />
                 <Filter size={16} className="text-gray-500" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="text-sm border rounded p-1 bg-white"
-                  style={{
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "4px",
-                    padding: "2px 6px",
-                  }}
+                  className="filter-select"
                 >
                   <option value="ALL">All Status</option>
                   <option value="NEW">New / Requested</option>
@@ -507,421 +850,116 @@ export default function OrdersPage() {
               )}
             </ul>
           </section>
-
+        </div>
+      ),
+    },
+    {
+      id: "new",
+      label: "New Unified Order",
+      icon: <PlusCircle size={18} />,
+      content: (
+        <div className="orders-tab-content">
           <section className="create-order-card">
             <header>
-              <PlusCircle size={20} />
-              <h2>New Unified Order</h2>
+              <h2>Create New Order</h2>
             </header>
             <form onSubmit={handleSubmit} className="create-order-form">
-              <div className="form-grid">
-                <label>
-                  <span>Patient ID</span>
-                  <input
-                    value={formState.patientId}
-                    onChange={(e) =>
-                      handleInputChange("patientId", e.target.value)
-                    }
-                    required
-                  />
-                </label>
-                <label>
-                  <span>Provider ID</span>
-                  <input
-                    value={formState.providerId}
-                    onChange={(e) =>
-                      handleInputChange("providerId", e.target.value)
-                    }
-                    required
-                  />
-                </label>
-                <label>
-                  <span>Encounter ID</span>
-                  <input
-                    value={formState.encounterId}
-                    onChange={(e) =>
-                      handleInputChange("encounterId", e.target.value)
-                    }
-                    required
-                  />
-                </label>
-                <label>
-                  <span>Priority</span>
-                  <select
-                    value={formState.priority}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "priority",
-                        e.target.value as OrderPriority
-                      )
-                    }
-                  >
-                    {ORDER_PRIORITIES.map((priority) => (
-                      <option key={priority.value} value={priority.value}>
-                        {priority.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Diagnosis Code</span>
-                  <select
-                    value={formState.diagnosisCode}
-                    onChange={(e) =>
-                      handleInputChange("diagnosisCode", e.target.value)
-                    }
-                  >
-                    <option value="">Select Diagnosis</option>
-                    {DIAGNOSIS_CODES.map((d) => (
-                      <option key={d.code} value={d.code}>
-                        {d.code} - {d.display}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="span-2">
-                  <span>Ordering Provider Signature</span>
-                  <input
-                    value={formState.providerSignature}
-                    onChange={(e) =>
-                      handleInputChange("providerSignature", e.target.value)
-                    }
-                    placeholder="Type full name to sign"
-                    style={{ fontFamily: "monospace" }}
-                  />
-                </label>
+              <div className="nested-tabs-container">
+                <Tabs tabs={newOrderTabs} defaultTab="context" />
               </div>
-
-              <label>
-                <span>Clinical Notes</span>
-                <textarea
-                  rows={3}
-                  value={formState.notes}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
-                  placeholder="Brief clinical context for fulfillment teams"
-                />
-              </label>
-
-              <ServiceAccordion
-                id="pharmacy"
-                icon={<Pill size={18} />}
-                title="Pharmacy"
-                description="Send prescription data to the pharmacy workbench"
-                enabled={formState.pharmacy.enabled}
-                onToggle={() => handleToggleService("pharmacy")}
-              >
-                <div className="service-grid">
-                  <label>
-                    <span>RxNorm ID</span>
-                    <input
-                      value={formState.pharmacy.rxNormId}
-                      onChange={(e) =>
-                        handlePharmacyChange("rxNormId", e.target.value)
-                      }
-                      required={formState.pharmacy.enabled}
-                    />
-                  </label>
-                  <label>
-                    <span>Medication</span>
-                    <input
-                      value={formState.pharmacy.drugName}
-                      onChange={(e) =>
-                        handlePharmacyChange("drugName", e.target.value)
-                      }
-                      required={formState.pharmacy.enabled}
-                    />
-                  </label>
-                  <label>
-                    <span>Dosage</span>
-                    <input
-                      value={formState.pharmacy.dosage}
-                      onChange={(e) =>
-                        handlePharmacyChange("dosage", e.target.value)
-                      }
-                      required={formState.pharmacy.enabled}
-                      placeholder="e.g. 500mg"
-                    />
-                  </label>
-                  <label>
-                    <span>Route</span>
-                    <select
-                      value={formState.pharmacy.route}
-                      onChange={(e) =>
-                        handlePharmacyChange("route", e.target.value)
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid var(--color-border)",
-                      }}
-                    >
-                      {MEDICATION_ROUTES.map((route) => (
-                        <option key={route} value={route}>
-                          {route}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Frequency</span>
-                    <select
-                      value={formState.pharmacy.frequency}
-                      onChange={(e) =>
-                        handlePharmacyChange("frequency", e.target.value)
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid var(--color-border)",
-                      }}
-                    >
-                      {MEDICATION_FREQUENCIES.map((freq) => (
-                        <option key={freq} value={freq}>
-                          {freq}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Duration</span>
-                    <input
-                      value={formState.pharmacy.duration}
-                      onChange={(e) =>
-                        handlePharmacyChange("duration", e.target.value)
-                      }
-                      placeholder="e.g. 7 days"
-                    />
-                  </label>
-                  <label>
-                    <span>Quantity</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={formState.pharmacy.quantity}
-                      onChange={(e) =>
-                        handlePharmacyChange("quantity", Number(e.target.value))
-                      }
-                    />
-                  </label>
-                  <label className="span-2">
-                    <span>Instructions</span>
-                    <input
-                      value={formState.pharmacy.instructions}
-                      onChange={(e) =>
-                        handlePharmacyChange("instructions", e.target.value)
-                      }
-                      placeholder="Take with meals, monitor blood pressure, etc."
-                    />
-                  </label>
-                </div>
-              </ServiceAccordion>
-
-              <ServiceAccordion
-                id="lab"
-                icon={<Beaker size={18} />}
-                title="Laboratory"
-                description="Route specimens to the lab fulfillment bench"
-                enabled={formState.lab.enabled}
-                onToggle={() => handleToggleService("lab")}
-              >
-                <div className="service-grid">
-                  <label>
-                    <span>LOINC Code</span>
-                    <input
-                      value={formState.lab.loincCode}
-                      onChange={(e) =>
-                        handleLabChange("loincCode", e.target.value)
-                      }
-                      required={formState.lab.enabled}
-                    />
-                  </label>
-                  <label>
-                    <span>Test Name</span>
-                    <input
-                      value={formState.lab.testName}
-                      onChange={(e) =>
-                        handleLabChange("testName", e.target.value)
-                      }
-                      required={formState.lab.enabled}
-                    />
-                  </label>
-                  <label className="span-2">
-                    <span>Specimen Type</span>
-                    <input
-                      value={formState.lab.specimenType}
-                      onChange={(e) =>
-                        handleLabChange("specimenType", e.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="span-2">
-                    <span>Collection Site</span>
-                    <input
-                      value={formState.lab.collectionSite}
-                      onChange={(e) =>
-                        handleLabChange("collectionSite", e.target.value)
-                      }
-                      placeholder="e.g. Left Arm, Central Line"
-                    />
-                  </label>
-                </div>
-              </ServiceAccordion>
-
-              <ServiceAccordion
-                id="radiology"
-                icon={<Radiation size={18} />}
-                title="Radiology"
-                description="Coordinate imaging orders with radiology"
-                enabled={formState.radiology.enabled}
-                onToggle={() => handleToggleService("radiology")}
-              >
-                <div className="service-grid">
-                  <label>
-                    <span>Study Type</span>
-                    <select
-                      value={formState.radiology.studyType}
-                      onChange={(e) =>
-                        handleRadiologyChange(
-                          "studyType",
-                          e.target.value as (typeof STUDY_TYPES)[number]
-                        )
-                      }
-                    >
-                      {STUDY_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Body Part</span>
-                    <input
-                      value={formState.radiology.bodyPart}
-                      onChange={(e) =>
-                        handleRadiologyChange("bodyPart", e.target.value)
-                      }
-                      required={formState.radiology.enabled}
-                    />
-                  </label>
-                  <label className="span-2">
-                    <span>Clinical Indication</span>
-                    <input
-                      value={formState.radiology.clinicalIndication}
-                      onChange={(e) =>
-                        handleRadiologyChange(
-                          "clinicalIndication",
-                          e.target.value
-                        )
-                      }
-                      required={formState.radiology.enabled}
-                    />
-                  </label>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formState.radiology.contrast}
-                      onChange={(e) =>
-                        handleRadiologyChange("contrast", e.target.checked)
-                      }
-                    />
-                    <span>Requires contrast</span>
-                  </label>
-                </div>
-              </ServiceAccordion>
 
               {submissionError && <p className="error">{submissionError}</p>}
 
-              <button
-                className="submit-button"
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? "Submitting…" : "Launch Unified Order"}
-              </button>
+              <div className="form-actions">
+                <button
+                  className="submit-button"
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting…" : "Launch Unified Order"}
+                </button>
+              </div>
             </form>
           </section>
         </div>
-
-        <div className="orders-detail">
+      ),
+    },
+    {
+      id: "investigations",
+      label: "Investigations",
+      icon: <Search size={18} />,
+      content: (
+        <div className="orders-tab-content">
+          <section className="create-order-card">
+            <header>
+              <Beaker size={20} />
+              <h2>Investigations (New Components Preview)</h2>
+            </header>
+            <div className="service-grid">
+              <div className="span-2">
+                <NewInvestigationSearch
+                  onSelect={() => {
+                    /* no-op preview */
+                  }}
+                />
+              </div>
+              <div className="span-2">
+                <NewInvestigationList
+                  encounterId={formState.encounterId || ""}
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+      ),
+    },
+    {
+      id: "detail",
+      label: "Order Detail",
+      icon: <FileText size={18} />,
+      content: (
+        <div className="orders-tab-content">
           {selectedOrder ? (
             <OrderDetailPanel order={selectedOrder} />
           ) : (
-            <p>Select an order to view detail.</p>
+            <div className="empty-state">
+              <p>Select an order from the Worklist to view details.</p>
+              <button
+                className="view-details-btn"
+                onClick={() => setActiveTab("worklist")}
+              >
+                Go to Worklist
+              </button>
+            </div>
           )}
         </div>
-      </div>
+      ),
+    },
+  ];
 
-      {/* New Components Preview (Non-invasive) */}
-      <div style={{ marginTop: 24 }}>
-        <section className="create-order-card">
-          <header>
-            <Beaker size={20} />
-            <h2>Investigations (New Components Preview)</h2>
-          </header>
-          <div className="service-grid">
-            <div className="span-2">
-              <NewInvestigationSearch
-                onSelect={() => {
-                  /* no-op preview */
-                }}
-              />
-            </div>
-            <div className="span-2">
-              <NewInvestigationList encounterId={formState.encounterId || ""} />
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-interface ServiceAccordionProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  enabled: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  id: string;
-}
-
-function ServiceAccordion({
-  icon,
-  title,
-  description,
-  enabled,
-  onToggle,
-  children,
-  id,
-}: ServiceAccordionProps) {
-  const inputId = `${id}-toggle`;
   return (
-    <div className="service-accordion">
-      <header>
-        <div className="service-title">
-          <div className="service-icon">{icon}</div>
-          <div>
-            <h3>{title}</h3>
-            <p>{description}</p>
-          </div>
+    <div className="orders-page">
+      <Breadcrumb
+        items={[
+          { label: "Dashboard", path: "/dashboard" },
+          { label: "Unified Orders" },
+        ]}
+      />
+      <div className="orders-header">
+        <div>
+          <h1>Unified Orders</h1>
+          <p>
+            Create, track, and orchestrate pharmacy, laboratory, and radiology
+            fulfillment from a single cockpit.
+          </p>
         </div>
-        <label className="switch" htmlFor={inputId}>
-          <input
-            id={inputId}
-            type="checkbox"
-            checked={enabled}
-            onChange={onToggle}
-            aria-label={`Toggle ${title}`}
-            title={`Toggle ${title}`}
-          />
-          <span className="slider" />
-        </label>
-      </header>
-      {enabled && <div className="service-content">{children}</div>}
+      </div>
+
+      <Tabs
+        tabs={tabs}
+        defaultTab="worklist"
+        onChange={(id) => setActiveTab(id)}
+      />
     </div>
   );
 }
@@ -932,9 +970,7 @@ interface OrderDetailPanelProps {
 
 function OrderDetailPanel({ order }: OrderDetailPanelProps) {
   const steps = ["NEW", "PARTIALLY_FULFILLED", "VERIFIED", "COMPLETED"];
-  // Default to 0 if status not found
   const currentStepIndex = Math.max(0, steps.indexOf(order.status));
-  // Check items for error since order status doesn't have ERROR
   const isError = order.items.some((i) => i.status === "ERROR");
 
   return (
@@ -951,39 +987,18 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
         </span>
       </header>
 
-      {/* Visual Stepper */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-          marginTop: "12px",
-          position: "relative",
-        }}
-      >
-        {/* Line behind steps */}
-        <div
-          style={{
-            position: "absolute",
-            top: "14px",
-            left: "0",
-            right: "0",
-            height: "2px",
-            background: "#E2E8F0",
-            zIndex: 0,
-          }}
-        />
+      <div className="stepper-container">
+        <div className="stepper-line" />
         {steps.map((step, idx) => {
           const isCompleted = idx <= currentStepIndex;
           const isCurrent = idx === currentStepIndex;
-          let color = isCompleted ? "#2563EB" : "#CBD5E1"; // Blue or Gray
+          let color = isCompleted ? "#2563EB" : "#CBD5E1";
           let bg = isCompleted ? "#EFF6FF" : "#F8FAFC";
           if (isError && isCurrent) {
-            color = "#DC2626"; // Red
+            color = "#DC2626";
             bg = "#FEF2F2";
           }
 
-          // Map status to label
           const label = {
             NEW: "Requested",
             PARTIALLY_FULFILLED: "In Progress",
@@ -992,40 +1007,21 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
           }[step];
 
           return (
-            <div
-              key={step}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                zIndex: 1,
-                position: "relative",
-              }}
-            >
+            <div key={step} className="step-item">
               <div
+                className="step-circle"
                 style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
                   background: bg,
-                  border: `2px solid ${color}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: "bold",
+                  borderColor: color,
                   color: color,
-                  marginBottom: "8px",
-                  transition: "all 0.3s ease",
                 }}
               >
                 {idx + 1}
               </div>
               <span
+                className="step-label"
                 style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
                   color: isCompleted ? "#1E293B" : "#94A3B8",
-                  textTransform: "capitalize",
                 }}
               >
                 {label}
@@ -1044,16 +1040,7 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
                   `Notes from order #${order.orderNumber} appended to Patient History.`
                 )
               }
-              style={{
-                background: "#fff",
-                border: "1px solid #CBD5E1",
-                padding: "6px 12px",
-                borderRadius: "4px",
-                fontSize: "12px",
-                cursor: "pointer",
-                color: "#475569",
-                fontWeight: 500,
-              }}
+              className="action-button"
             >
               Append Notes to History
             </button>
@@ -1064,16 +1051,7 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
             <h3>Diagnosis</h3>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {order.diagnosisCodes.map((code) => (
-                <span
-                  key={code}
-                  style={{
-                    background: "#F1F5F9",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    border: "1px solid #E2E8F0",
-                  }}
-                >
+                <span key={code} className="diagnosis-tag">
                   {code}
                 </span>
               ))}
@@ -1086,13 +1064,7 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
           {order.items.map((item) => (
             <li key={item.id}>
               <div style={{ width: "100%" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}
-                >
+                <div className="item-header">
                   <div>
                     <span className="item-title">
                       {ITEM_LABEL[item.itemType]}
@@ -1105,20 +1077,8 @@ function OrderDetailPanel({ order }: OrderDetailPanelProps) {
                     {item.status}
                   </span>
                 </div>
-                {/* Expanded Details */}
                 {item.metadata && (
-                  <div
-                    style={{
-                      marginTop: "8px",
-                      paddingTop: "8px",
-                      borderTop: "1px dashed #E2E8F0",
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "4px",
-                      fontSize: "11px",
-                      color: "#64748B",
-                    }}
-                  >
+                  <div className="item-metadata">
                     {Object.entries(item.metadata).map(([k, v]) => (
                       <div key={k}>
                         <span style={{ fontWeight: 600, marginRight: "4px" }}>

@@ -1,61 +1,86 @@
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--color-background);
+  background: #ffffff;
+  position: relative;
 }
 
 .dashboard-main {
   flex: 1;
+  /* Critical: Account for fixed sidebar */
   margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition-base);
+  transition: margin-left var(--transition-normal);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* Prevent content from going under sidebar */
+  min-width: 0; /* Allow flex item to shrink */
+  position: relative;
+}
+
+/* When sidebar is collapsed - adjust margin */
+.dashboard-layout:has(.sidebar-collapsed) .dashboard-main {
+  margin-left: var(--sidebar-collapsed-width);
 }
 
 .dashboard-content {
   flex: 1;
-  padding: var(--space-2xl);
-  max-width: 100%;
-  overflow-x: hidden;
+  /* Dynamic padding that scales with viewport */
+  padding: clamp(1rem, 2vw, 3rem) clamp(1.5rem, 3vw, 4rem);
+  max-width: 1800px; /* Larger max-width for big monitors */
+  margin: 0 auto; /* Center within available space */
+  width: 100%;
+  background: #ffffff;
+  /* Ensure content doesn't overflow */
+  overflow-x: auto;
 }
 
 /* Mobile Overlay */
 .mobile-overlay {
   display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.mobile-overlay.visible {
+  display: block;
+  opacity: 1;
 }
 
 /* Responsive Design */
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   .dashboard-main {
     margin-left: 0;
   }
-  
-  .mobile-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: var(--color-overlay);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: calc(var(--z-fixed) - 1);
-    animation: fadeIn var(--transition-fast);
-  }
-}
 
-@media (max-width: 767px) {
   .dashboard-content {
-    padding: var(--space-lg) var(--space-md);
-    padding-bottom: calc(var(--mobile-nav-height) + var(--space-lg));
+    padding: clamp(0.75rem, 2vw, 2rem);
+  }
+
+  /* Sidebar should overlay on tablets/mobile */
+  .sidebar:not(.sidebar-collapsed) {
+    transform: translateX(-100%);
+  }
+
+  .sidebar:not(.sidebar-collapsed).mobile-open {
+    transform: translateX(0);
   }
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-main,
-  .mobile-overlay {
-    transition: none !important;
-    animation: none !important;
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
   }
 }
 
+/* Prevent horizontal scroll caused by layout issues */
+html,
+body {
+  overflow-x: hidden;
+}

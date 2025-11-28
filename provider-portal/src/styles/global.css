@@ -1,7 +1,9 @@
 /* Global Styles - Medical EMR/HMS System */
 
 /* CSS Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -18,9 +20,9 @@ html {
 body {
   font-family: var(--font-primary);
   font-size: var(--text-base);
-  line-height: var(--leading-normal);
-  color: var(--color-text-primary);
-  background-color: var(--color-background);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: #ffffff !important;
   min-height: 100%;
   overflow-x: hidden;
 }
@@ -30,10 +32,15 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: var(--font-semibold);
   line-height: var(--leading-tight);
-  color: var(--color-text-primary);
+  color: var(--text-primary);
   margin-bottom: var(--space-md);
 }
 
@@ -66,8 +73,8 @@ h6 {
 }
 
 p {
-  margin-bottom: var(--space-md);
-  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  color: var(--text-secondary);
 }
 
 a {
@@ -87,18 +94,22 @@ a:focus-visible {
 }
 
 /* Lists */
-ul, ol {
+ul,
+ol {
   margin-bottom: var(--space-md);
   padding-left: var(--space-lg);
 }
 
 li {
-  margin-bottom: var(--space-sm);
-  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+  color: var(--text-secondary);
 }
 
 /* Form Elements */
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   font-family: inherit;
   font-size: inherit;
 }
@@ -322,7 +333,8 @@ button:disabled {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -340,7 +352,8 @@ button:disabled {
 }
 
 @keyframes breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -401,7 +414,7 @@ button:disabled {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -415,8 +428,8 @@ button:disabled {
 
 /* Selection */
 ::selection {
-  background-color: rgba(0, 102, 204, 0.2);
-  color: var(--color-text-primary);
+  background-color: rgba(0, 122, 255, 0.2);
+  color: var(--text-primary);
 }
 
 /* Print Styles */
@@ -424,9 +437,8 @@ button:disabled {
   body {
     background: white;
   }
-  
+
   .no-print {
     display: none !important;
   }
 }
-

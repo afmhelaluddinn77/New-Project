@@ -1,0 +1,107 @@
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  gap: var(--space-4); /* Increased gap for separation */
+  padding: var(--space-4);
+  background: transparent; /* Removed background to let page gradient show */
+  border-bottom: none; /* Removed border */
+  overflow-x: auto;
+  flex-shrink: 0;
+  /* Ensure tabs can wrap if needed on very small screens, but prefer row */
+  flex-wrap: nowrap;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(240, 240, 245, 0.4)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-xl);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  position: relative;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.tab-button:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.8),
+    rgba(245, 245, 250, 0.6)
+  );
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
+}
+
+.tab-button-active {
+  background: linear-gradient(145deg, #ffffff, #f5f5f7);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+.tab-button-active::after {
+  display: none; /* Remove the bottom line */
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-label {
+  font-size: inherit;
+}
+
+.tabs-content {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-y: auto;
+  background: var(--bg-card);
+}
+
+@media (max-width: 768px) {
+  .tabs-header {
+    padding: var(--space-2);
+  }
+
+  .tab-button {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .tabs-content {
+    padding: var(--space-4);
+  }
+}
